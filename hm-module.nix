@@ -61,7 +61,7 @@ in {
       nofifyAboutUpdates = mkEnableOption "Notify when updates are available";
       autoUpdate = mkEnableOption "Automaticall update Vencord";
       autoUpdateNotification = mkEnableOption "Notify user about auto updates";
-      useQuckCSS = mkEnableOption "Enable quick CSS file";
+      useQuickCSS = mkEnableOption "Enable quick CSS file";
       themeLinks = mkOption {
         type = with types; listOf str;
         default = [ ];
