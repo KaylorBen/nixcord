@@ -122,7 +122,7 @@ incredibly hard to edit. In general, use a non-declarative Vencord
 build to edit these parameters and confirm the coresponding value
 in JSON. This too can easily be fixed once the parsing function
 is complete, but until then I have created a list of all
-inconsistencies [here](./SETTINGS.MD).
+inconsistencies [here](./SETTINGS.md).
 
 The case used for all plugin names is UpperCamelCase, whereas Nix
 prefers standard camelCase. This is quite annoying, but should
