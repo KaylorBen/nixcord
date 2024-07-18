@@ -53,8 +53,8 @@ in {
       description = "Enable OpenASAR";
     };
     quickCss = mkOption {
-      type = with types; nullOr str;
-      default = null;
+      type = types.str;
+      default = "";
       description = "Vencord quick CSS";
     };
     config = {
@@ -95,9 +95,9 @@ in {
         })
       ];
     }
-    (mkIf (!builtins.isNull cfg.quickCss) {
+    {
       home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
-    })
+    }
     (mkIfElse (!builtins.isNull cfg.extraConfig) {
       home.file."${cfg.configDir}/settings/settings.json".text =
         builtins.toJSON (cfg.config // cfg.extraConfig);
