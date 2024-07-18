@@ -117,12 +117,12 @@ This is probably the most annoying one, but should be fixable in
 the future with a custom function to parse them.
 
 Many plugins use JS option types for settings that either become
-strings or ints in settings.JSON. This makes some config options
+strings or ints in settings.json. This makes some config options
 incredibly hard to edit. In general, use a non-declarative Vencord
 build to edit these parameters and confirm the coresponding value
 in JSON. This too can easily be fixed once the parsing function
 is complete, but until then I have created a list of all
-inconsistencies [here](./SETTINGS.MD).
+inconsistencies [here](./SETTINGS.md).
 
 The case used for all plugin names is UpperCamelCase, whereas Nix
 prefers standard camelCase. This is quite annoying, but should
