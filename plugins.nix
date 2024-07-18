@@ -2904,4 +2904,9 @@ with lib;
       '';
     };
   };
+  SupportHelper = {
+    enabled = mkEnableOption ''
+      Helps us provide support to you
+    '' // { default = true; }; # Required
+  };
 }
