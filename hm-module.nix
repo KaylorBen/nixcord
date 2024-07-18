@@ -1,4 +1,4 @@
-self: {
+{
   config,
   lib,
   pkgs,
@@ -11,6 +11,7 @@ let
     mkOption
     types
     mkIf
+    mkMerge
     literalExpression
     ;
 in {
@@ -75,14 +76,23 @@ in {
     extraConfig = mkOption {
       type = with types; nullOr attrs;
       default = null;
-      description = "Vencord config";
+      description = "Vencord extra config";
     };
   };
 
-  config = mkIf cfg.enable {
-    home.packages = cfg.package.override {
-      withVencord = cfg.vencord.enable;
-      withOpenASAR = cfg.openASAR.enable;
-    };
-  };
+  config = mkIf cfg.enable (mkMerge [
+    {
+      home.packages = cfg.package.override {
+        withVencord = cfg.vencord.enable;
+        withOpenASAR = cfg.openASAR.enable;
+      };
+    }
+    {
+      home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.vencord.css;
+    }
+    {
+      home.file."${cfg.configDir}/settings/settings.json".text =
+        builtins.toJSON (cfg.config // cfg.extraConfig);
+    }
+  ]);
 }
