@@ -1,5 +1,4 @@
 # Nixcord
-Dev Branch
 Manage Vencord settings and plugins declaratively with NixOS
 
 Currently this project is a wrapper for builtins.toJSON for the
