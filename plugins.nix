@@ -369,7 +369,7 @@ with lib;
   CrashHandler = {
     enabled = mkOption {
       type = types.bool;
-      default = true;
+      default = true; # Default on
       description = ''
         Utility plugin for handling and possibly recovering from crashes without a restart
       '';
