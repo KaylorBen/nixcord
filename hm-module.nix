@@ -6,6 +6,12 @@
 }:
 let
   cfg = config.programs.nixcord;
+
+  mkIfElse = p: yes: no: mkMerge [
+    (mkIf p yes)
+    (mkIf (!p) no)
+  ];
+
   inherit (lib)
     mkEnableOption
     mkOption
@@ -18,7 +24,7 @@ in {
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
     package = mkOption {
-      type = with types; nullOr package;
+      type = types.package;
       default = pkgs.discord;
       defaultText = literalExpression "pkgs.discord";
       example = literalExpression ''
@@ -47,8 +53,8 @@ in {
       description = "Enable OpenASAR";
     };
     quickCss = mkOption {
-      type = types.str;
-      default = "";
+      type = with types; nullOr str;
+      default = null;
       description = "Vencord quick CSS";
     };
     config = {
@@ -71,7 +77,7 @@ in {
       frameless = mkEnableOption "Make client frameless";
       transparent = mkEnableOption "Enable client transparency";
       disableMinSize = mkEnableOption "Disable minimum window size for client";
-      plugins = import ./plugins.nix;
+      plugins = import ./plugins.nix { inherit lib; };
     };
     extraConfig = mkOption {
       type = with types; nullOr attrs;
@@ -82,17 +88,22 @@ in {
 
   config = mkIf cfg.enable (mkMerge [
     {
-      home.packages = cfg.package.override {
-        withVencord = cfg.vencord.enable;
-        withOpenASAR = cfg.openASAR.enable;
-      };
+      home.packages = [
+        (cfg.package.override {
+          withVencord = cfg.vencord.enable;
+          withOpenASAR = cfg.openASAR.enable;
+        })
+      ];
     }
-    {
-      home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.vencord.css;
-    }
-    {
+    (mkIf (!builtins.isNull cfg.quickCss) {
+      home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
+    })
+    (mkIfElse (!builtins.isNull cfg.extraConfig) {
       home.file."${cfg.configDir}/settings/settings.json".text =
         builtins.toJSON (cfg.config // cfg.extraConfig);
-    }
+    } {
+      home.file."${cfg.configDir}/settings/settings.json".text =
+        builtins.toJSON cfg.config;
+    })
   ]);
 }

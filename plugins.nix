@@ -73,7 +73,7 @@ with lib;
       Whether to anonymise file names by default
     '';
     method = mkOption {
-      type = types.str;
+      type = types.int;
       default = 0;
       description = ''
         Anonymising Method
@@ -2620,7 +2620,7 @@ with lib;
       '';
     };
     volume = mkOption {
-      type = types.float;
+      type = types.number;
       default = 1;
       example = 0.25;
       description = ''
@@ -2628,7 +2628,7 @@ with lib;
       '';
     };
     rate = mkOption {
-      type = types.float;
+      type = types.number;
       default = 1;
       example = 2;
       description = ''
@@ -2870,11 +2870,30 @@ with lib;
     };
   };
   NoTrack = {
-    enabled = true; # Required
-    disableAnalytics = true;
+    enabled = mkEnableOption ''
+      Disable Discord's tracking (analytics/'science'), metrics and Sentry crash reporting
+    '' // { default = true; }; # Required
+    disableAnalytics = mkEnableOption ''
+      Disable Discord's tracking (analytics/'science')
+    '' // { default = true; };
   };
   Settings = {
-    enabled = true; # Required
-    settingsLocation = "aboveNitro";
+    enabled = mkEnableOption ''
+      Adds Settings UI and debug info
+    '' // { default = true; }; # Required
+    settingsLocation = mkOption {
+      type = types.str;
+      default = "aboveNitro";
+      example = "top";
+      description = ''
+        Where to put the Vencord settings section
+        top - At the very top
+        aboveNitro - Above the Nitro section
+        belowNitro - Below the Nitro section
+        aboveActivity - Above Activity Settings
+        belowActivity - Below Activity Settings
+        bottom - At the very bottom
+      '';
+    };
   };
 }
