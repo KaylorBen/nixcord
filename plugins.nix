@@ -329,6 +329,21 @@ with lib;
       Removes the colorblind-friendly icons from statuses, just like 2015-2017 Discord
     '';
   };
+  ConsoleJanitor = {
+    enabled = mkEnableOption ''
+      Disables annoying console messages/errors
+    '';
+    disableNoisyLoggers = mkEnableOption ''
+      Disable noisy loggers like the MessageActionCreators
+    '';
+    disableSpotifyLogger = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Disable the Spotify logger, which leaks account information and access token
+      '';
+    };
+  };
   ConsoleShortcuts = {
     enabled = mkEnableOption ''
       Adds shorter Aliases for many things on the window. Run `shortcutList` for a list.
@@ -1044,6 +1059,11 @@ with lib;
         If the member count should be displayed on the member list
       '';
     };
+  };
+  MentionAvatars = {
+    enabled = mkEnableOption ''
+      Shows user avatars inside mentions
+    '';
   };
   MessageClickActions = {
     enabled = mkEnableOption ''
@@ -2203,6 +2223,11 @@ with lib;
       Always show all message buttons no matter if you are holding the shift key or not.
     '';
   };
+  ShowAllRoles = {
+    enabled = mkEnableOption ''
+      Show all roles in new profiles.
+    '';
+  };
   ShowConnections = {
     enabled = mkEnableOption ''
       Show connected accounts in user popouts
@@ -2541,18 +2566,6 @@ with lib;
       Allows you to unsuppress embeds in messages
     '';
   };
-  UrbanDictionary = {
-    enabled = mkEnableOption ''
-      Search for a word on Urban Dictionary via /urban slash command
-    '';
-    resultsAmount = mkOption {
-      type = types.int;
-      default = 10;
-      description = ''
-        The amount of results you want to get (more gives better results, but its slower)
-      '';
-    };
-  };
   UserVoiceShow = {
     enabled = mkEnableOption ''
       Shows whether a User is currently in a voice channel somewhere in their profile
@@ -2777,11 +2790,6 @@ with lib;
   WhoReacted = {
     enabled = mkEnableOption ''
       Renders the avatars of users who reacted to a message
-    '';
-  };
-  Wikisearch = {
-    enabled = mkEnableOption ''
-      Searches Wikipedia for your requrested query. (/wikisearch)
     '';
   };
   XSOverlay = {
