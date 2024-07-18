@@ -5,9 +5,8 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = inputs @ {self, nixpkgs}:
+  outputs = {self}:
   {
-    nixosModules.default = import ./module.nix inputs;
     homeManagerModules.default = import ./hm-module.nix self;
   };
 }
