@@ -104,10 +104,10 @@ in {
     }
     (mkIfElse (!builtins.isNull cfg.extraConfig) {
       home.file."${cfg.configDir}/settings/settings.json".text =
-        builtins.toJSON (cfg.config // cfg.extraConfig);
+        builtins.toJSON mkVencordCfg (cfg.config // cfg.extraConfig);
     } {
       home.file."${cfg.configDir}/settings/settings.json".text =
-        builtins.toJSON cfg.config;
+        builtins.toJSON mkVencordCfg cfg.config;
     })
   ]);
 }
