@@ -20,6 +20,10 @@ let
     mkMerge
     literalExpression
     ;
+
+  inherit (./lib.nix)
+    mkVencordCfg
+  ;
 in {
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
