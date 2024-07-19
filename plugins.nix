@@ -1,53 +1,53 @@
 {lib, ...}:
 with lib;
 {
-  ChatInputButtonAPI.enabled = mkOption {
+  chatInputButtonAPI.enable = mkOption {
     type = types.bool;
     default = true;
   };
-  CommandsAPI.enabled = mkOption {
+  commandsAPI.enable = mkOption {
     type = types.bool;
     default = true;
   };
-  MemberListDecoratorsAPI.enabled = mkOption {
+  memberListDecoratorsAPI.enable = mkOption {
     type = types.bool;
     default = true;
   };
-  MessageAccessoriesAPI.enabled = mkOption {
+  messageAccessoriesAPI.enable = mkOption {
     type = types.bool;
     default = true;
   };
-  MessageDecorationsAPI.enabled = mkOption {
+  messageDecorationsAPI.enable = mkOption {
     type = types.bool;
     default = true;
   };
-  MessageEventsAPI.enabled = mkOption {
+  messageEventsAPI.enable = mkOption {
     type = types.bool;
     default = true;
   };
-  MessagePopoverAPI.enabled = mkOption {
+  messagePopoverAPI.enable = mkOption {
     type = types.bool;
     default = true;
   };
-  MessageUpdaterAPI.enabled = mkOption {
+  messageUpdaterAPI.enable = mkOption {
     type = types.bool;
     default = true;
   };
-  ServerListAPI.enabled = mkOption {
+  serverListAPI.enable = mkOption {
     type = types.bool;
     default = true;
   };
-  UserSettingsAPI.enabled = mkOption {
+  userSettingsAPI.enable = mkOption {
     type = types.bool;
     default = true;
   };
-  AlwaysAnimate = {
-    enabled = mkEnableOption ''
+  alwaysAnimate = {
+    enable = mkEnableOption ''
       Animates anything that can be animated
     '';
   };
-  AlwaysTrust = {
-    enabled = mkEnableOption ''
+  alwaysTrust = {
+    enable = mkEnableOption ''
       Removes the annoying untrusted domain and suspicious file popup
     '';
     domain = mkOption {
@@ -65,8 +65,8 @@ with lib;
       '';
     };
   };
-  AnonymiseFileNames = {
-    enabled = mkEnableOption ''
+  anonymiseFileNames = {
+    enable = mkEnableOption ''
       Anonymise uploaded file names
     '';
     anonymiseByDefault = mkEnableOption ''
@@ -97,19 +97,19 @@ with lib;
       '';
     };
   };
-  AppleMusicRichPresence = {
+  appleMusicRichPresence = {
     # Darwin is not offically supported, still could work
-    enabled = mkEnableOption ''
+    enable = mkEnableOption ''
       Apple music rich presence integration
     '';
   };
-  AutomodContext = {
-    enabled = mkEnableOption ''
+  automodContext = {
+    enable = mkEnableOption ''
       Allows you to jump to the messages surrounding an automod hit
     '';
   };
-  BANger = {
-    enabled = mkEnableOption ''
+  bANger = {
+    enable = mkEnableOption ''
       Replaces the GIF in the ban dialogue with a custom one.
     '';
     source = mkOption {
@@ -120,8 +120,8 @@ with lib;
       '';
     };
   };
-  BetterFolders = {
-    enabled = mkEnableOption ''
+  betterFolders = {
+    enable = mkEnableOption ''
       Shows server folders on dedicated sidebar and adds folder related improvements
     '';
     sidebar = mkOption {
@@ -184,18 +184,18 @@ with lib;
       '';
     };
   };
-  BetterGifAltText = {
-    enabled = mkEnableOption ''
+  betterGifAltText = {
+    enable = mkEnableOption ''
       Change GIF alt text from simply being 'GIF' to containing the gif tags / filename
     '';
   };
-  BetterGifPicker = {
-    enabled = mkEnableOption ''
+  betterGifPicker = {
+    enable = mkEnableOption ''
       Makes the gif picker open the favourite category by default
     '';
   };
-  BetterNotesBox = {
-    enabled = mkEnableOption ''
+  betterNotesBox = {
+    enable = mkEnableOption ''
       Hide notes or disable spellcheck (Configure in settings!!)
     '';
     hide = mkEnableOption ''
@@ -205,8 +205,8 @@ with lib;
       Disable spellcheck in notes
     '';
   };
-  BetterRoleContext = {
-    enabled = mkEnableOption ''
+  betterRoleContext = {
+    enable = mkEnableOption ''
       Adds options to copy role color / edit role / view role icon when right clicking roles in the user profile
     '';
     roleIconFileFormat = mkOption {
@@ -216,8 +216,8 @@ with lib;
       description = "File format to use when viewing role icons";
     };
   };
-  BetterRoleDot = {
-    enabled = mkEnableOption ''
+  betterRoleDot = {
+    enable = mkEnableOption ''
       Copy role color on RoleDot (accessibility setting) click.
       Also allows using both RoleDot and colored names simultaneously
     '';
@@ -228,8 +228,8 @@ with lib;
       Allow click on role dot in profile popout to copy role color
     '';
   };
-  BetterSessions = {
-    enabled = mkEnableOption ''
+  betterSessions = {
+    enable = mkEnableOption ''
       Enhances the sessions (devices) menu. Allows you to view exact timestamps,
       give each session a custom name, and receive notifications about new sessions.
     '';
@@ -244,8 +244,8 @@ with lib;
       '';
     };
   };
-  BetterSettings = {
-    enabled = mkEnableOption ''
+  betterSettings = {
+    enable = mkEnableOption ''
       Enhances your settings-menu-opening experience
     '';
     disableFade = mkOption {
@@ -270,18 +270,18 @@ with lib;
       '';
     };
   };
-  BetterUploadButton = {
-    enabled = mkEnableOption ''
+  betterUploadButton = {
+    enable = mkEnableOption ''
       Upload with a single click, open menu with right click
     '';
   };
-  BiggerStreamPreview = {
-    enabled = mkEnableOption ''
+  biggerStreamPreview = {
+    enable = mkEnableOption ''
       This plugin allows you to enlarge stream previews
     '';
   };
-  BlurNSFW = {
-    enabled = mkEnableOption ''
+  blurNSFW = {
+    enable = mkEnableOption ''
       Blur attachments in NSFW channels until hovered
     '';
     blurAmount = mkOption {
@@ -292,8 +292,8 @@ with lib;
       '';
     };
   };
-  CallTimer = {
-    enabled = mkEnableOption ''
+  callTimer = {
+    enable = mkEnableOption ''
       Adds a timer to vcs
     '';
     format = mkOption {
@@ -305,13 +305,13 @@ with lib;
       '';
     };
   };
-  ClearURLs = {
-    enabled = mkEnableOption ''
+  clearURLs = {
+    enable = mkEnableOption ''
       Removes tracking garbage from URLs
     '';
   };
-  ClientTheme = {
-    enabled = mkEnableOption ''
+  clientTheme = {
+    enable = mkEnableOption ''
       Recreation of the old client theme experiment. Add a color to your Discord client theme
     '';
     color = mkOption {
@@ -324,13 +324,13 @@ with lib;
       '';
     };
   };
-  ColorSighted = {
-    enabled = mkEnableOption ''
+  colorSighted = {
+    enable = mkEnableOption ''
       Removes the colorblind-friendly icons from statuses, just like 2015-2017 Discord
     '';
   };
-  ConsoleJanitor = {
-    enabled = mkEnableOption ''
+  consoleJanitor = {
+    enable = mkEnableOption ''
       Disables annoying console messages/errors
     '';
     disableNoisyLoggers = mkEnableOption ''
@@ -344,13 +344,13 @@ with lib;
       '';
     };
   };
-  ConsoleShortcuts = {
-    enabled = mkEnableOption ''
+  consoleShortcuts = {
+    enable = mkEnableOption ''
       Adds shorter Aliases for many things on the window. Run `shortcutList` for a list.
     '';
   };
-  CopyEmojiMarkdown = {
-    enabled = mkEnableOption ''
+  copyEmojiMarkdown = {
+    enable = mkEnableOption ''
       Allows you to copy emojis as formatted string (<:blobcatcozy:1026533070955872337>)
     '';
     copyUnicode = mkOption {
@@ -361,13 +361,13 @@ with lib;
       '';
     };
   };
-  CopyUserURLs = {
-    enabled = mkEnableOption ''
+  copyUserURLs = {
+    enable = mkEnableOption ''
       Adds a 'Copy User URL' option to the user context menu.
     '';
   };
-  CrashHandler = {
-    enabled = mkOption {
+  crashHandler = {
+    enable = mkOption {
       type = types.bool;
       default = true; # Default on
       description = ''
@@ -385,8 +385,8 @@ with lib;
       Whether to attempt to navigate to the home when preventing Discord crashes
     '';
   };
-  CtrlEnterSend = {
-    enabled = mkEnableOption ''
+  ctrlEnterSend = {
+    enable = mkEnableOption ''
       Use Ctrl+Enter to send messages (customizable)
     '';
     submitRule = mkOption {
@@ -405,8 +405,8 @@ with lib;
       '';
     };
   };
-  CustomRPC = {
-    enabled = mkEnableOption ''
+  customRPC = {
+    enable = mkEnableOption ''
       Allows you to set a custom rich presence.
     '';
     appID = mkOption {
@@ -551,8 +551,8 @@ with lib;
       '';
     };
   };
-  CustomIdle = {
-    enabled = mkEnableOption ''
+  customIdle = {
+    enable = mkEnableOption ''
       Allows you to set the time before Discord goes idle (or disable auto-idle)
     '';
     idleTimeout = mkOption {
@@ -570,8 +570,8 @@ with lib;
       '';
     };
   };
-  Dearrow = {
-    enabled = mkEnableOption ''
+  dearrow = {
+    enable = mkEnableOption ''
       Makes YouTube embed titles and thumbnails less sensationalist, powered by Dearrow
     '';
     hideButton = mkEnableOption ''
@@ -588,42 +588,42 @@ with lib;
       '';
     };
   };
-  Decor = {
-    enabled = mkEnableOption ''
+  decor = {
+    enable = mkEnableOption ''
       Create and use your own custom avatar decorations, or pick your favorite from the presets.
     '';
   };
-  DisableCallIdle = {
-    enabled = mkEnableOption ''
+  disableCallIdle = {
+    enable = mkEnableOption ''
       Disables automatically getting kicked from a DM voice call after 3 minutes
       and being moved to an AFK voice channel.
     '';
   };
-  DontRoundMyTimestamps = {
-    enabled = mkEnableOption ''
+  dontRoundMyTimestamps = {
+    enable = mkEnableOption ''
       Always rounds relative timestamps down, so 7.6y becomes 7y instead of 8y
     '';
   };
-  EmoteCloner = {
-    enabled = mkEnableOption ''
+  emoteCloner = {
+    enable = mkEnableOption ''
       Allows you to clone Emotes & Stickers to your own server (right click them)
     '';
   };
-  Experiments = {
-    enabled = mkEnableOption ''
+  experiments = {
+    enable = mkEnableOption ''
       Enable Access to Experiments & other dev-only features in Discord!
     '';
     toolbarDevMenu = mkEnableOption ''
       Change the Help (?) toolbar button (top right in chat) to Discord's developer menu
     '';
   };
-  F8Break = {
-    enabled = mkEnableOption ''
+  f8Break = {
+    enable = mkEnableOption ''
       Pause the client when you press F8 with DevTools (+ breakpoints) open.
     '';
   };
-  FakeNitro = {
-    enabled = mkEnableOption ''
+  fakeNitro = {
+    enable = mkEnableOption ''
       Allows you to stream in nitro quality, send fake emojis/stickers,
       use client themes and custom Discord notifications.
     '';
@@ -701,8 +701,8 @@ with lib;
       Whether to disable the embed permission check when sending fake emojis and stickers
     '';
   };
-  FakeProfileThemes = {
-    enabled = mkEnableOption ''
+  fakeProfileThemes = {
+    enable = mkEnableOption ''
       Allows profile theming by hiding the colors in your bio thanks to invisible 3y3 encoding
     '';
     nitroFirst = mkOption {
@@ -713,13 +713,13 @@ with lib;
       '';
     };
   };
-  FavoriteEmojiFirst = {
-    enabled = mkEnableOption ''
+  favoriteEmojiFirst = {
+    enable = mkEnableOption ''
       Puts your favorite emoji first in the emoji autocomplete.
     '';
   };
-  FavoriteGifSearch = {
-    enabled = mkEnableOption ''
+  favoriteGifSearch = {
+    enable = mkEnableOption ''
       Adds a search bar to favorite gifs. 
     '';
     searchOption = mkOption {
@@ -734,13 +734,13 @@ with lib;
       '';
     };
   };
-  FixCodeblockGap = {
-    enabled = mkEnableOption ''
+  fixCodeblockGap = {
+    enable = mkEnableOption ''
       Removes the gap between codeblocks and text below it
     '';
   };
-  FixSpotifyEmbeds = {
-    enabled = mkEnableOption ''
+  fixSpotifyEmbeds = {
+    enable = mkEnableOption ''
       Fixes spotify embeds being incredibly loud by letting you customise the volume
     '';
     volume = mkOption {
@@ -751,42 +751,42 @@ with lib;
       '';
     };
   };
-  FixYoutubeEmbeds = {
-    enabled = mkEnableOption ''
+  fixYoutubeEmbeds = {
+    enable = mkEnableOption ''
       Bypasses youtube videos being blocked from display on Discord (for example by UMG)
     '';
   };
-  ForceOwnerCrown = {
-    enabled = mkEnableOption ''
+  forceOwnerCrown = {
+    enable = mkEnableOption ''
       Force the owner crown next to usernames even if the server is large.
     '';
   };
-  FriendInvites = {
-    enabled = mkEnableOption ''
+  friendInvites = {
+    enable = mkEnableOption ''
       Create and manage friend invite links via slash commands
       (/create friend invite, /view friend invites, /revoke friend invites).
     '';
   };
-  FriendsSince = {
-    enabled = mkEnableOption ''
+  friendsSince = {
+    enable = mkEnableOption ''
       Shows when you became friends with someone in the user popout
     '';
   };
-  GameActivityToggle = {
-    enabled = mkEnableOption ''
+  gameActivityToggle = {
+    enable = mkEnableOption ''
       Adds a button next to the mic and deafen button to toggle game activity.
     '';
     oldIcon = mkEnableOption ''
       Use the old icon style before Discord icon redesign
     '';
   };
-  GifPaste = {
-    enabled = mkEnableOption ''
+  gifPaste = {
+    enable = mkEnableOption ''
       Makes picking a gif in the gif picker insert a link into the chatbox instead of instantly sending it
     '';
   };
-  GreetStickerPicker = {
-    enabled = mkEnableOption ''
+  greetStickerPicker = {
+    enable = mkEnableOption ''
       Allows you to use any greet sticker instead of only the
       random one by right-clicking the 'Wave to say hi!' button
     '';
@@ -801,18 +801,18 @@ with lib;
       '';
     };
   };
-  HideAttachments = {
-    enabled = mkEnableOption ''
+  hideAttachments = {
+    enable = mkEnableOption ''
       Hide attachments and Embeds for individual messages via hover button
     '';
   };
   iLoveSpam = {
-    enabled = mkEnableOption ''
+    enable = mkEnableOption ''
       Do not hide messages from 'likely spammers'
     '';
   };
-  IgnoreActivities = {
-    enabled = mkEnableOption ''
+  ignoreActivities = {
+    enable = mkEnableOption ''
       Ignore activities from showing up on your status ONLY.
       You can configure which ones are specifically ignored from the
       Registered Games and Activities tabs, or use the general settings below.
@@ -841,13 +841,13 @@ with lib;
       Ignore all competing activities (These are normally special game activities)
     '';
   };
-  ImageLink = {
-    enabled = mkEnableOption ''
+  imageLink = {
+    enable = mkEnableOption ''
       Never hide image links in messages, even if it's the only content
     '';
   };
-  ImageZoom = {
-    enabled = mkEnableOption ''
+  imageZoom = {
+    enable = mkEnableOption ''
       Lets you zoom in to images and gifs.
       Use scroll wheel to zoom in and shift + scroll wheel to increase lens radius / size
     '';
@@ -893,8 +893,8 @@ with lib;
       '';
     };
   };
-  ImplicitRelationships = {
-    enabled = mkEnableOption ''
+  implicitRelationships = {
+    enable = mkEnableOption ''
       Shows your implicit relationships in the Friends tab.
     '';
     sortByAffinity = mkOption {
@@ -905,8 +905,8 @@ with lib;
       '';
     };
   };
-  InvisibleChat = {
-    enabled = mkEnableOption ''
+  invisibleChat = {
+    enable = mkEnableOption ''
       Encrypt your Messages in a non-suspicious way!
     '';
     savedPasswords = mkOption {
@@ -917,13 +917,13 @@ with lib;
       '';
     };
   };
-  KeepCurrentChannel = {
-    enabled = mkEnableOption ''
+  keepCurrentChannel = {
+    enable = mkEnableOption ''
       Attempt to navigate to the channel you were in before switching accounts or loading Discord.
     '';
   };
-  LastFMRichPresence = {
-    enabled = mkEnableOption ''
+  lastFMRichPresence = {
+    enable = mkEnableOption ''
       Little plugin for Last.fm rich presence
     '';
     username = mkOption {
@@ -999,8 +999,8 @@ with lib;
       '';
     };
   };
-  LoadingQuotes = {
-    enabled = mkEnableOption ''
+  loadingQuotes = {
+    enable = mkEnableOption ''
       Replace Discords loading quotes
     '';
     replaceEvents = mkOption {
@@ -1036,13 +1036,13 @@ with lib;
       '';
     };
   };
-  MaskedLinkPaste = {
-    enabled = mkEnableOption ''
+  maskedLinkPaste = {
+    enable = mkEnableOption ''
       Pasting a link while having text selected will paste a hyperlink
     '';
   };
-  MemberCount = {
-    enabled = mkEnableOption ''
+  memberCount = {
+    enable = mkEnableOption ''
       Shows the amount of online & total members in the server member list and tooltip
     '';
     toolTip = mkOption {
@@ -1060,13 +1060,13 @@ with lib;
       '';
     };
   };
-  MentionAvatars = {
-    enabled = mkEnableOption ''
+  mentionAvatars = {
+    enable = mkEnableOption ''
       Shows user avatars inside mentions
     '';
   };
-  MessageClickActions = {
-    enabled = mkEnableOption ''
+  messageClickActions = {
+    enable = mkEnableOption ''
       Hold Backspace and click to delete, double click to edit/reply
     '';
     enableDeleteOnClick = mkOption {
@@ -1094,8 +1094,8 @@ with lib;
       Only do double click actions when shift/ctrl is held
     '';
   };
-  MessageLatency = {
-    enabled = mkEnableOption ''
+  messageLatency = {
+    enable = mkEnableOption ''
       Displays an indicator for messages that took ≥n seconds to send
     '';
     latency = mkOption {
@@ -1116,8 +1116,8 @@ with lib;
       Show milliseconds
     '';
   };
-  MessageLinkEmbeds = {
-    enabled = mkEnableOption ''
+  messageLinkEmbeds = {
+    enable = mkEnableOption ''
       Adds a preview to messages that link another message
     '';
     messageBackgroundColor = mkEnableOption ''
@@ -1151,8 +1151,8 @@ with lib;
       '';
     };
   };
-  MessageLogger = {
-    enabled = mkEnableOption ''
+  messageLogger = {
+    enable = mkEnableOption ''
       Temporarily logs deleted and edited messages.
     '';
     deleteStyle = mkOption {
@@ -1217,8 +1217,8 @@ with lib;
       '';
     };
   };
-  MessageTags = {
-    enabled = mkEnableOption ''
+  messageTags = {
+    enable = mkEnableOption ''
       Allows you to save messages and to use them with a simple command.
     '';
     clyde = mkOption {
@@ -1229,18 +1229,18 @@ with lib;
       '';
     };
   };
-  MoreCommands = {
-    enabled = mkEnableOption ''
+  moreCommands = {
+    enable = mkEnableOption ''
       echo, lenny, mock
     '';
   };
-  MoreKaomoji = {
-    enabled = mkEnableOption ''
+  moreKaomoji = {
+    enable = mkEnableOption ''
       Adds more Kaomoji to discord. ヽ(´▽`)/
     '';
   };
-  MoreUserTags = {
-    enabled = mkEnableOption ''
+  moreUserTags = {
+    enable = mkEnableOption ''
       Adds tags for webhooks and moderative roles (owner, admin, etc.)
     '';
     dontShowForBots = mkEnableOption ''
@@ -1250,7 +1250,7 @@ with lib;
       Only show extra tags for bots / Hide [BOT] text
     '';
     tagSettings = {
-      WEBHOOK = {
+      webhook = {
         text = mkOption {
           type = types.str;
           default = "Webhook";
@@ -1273,7 +1273,7 @@ with lib;
           '';
         };
       };
-      OWNER = {
+      owner = {
         text = mkOption {
           type = types.str;
           default = "Owner";
@@ -1296,7 +1296,7 @@ with lib;
           '';
         };
       };
-      ADMINISTRATOR = {
+      administrator = {
         text = mkOption {
           type = types.str;
           default = "Admin";
@@ -1319,7 +1319,7 @@ with lib;
           '';
         };
       };
-      MODERATOR_STAFF = {
+      moderatorStaff = {
         text = mkOption {
           type = types.str;
           default = "Staff";
@@ -1343,7 +1343,7 @@ with lib;
         };
 
       };
-      MODERATOR = {
+      moderator = {
         text = mkOption {
           type = types.str;
           default = "Mod";
@@ -1366,7 +1366,7 @@ with lib;
           '';
         };
       };
-      VOICE_MODERATOR = {
+      voiceModerator = {
         text = mkOption {
           type = types.str;
           default = "VC Mod";
@@ -1389,7 +1389,7 @@ with lib;
           '';
         };
       };
-      CHAT_MODERATOR = {
+      chatModerator = {
         text = mkOption {
           type = types.str;
           default = "Chat Mod";
@@ -1414,11 +1414,11 @@ with lib;
       };
     };
   };
-  Moyai = {
+  moyai = {
     # This plugin has meme descriptions. It plays a boom sound effect
     # when a certain emoji is sent. I've kept the descriptions of the original
     # for consistency, and to match the original repository
-    enabled = mkEnableOption ''
+    enable = mkEnableOption ''
       🗿🗿🗿🗿🗿🗿🗿🗿
     '';
     volume = mkOption {
@@ -1458,13 +1458,13 @@ with lib;
       '';
     };
   };
-  MutualGroupDMs = {
-    enabled = mkEnableOption ''
+  mutualGroupDMs = {
+    enable = mkEnableOption ''
       Shows mutual group dms in profiles
     '';
   };
-  NewGuildSettings = {
-    enabled = mkEnableOption ''
+  newGuildSettings = {
+    enable = mkEnableOption ''
       Automatically mute new servers and change various other settings upon joining
     '';
     guild = mkOption {
@@ -1521,32 +1521,32 @@ with lib;
       '';
     };
   };
-  NoBlockedMessages = {
-    enabled = mkEnableOption ''
+  noBlockedMessages = {
+    enable = mkEnableOption ''
       Hides all blocked messages from chat completely.
     '';
     ignoreBlockedMessages = mkEnableOption ''
       Completely ignores (recent) incoming messages from blocked users (locally).
     '';
   };
-  NoDefaultHangStatus = {
-    enabled = mkEnableOption ''
+  noDefaultHangStatus = {
+    enable = mkEnableOption ''
       Disable the default hang status when joining voice channels
     '';
   };
-  NoDevtoolsWarning = {
-    enabled = mkEnableOption ''
+  noDevtoolsWarning = {
+    enable = mkEnableOption ''
       Disables the 'HOLD UP' banner in the console. As a side effect,
       also prevents Discord from hiding your token, which prevents random logouts.
     '';
   };
-  NoF1 = {
-    enabled = mkEnableOption ''
+  noF1 = {
+    enable = mkEnableOption ''
       Disables F1 help bind.
     '';
   };
-  NoMosaic = {
-    enabled = mkEnableOption ''
+  noMosaic = {
+    enable = mkEnableOption ''
       Removes Discord new image mosaic
     '';
     inlineVideo = mkOption {
@@ -1557,13 +1557,13 @@ with lib;
       '';
     };
   };
-  NoOnboardingDelay = {
-    enabled = mkEnableOption ''
+  noOnboardingDelay = {
+    enable = mkEnableOption ''
       Skips the slow and annoying onboarding delay
     '';
   };
-  NoPendingCount = {
-    enabled = mkEnableOption ''
+  noPendingCount = {
+    enable = mkEnableOption ''
       Removes the ping count of incoming friend requests, message requests, and nitro offers.
     '';
     hideFriendRequestsCount = mkOption {
@@ -1588,18 +1588,18 @@ with lib;
       '';
     };
   };
-  NoProfileThemes = {
-    enabled = mkEnableOption ''
+  noProfileThemes = {
+    enable = mkEnableOption ''
       Completely removes Nitro profile themes
     '';
   };
-  NoRPC = {
-    enabled = mkEnableOption ''
+  noRPC = {
+    enable = mkEnableOption ''
       Disables Discord's RPC server.
     '';
   };
-  NoReplyMention = {
-    enabled = mkEnableOption ''
+  noReplyMention = {
+    enable = mkEnableOption ''
       Disables reply pings by default
     '';
     userList = mkOption {
@@ -1621,13 +1621,13 @@ with lib;
       Invert Discord's shift replying behaviour (enable to make shift reply mention user)
     '';
   };
-  NoScreensharePreview = {
-    enabled = mkEnableOption ''
+  noScreensharePreview = {
+    enable = mkEnableOption ''
       Disables screenshare previews from being sent.
     '';
   };
-  NoServerEmojis = {
-    enabled = mkEnableOption ''
+  noServerEmojis = {
+    enable = mkEnableOption ''
       Do not show server emojis in the autocomplete menu.
     '';
     shownEmojis = mkOption {
@@ -1642,28 +1642,28 @@ with lib;
       '';
     };
   };
-  NoSystemBadge = {
-    enabled = mkEnableOption ''
+  noSystemBadge = {
+    enable = mkEnableOption ''
       Disables the taskbar and system tray unread count badge.
     '';
   };
-  NoTypingAnimation = {
-    enabled = mkEnableOption ''
+  noTypingAnimation = {
+    enable = mkEnableOption ''
       Disables the CPU-intensive typing dots animation
     '';
   };
-  NoUnblockToJump = {
-    enabled = mkEnableOption ''
+  noUnblockToJump = {
+    enable = mkEnableOption ''
       Allows you to jump to messages of blocked users without unblocking them
     '';
   };
-  NormalizeMessageLinks = {
-    enabled = mkEnableOption ''
+  normalizeMessageLinks = {
+    enable = mkEnableOption ''
       Strip canary/ptb from message links
     '';
   };
-  NotificationVolume = {
-    enabled = mkEnableOption ''
+  notificationVolume = {
+    enable = mkEnableOption ''
       Save your ears and set a separate volume for notifications and in-app sounds
     '';
     notificationVolume = mkOption {
@@ -1674,13 +1674,13 @@ with lib;
       '';
     };
   };
-  NSFWGateBypass = {
-    enabled = mkEnableOption ''
+  nSFWGateBypass = {
+    enable = mkEnableOption ''
       Allows you to access NSFW channels without setting/verifying your age
     '';
   };
-  OnePingPerDM = {
-    enabled = mkEnableOption ''
+  onePingPerDM = {
+    enable = mkEnableOption ''
       If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping.
       Read the messages to reset the limit
     '';
@@ -1703,12 +1703,12 @@ with lib;
     '';
   };
   oneko = {
-    enabled = mkEnableOption ''
+    enable = mkEnableOption ''
       cat follow mouse (real)
     '';
   };
-  OpenInApp = {
-    enabled = mkEnableOption ''
+  openInApp = {
+    enable = mkEnableOption ''
       Open Spotify, Tidal, Steam and Epic Games URLs in their respective apps instead of your browser
     '';
     spotify = mkOption {
@@ -1740,8 +1740,8 @@ with lib;
       '';
     };
   };
-  OverrideForumDefaults = {
-    enabled = mkEnableOption ''
+  overrideForumDefaults = {
+    enable = mkEnableOption ''
       Allows you to override default forum layout/sort order. you can still change it on a per-channel basis
     '';
     # I have no idea why this uses 1 based indexing, it is driving me crazy
@@ -1764,8 +1764,8 @@ with lib;
       '';
     };
   };
-  PartyMode = {
-    enabled = mkEnableOption ''
+  partyMode = {
+    enable = mkEnableOption ''
       Allows you to use party mode cause the party never ends ✨
     '';
     # This one apparently uses an enum in code, but in my config its an int
@@ -1780,13 +1780,13 @@ with lib;
       '';
     };
   };
-  PauseInvitesForever = {
-    enabled = mkEnableOption ''
+  pauseInvitesForever = {
+    enable = mkEnableOption ''
       Brings back the option to pause invites indefinitely that stupit Discord removed.
     '';
   };
-  PermissionFreeWill = {
-    enabled = mkEnableOption ''
+  permissionFreeWill = {
+    enable = mkEnableOption ''
       Disables the client-side restrictions for channel permission management.
     '';
     lockout = mkOption {
@@ -1804,8 +1804,8 @@ with lib;
       '';
     };
   };
-  PermissionsViewer = {
-    enabled = mkEnableOption ''
+  permissionsViewer = {
+    enable = mkEnableOption ''
       View the permissions a user or channel has, and the roles of a server
     '';
     permissionsSortOrder = mkOption {
@@ -1822,12 +1822,12 @@ with lib;
     '';
   };
   petpet = {
-    enabled = mkEnableOption ''
+    enable = mkEnableOption ''
       Adds a /petpet slash command to create headpet gifs from any image
     '';
   };
-  PictureInPicture = {
-    enabled = mkEnableOption ''
+  pictureInPicture = {
+    enable = mkEnableOption ''
       Adds picture in picture to videos (next to the Download button)
     '';
     loop = mkOption {
@@ -1838,8 +1838,8 @@ with lib;
       '';
     };
   };
-  PinDMs = {
-    enabled = mkEnableOption ''
+  pinDMs = {
+    enable = mkEnableOption ''
       Allows you to pin private channels to the top of your DM list.
       To pin/unpin or reorder pins, right click DMs
     '';
@@ -1856,13 +1856,13 @@ with lib;
       Collapse DM sections
     '';
   };
-  PlainFolderIcon = {
-    enabled = mkEnableOption ''
+  plainFolderIcon = {
+    enable = mkEnableOption ''
       Doesn't show the small guild icons in folders
     '';
   };
-  PlatformIndicators = {
-    enabled = mkEnableOption ''
+  platformIndicators = {
+    enable = mkEnableOption ''
       Adds platform indicators (Desktop, Mobile, Web...) to users
     '';
     lists = mkOption {
@@ -1894,14 +1894,14 @@ with lib;
       '';
     };
   };
-  PreviewMessage = {
-    enabled = mkEnableOption ''
+  previewMessage = {
+    enable = mkEnableOption ''
       Lets you preview your message before sending it.
     '';
   };
   # This is now a discord feature so somewhat redundent
-  PronounDB = {
-    enabled = mkEnableOption ''
+  pronounDB = {
+    enable = mkEnableOption ''
       Adds pronouns to user messages using pronoundb
     '';
     pronounsFormat = mkOption {
@@ -1946,13 +1946,13 @@ with lib;
       '';
     };
   };
-  QuickMention = {
-    enabled = mkEnableOption ''
+  quickMention = {
+    enable = mkEnableOption ''
       Adds a quick mention button to the message actions bar
     '';
   };
-  QuickReply = {
-    enabled = mkEnableOption ''
+  quickReply = {
+    enable = mkEnableOption ''
       Reply to (ctrl + up/down) and edit (ctrl + shift + up/down) messages via keybinds
     '';
     shouldMention = mkOption {
@@ -1966,18 +1966,18 @@ with lib;
       '';
     };
   };
-  ReactErrorDecoder = {
-    enabled = mkEnableOption ''
+  reactErrorDecoder = {
+    enable = mkEnableOption ''
       Replaces "Minifed React Error" with the actual error.
     '';
   };
-  ReadAllNotificationsButton = {
-    enabled = mkEnableOption ''
+  readAllNotificationsButton = {
+    enable = mkEnableOption ''
       Read all server notifications with a single button click!
     '';
   };
-  RelationshipNotifier = {
-    enabled = mkEnableOption ''
+  relationshipNotifier = {
+    enable = mkEnableOption ''
       Notifies you when a friend, group chat, or server removes you.
     '';
     notices = mkEnableOption ''
@@ -2020,8 +2020,8 @@ with lib;
       '';
     };
   };
-  ReplaceGoogleSearch = {
-    enabled = mkEnableOption ''
+  replaceGoogleSearch = {
+    enable = mkEnableOption ''
       Replaces the Google search with different Engines
     '';
     customEngineName = mkOption {
@@ -2042,23 +2042,23 @@ with lib;
       '';
     };
   };
-  ReplyTimestamp = {
-    enabled = mkEnableOption ''
+  replyTimestamp = {
+    enable = mkEnableOption ''
       Shows a timestamp on replied-message previews
     '';
   };
-  RevealAllSpoilers = {
-    enabled = mkEnableOption ''
+  revealAllSpoilers = {
+    enable = mkEnableOption ''
       Reveal all spoilers in a message by Ctrl-clicking a spoiler, or in the chat with Ctrl+Shift-click
     '';
   };
-  ReverseImageSearch = {
-    enabled = mkEnableOption ''
+  reverseImageSearch = {
+    enable = mkEnableOption ''
       Adds ImageSearch to image context menus
     '';
   };
-  ReviewDB = {
-    enabled = mkEnableOption ''
+  reviewDB = {
+    enable = mkEnableOption ''
       Review other users (Adds a new settings to profiles)
     '';
     notifyReviews = mkOption {
@@ -2086,8 +2086,8 @@ with lib;
       '';
     };
   };
-  RoleColorEverywhere = {
-    enabled = mkEnableOption ''
+  roleColorEverywhere = {
+    enable = mkEnableOption ''
       Adds the top role color anywhere possible
     '';
     chatMentions = mkOption {
@@ -2119,19 +2119,19 @@ with lib;
       '';
     };
   };
-  SearchReply = {
-    enabled = mkEnableOption ''
+  searchReply = {
+    enable = mkEnableOption ''
       Adds a reply button to search results
     '';
   };
-  SecretRingToneEnabler = {
-    enabled = mkEnableOption ''
+  secretRingToneEnabler = {
+    enable = mkEnableOption ''
       Always play the secret version of the discord ringtone
       (except during special ringtone events)
     '';
   };
-  Summaries = {
-    enabled = mkEnableOption ''
+  summaries = {
+    enable = mkEnableOption ''
       Enables Discord's experimental Summaries feature on every server, displaying AI generated summaries of conversations
     '';
     summaryExpiryThresholdDays = mkOption {
@@ -2142,8 +2142,8 @@ with lib;
       '';
     };
   };
-  SendTimestamps = {
-    enabled = mkEnableOption ''
+  sendTimestamps = {
+    enable = mkEnableOption ''
       Send timestamps easily via chat box button & text shortcuts. Read the extended description!
     '';
     replaceMessageContents = mkOption {
@@ -2154,13 +2154,13 @@ with lib;
       '';
     };
   };
-  ServerInfo = {
-    enabled = mkEnableOption ''
+  serverInfo = {
+    enable = mkEnableOption ''
       Allows you to view info about a server
     '';
   };
-  ServerListIndicators = {
-    enabled = mkEnableOption ''
+  serverListIndicators = {
+    enable = mkEnableOption ''
       Add online friend count or server count in the server list
     '';
     mode = mkOption {
@@ -2174,8 +2174,8 @@ with lib;
       '';
     };
   };
-  ShikiCodeblocks = {
-    enabled = mkEnableOption ''
+  shikiCodeblocks = {
+    enable = mkEnableOption ''
       Brings vscode-style codeblocks into Discord, powered by Shiki
     '';
     theme = mkOption {
@@ -2218,18 +2218,18 @@ with lib;
       '';
     };
   };
-  ShowAllMessageButtons = {
-    enabled = mkEnableOption ''
+  showAllMessageButtons = {
+    enable = mkEnableOption ''
       Always show all message buttons no matter if you are holding the shift key or not.
     '';
   };
-  ShowAllRoles = {
-    enabled = mkEnableOption ''
+  showAllRoles = {
+    enable = mkEnableOption ''
       Show all roles in new profiles.
     '';
   };
-  ShowConnections = {
-    enabled = mkEnableOption ''
+  showConnections = {
+    enable = mkEnableOption ''
       Show connected accounts in user popouts
     '';
     iconSize = mkOption {
@@ -2250,8 +2250,8 @@ with lib;
       '';
     };
   };
-  ShowHiddenChannels = {
-    enabled = mkEnableOption ''
+  showHiddenChannels = {
+    enable = mkEnableOption ''
       Show channels that you do not have access to view.
     '';
     hideUnreads = mkOption {
@@ -2278,8 +2278,8 @@ with lib;
       '';
     };
   };
-  ShowHiddenThings = {
-    enabled = mkEnableOption ''
+  showHiddenThings = {
+    enable = mkEnableOption ''
       Displays various hidden & moderator-only things regardless of permissions.
     '';
     showTimeouts = mkOption {
@@ -2318,8 +2318,8 @@ with lib;
       '';
     };
   };
-  ShowMeYourName = {
-    enabled = mkEnableOption ''
+  showMeYourName = {
+    enable = mkEnableOption ''
       Display usernames next to nicks, or no nicks at all
     '';
     mode = mkOption {
@@ -2334,8 +2334,8 @@ with lib;
       '';
     };
   };
-  ShowTimeoutDuration = {
-    enabled = mkEnableOption ''
+  showTimeoutDuration = {
+    enable = mkEnableOption ''
       Shows how much longer a user's timeout will last, either in the timeout icon tooltip or next to it
     '';
     displayStyle = mkOption {
@@ -2349,8 +2349,8 @@ with lib;
       '';
     };
   };
-  SilentMessageToggle = {
-    enabled = mkEnableOption ''
+  silentMessageToggle = {
+    enable = mkEnableOption ''
       Adds a button to the chat bar to toggle sending a silent message.
     '';
     persistentState = mkEnableOption ''
@@ -2364,8 +2364,8 @@ with lib;
       '';
     };
   };
-  SilentTyping = {
-    enabled = mkEnableOption ''
+  silentTyping = {
+    enable = mkEnableOption ''
       Hide that you are typing
     '';
     showIcon = mkEnableOption ''
@@ -2386,16 +2386,16 @@ with lib;
       '';
     };
   };
-  SortFriendRequests = {
-    enabled = mkEnableOption ''
+  sortFriendRequests = {
+    enable = mkEnableOption ''
       Sorts friend requests by date of receipt
     '';
     showDates = mkEnableOption ''
       Show dates on friend requests
     '';
   };
-  SpotifyControls = {
-    enabled = mkEnableOption ''
+  spotifyControls = {
+    enable = mkEnableOption ''
       Adds a Spotify player above the account panel
     '';
     hoverControls = mkEnableOption ''
@@ -2405,8 +2405,8 @@ with lib;
       Open Spotify URIs instead of Spotify URLs. Will only work if you have Spotify installed and might not work on all platforms
     '';
   };
-  SpotifyCrack = {
-    enabled = mkEnableOption ''
+  spotifyCrack = {
+    enable = mkEnableOption ''
       Free listen along, no auto-pausing in voice chat, and allows activity to continue playing when idling
     '';
     noSpotifyAutoPause = mkOption {
@@ -2420,23 +2420,23 @@ with lib;
       Keep Spotify activity playing when idling
     '';
   };
-  SpotifyShareCommands = {
-    enabled = mkEnableOption ''
+  spotifyShareCommands = {
+    enable = mkEnableOption ''
       Share your current Spotify track, album or artist via slash command (/track, /album, /artist)
     '';
   };
-  StartupTimings = {
-    enabled = mkEnableOption ''
+  startupTimings = {
+    enable = mkEnableOption ''
       Adds Startup Timings to the Settings menu
     '';
   };
-  StreamerModeOnStream = {
-    enabled = mkEnableOption ''
+  streamerModeOnStream = {
+    enable = mkEnableOption ''
       Automatically enables streamer mode when you start streaming in Discord
     '';
   };
-  SuperReactionTweaks = {
-    enabled = mkEnableOption ''
+  superReactionTweaks = {
+    enable = mkEnableOption ''
       Customize the limit of Super Reactions playing at once, and super react by default
     '';
     superReactByDefault = mkOption {
@@ -2457,25 +2457,25 @@ with lib;
       '';
     };
   };
-  TextReplace = {
-    enabled = mkEnableOption ''
+  textReplace = {
+    enable = mkEnableOption ''
       Replace text in your messages. You can find pre-made rules in the
       #textreplace-rules channel in Vencord's Server
     '';
     # The rules are not configured in settings.json
   };
-  ThemeAttributes = {
-    enabled = mkEnableOption ''
+  themeAttributes = {
+    enable = mkEnableOption ''
       Adds data attributes to various elements for theming purposes
     '';
   };
-  TimeBarAllActivities = {
-    enabled = mkEnableOption ''
+  timeBarAllActivities = {
+    enable = mkEnableOption ''
       Adds the Spotify time bar to all activities if they have start and end timestamps
     '';
   };
-  Translate = {
-    enabled = mkEnableOption ''
+  translate = {
+    enable = mkEnableOption ''
       Translate messages with Google Translate
     '';
     autoTranslate = mkEnableOption ''
@@ -2490,8 +2490,8 @@ with lib;
       '';
     };
   };
-  TypingIndicator = {
-    enabled = mkEnableOption ''
+  typingIndicator = {
+    enable = mkEnableOption ''
       Adds an indicator if someone is typing on a channel.
     '';
     includeCurrentChannel = mkOption {
@@ -2518,8 +2518,8 @@ with lib;
       '';
     };
   };
-  TypingTweaks = {
-    enabled = mkEnableOption ''
+  typingTweaks = {
+    enable = mkEnableOption ''
       Show avatars and role colours in the typing indicator
     '';
     showAvatars = mkOption {
@@ -2544,13 +2544,13 @@ with lib;
       '';
     };
   };
-  Unindent = {
-    enabled = mkEnableOption ''
+  unindent = {
+    enable = mkEnableOption ''
       Trims leading indentation from codeblocks
     '';
   };
-  UnlockedAvatarZoom = {
-    enabled = mkEnableOption ''
+  unlockedAvatarZoom = {
+    enable = mkEnableOption ''
       Allows you to zoom in further in the image crop tool when changing your avatar
     '';
     zoomMultiplier = mkOption {
@@ -2561,13 +2561,13 @@ with lib;
       '';
     };
   };
-  UnsuppressEmbeds = {
-    enabled = mkEnableOption ''
+  unsuppressEmbeds = {
+    enable = mkEnableOption ''
       Allows you to unsuppress embeds in messages
     '';
   };
-  UserVoiceShow = {
-    enabled = mkEnableOption ''
+  userVoiceShow = {
+    enable = mkEnableOption ''
       Shows whether a User is currently in a voice channel somewhere in their profile
     '';
     showInUserProfileModal = mkOption {
@@ -2585,8 +2585,8 @@ with lib;
       '';
     };
   };
-  USRBG = {
-    enabled = mkEnableOption ''
+  uSRBG = {
+    enable = mkEnableOption ''
       Displays user banners from USRBG, allowing anyone to get a banner without Nitro
     '';
     nitroFirst = mkOption {
@@ -2604,23 +2604,23 @@ with lib;
       '';
     };
   };
-  ValidReply = {
-    enabled = mkEnableOption ''
+  validReply = {
+    enable = mkEnableOption ''
       Fixes "Message could not be loaded" upon hovering over the reply
     '';
   };
-  ValidUser = {
-    enabled = mkEnableOption ''
+  validUser = {
+    enable = mkEnableOption ''
       Fix mentions for unknown users showing up as '@unknown-user' (hover over a mention to fix it)
     '';
   };
-  VoiceChatDoubleClick = {
-    enabled = mkEnableOption ''
+  voiceChatDoubleClick = {
+    enable = mkEnableOption ''
       Join voice chats via double click instead of single click
     '';
   };
-  VcNarrator = {
-    enabled = mkEnableOption ''
+  vcNarrator = {
+    enable = mkEnableOption ''
       Announces when users join, leave, or move voice channels via narrator
     '';
     voice = mkOption {
@@ -2704,13 +2704,13 @@ with lib;
       '';
     };
   };
-  VencordToolbox = {
-    enabled = mkEnableOption ''
+  vencordToolbox = {
+    enable = mkEnableOption ''
       Adds a button next to the inbox button in the channel header that houses Vencord quick actions
     '';
   };
-  ViewIcons = {
-    enabled = mkEnableOption ''
+  viewIcons = {
+    enable = mkEnableOption ''
       Makes avatars and banners in user profiles clickable,
       adds View Icon/Banner entries in the user, server and group channel context menu.
     '';
@@ -2732,8 +2732,8 @@ with lib;
       '';
     };
   };
-  ViewRaw = {
-    enabled = mkEnableOption ''
+  viewRaw = {
+    enable = mkEnableOption ''
       Copy and view the raw content/data of any message, channel or guild
     '';
     clickMethod = mkOption {
@@ -2745,13 +2745,13 @@ with lib;
       '';
     };
   };
-  VoiceDownload = {
-    enabled = mkEnableOption ''
+  voiceDownload = {
+    enable = mkEnableOption ''
       Adds a download to voice messages. (Opens a new browser tab)
     '';
   };
-  VoiceMessages = {
-    enabled = mkEnableOption ''
+  voiceMessages = {
+    enable = mkEnableOption ''
       Allows you to send voice messages like on mobile.
       To do so, right click the upload button and click Send Voice Message
     '';
@@ -2770,8 +2770,8 @@ with lib;
       '';
     };
   };
-  VolumeBooster = {
-    enabled = mkEnableOption ''
+  volumeBooster = {
+    enable = mkEnableOption ''
       Allows you to set the user and stream volume above the default maximum.
     '';
     multiplier = mkOption {
@@ -2782,18 +2782,18 @@ with lib;
       '';
     };
   };
-  WatchTogetherAdblock = {
-    enabled = mkEnableOption ''
+  watchTogetherAdblock = {
+    enable = mkEnableOption ''
       Block ads in the YouTube WatchTogether activity via AdGuard
     '';
   };
-  WhoReacted = {
-    enabled = mkEnableOption ''
+  whoReacted = {
+    enable = mkEnableOption ''
       Renders the avatars of users who reacted to a message
     '';
   };
-  XSOverlay = {
-    enabled = mkEnableOption ''
+  xSOverlay = {
+    enable = mkEnableOption ''
       Forwards discord notifications to XSOverlay, for easy viewing in VR
     '';
     botNotifications = mkEnableOption ''
@@ -2877,16 +2877,16 @@ with lib;
       '';
     };
   };
-  NoTrack = {
-    enabled = mkEnableOption ''
+  noTrack = {
+    enable = mkEnableOption ''
       Disable Discord's tracking (analytics/'science'), metrics and Sentry crash reporting
     '' // { default = true; }; # Required
     disableAnalytics = mkEnableOption ''
       Disable Discord's tracking (analytics/'science')
     '' // { default = true; };
   };
-  Settings = {
-    enabled = mkEnableOption ''
+  settings = {
+    enable = mkEnableOption ''
       Adds Settings UI and debug info
     '' // { default = true; }; # Required
     settingsLocation = mkOption {
@@ -2904,8 +2904,8 @@ with lib;
       '';
     };
   };
-  SupportHelper = {
-    enabled = mkEnableOption ''
+  supportHelper = {
+    enable = mkEnableOption ''
       Helps us provide support to you
     '' // { default = true; }; # Required
   };
