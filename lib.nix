@@ -8,6 +8,7 @@ let
   inherit (attrsets)
     mapAttrs'
     nameValuePair
+    hasAttrByPath
     ;
 
   upperNames = [  # these are option names to become UPPER_SNAKE_CASE
@@ -48,17 +49,25 @@ let
     ]
   );
 
-  mkVencordCfg = cfg: mapAttrs' (name: value: nameValuePair
-    (
-      if name == "enable" then "enabled" else
-      if name == "tagSettings" then "tagSettings" else  # the only name that = attrset not in upperNames
-      if builtins.elem name upperNames then unNixify name else
-      if builtins.elem name lowerPluginTitles then name else
-      if isLowerCamel name && builtins.isAttrs value then toUpper name else
-      name
-    )
-    (value)
-  ) cfg;
+  mkVencordCfg = cfg:
+  let
+    recurse = mapAttrs' (name: value: nameValuePair
+      (
+        if name == "enable" then "enabled" else
+        if name == "tagSettings" then "tagSettings" else  # the only name that = attrset not in upperNames
+        if builtins.elem name upperNames then unNixify name else
+        if builtins.elem name lowerPluginTitles then name else
+        if hasAttrByPath [ "plugins" ]
+          && isLowerCamel name
+          && builtins.isAttrs value then toUpper name else
+        name
+      )
+      (
+        if builtins.isAttrs value then recurse value  # recurse into subsequent attrs
+        else value
+      )
+    );
+  in recurse cfg;
 in
 {
   inherit
