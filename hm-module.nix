@@ -21,7 +21,7 @@ let
     literalExpression
     ;
 
-  inherit (./lib.nix)
+  inherit (pkgs.callPackage ./lib.nix { })
     mkVencordCfg
     ;
 in {
