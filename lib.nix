@@ -10,7 +10,7 @@ let
     nameValuePair
     ;
 
-  upperNames = [
+  upperNames = [  # these are option names to become UPPER_SNAKE_CASE
     "webhook"
     "owner"
     "administrator"
@@ -18,6 +18,11 @@ let
     "moderator"
     "voiceModerator"
     "chatModerator"
+  ];
+
+  lowerPluginTitles = [ # these are the only plugins with lowercase names in json
+    "moyai"
+    "petpet"
   ];
 
   isLowerCase = char: (
@@ -48,6 +53,7 @@ let
       if name == "enable" then "enabled" else
       if name == "tagSettings" then "tagSettings" else  # the only name that = attrset not in upperNames
       if builtins.elem name upperNames then unNixify name else
+      if builtins.elem name lowerPluginTitles then name else
       if isLowerCamel name && builtins.isAttrs value then toUpper name else
       name
     )
