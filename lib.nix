@@ -55,15 +55,15 @@ let
       (
         if name == "enable" then "enabled" else
         if name == "tagSettings" then "tagSettings" else  # the only name that = attrset not in upperNames
-        if builtins.elem name upperNames then unNixify name else
-        if builtins.elem name lowerPluginTitles then name else
-        if hasAttrByPath [ "plugins" ]
-          && isLowerCamel name
-          && builtins.isAttrs value then toUpper name else
+        if (builtins.elem name) upperNames then (unNixify name) else
+        if (builtins.elem name) lowerPluginTitles then name else
+        if (hasAttrByPath [ "plugins" ])
+          && (isLowerCamel name)
+          && (builtins.isAttrs value) then (toUpper name) else
         name
       )
       (
-        if builtins.isAttrs value then recurse value  # recurse into subsequent attrs
+        if (builtins.isAttrs value) then (recurse value)  # recurse into subsequent attrs
         else value
       )
     );
