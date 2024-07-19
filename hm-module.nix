@@ -107,7 +107,7 @@ in {
         builtins.toJSON mkVencordCfg (cfg.config // cfg.extraConfig);
     } {
       home.file."${cfg.configDir}/settings/settings.json".text =
-        builtins.toJSON mkVencordCfg cfg.config;
+        builtins.toJSON (mkVencordCfg cfg.config);
     })
   ]);
 }
