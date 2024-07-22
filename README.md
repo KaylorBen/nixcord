@@ -1,18 +1,24 @@
 # Nixcord
-Manage Vencord settings and plugins declaratively with NixOS
-
-Currently this project is a wrapper for builtins.toJSON for the
-Vencord settings file, and managing CSS and themes. It DOES NOT
-control plugin version via flake.lock or any other way.
+Manage [Vencord](https://github.com/Vendicated/Vencord) settings and plugins declaratively with Nix!
 
 This repo can be used to make a clean looking config for Vencord
 without needing to polute system config with needless utils to
-build vencord.
+override the discord pacakge, and write ugly JSON code directly
+in .nix files.
 
-In the future, this repo will contain a much nicer paradigm for
-building the configs by setting up a custom helper function to
-parse a more "nix friendly" syntax for configuration, into the
-json format used in Vencord's config.
+I started this project after having to reinstall my NixOS system
+several times, resulting in manually enabling and configuring the
+~100 Vencord plugins more than 4 times. With Nixcord you can
+configure once and save it to a git repo.
+
+>[!WARNING]
+> Using Nixcord means comitting to declaratively installing plugins.
+> This means that the normal "plugins" menu in Vencord will not
+> apply permenant changes. You can still use it to test out plugins
+> but on restarting the client, any changes will be gone.
+>
+> The primary goal of this project is to reduce the need to configure
+> Vencord again on every new system you install.
 
 ## How to use Nixcord
 Currently Nixcord only supports nix flakes as a [home-manager](https://github.com/nix-community/home-manager) module.
@@ -88,9 +94,9 @@ This is an example home-manager configuration using Nixcord
       ];
       frameless = true; # set some Vencord options
       plugins = {
-        HideAttachments.enabled = true;    # Enable a Vencord plugin
-        IgnoreActivities = {    # Enable a plugin and set some options
-          enabled = true;
+        hideAttachments.enable = true;    # Enable a Vencord plugin
+        ignoreActivities = {    # Enable a plugin and set some options
+          enable = true;
           ignorePlaying = true;
           ignoreWatching = true;
           ignoredActivities = [ "someActivity" ];
@@ -105,28 +111,10 @@ This is an example home-manager configuration using Nixcord
   # ...
 }
 ```
->[!WARNING]
-> Nixcord does not follow many syntax norms of nixos modules.
-> This is due to the nature of the Vencord config being incredibly
-> inconsistent.
->
-> Some of the most common differences are noted below.
 
-All plugins at their base level use enabled instead of enable.
-This is probably the most annoying one, but should be fixable in
-the future with a custom function to parse them.
-
-Many plugins use JS option types for settings that either become
-strings or ints in settings.json. This makes some config options
-incredibly hard to edit. In general, use a non-declarative Vencord
-build to edit these parameters and confirm the coresponding value
-in JSON. This too can easily be fixed once the parsing function
-is complete, but until then I have created a list of all
-inconsistencies [here](./SETTINGS.md).
-
-The case used for all plugin names is UpperCamelCase, whereas Nix
-prefers standard camelCase. This is quite annoying, but should
-also be fixable.
+It is highly recommend configuring Nixcord with an open Vencord client
+to look through available plugins and options. More comprehensive
+documentation is available [here](docs/INDEX.md).
 
 ## Special Thanks
 Special Thanks to [Vencord](https://github.com/Vendicated/Vencord), [Home Manager](https://github.com/nix-community/home-manager), and [Nix](https://nixos.org/) and all the

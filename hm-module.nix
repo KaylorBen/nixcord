@@ -20,6 +20,10 @@ let
     mkMerge
     literalExpression
     ;
+
+  inherit (pkgs.callPackage ./lib.nix { })
+    mkVencordCfg
+    ;
 in {
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
@@ -61,7 +65,7 @@ in {
       nofifyAboutUpdates = mkEnableOption "Notify when updates are available";
       autoUpdate = mkEnableOption "Automaticall update Vencord";
       autoUpdateNotification = mkEnableOption "Notify user about auto updates";
-      useQuickCSS = mkEnableOption "Enable quick CSS file";
+      useQuickCss = mkEnableOption "Enable quick CSS file";
       themeLinks = mkOption {
         type = with types; listOf str;
         default = [ ];
@@ -71,7 +75,7 @@ in {
       enabledThemes = mkOption {
         type = with types; listOf str;
         default = [ ];
-        description = "A list of themes to enable from themes folder";
+        description = "A list of themes to enable from themes directory";
       };
       enableReactDevtools = mkEnableOption "Enable React developer tools";
       frameless = mkEnableOption "Make client frameless";
@@ -100,10 +104,10 @@ in {
     }
     (mkIfElse (!builtins.isNull cfg.extraConfig) {
       home.file."${cfg.configDir}/settings/settings.json".text =
-        builtins.toJSON (cfg.config // cfg.extraConfig);
+        builtins.toJSON (mkVencordCfg (cfg.config // cfg.extraConfig));
     } {
       home.file."${cfg.configDir}/settings/settings.json".text =
-        builtins.toJSON cfg.config;
+        builtins.toJSON (mkVencordCfg cfg.config);
     })
   ]);
 }
