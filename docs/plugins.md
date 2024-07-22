@@ -1697,14 +1697,14 @@ programs.nixcord.config.plugins.userVoiceShow.showVoiceChannelSectionHeader
     # Whether to show "IN A VOICE CHANNEL" above the join button
     # default: true
 ```
-## uSRBG
+## USRBG
 ```nix
-programs.nixcord.config.plugins.uSRBG.enable
+programs.nixcord.config.plugins.USRBG.enable
     # Displays user banners from USRBG, allowing anyone to get a banner without Nitro
-programs.nixcord.config.plugins.uSRBG.nitroFirst
+programs.nixcord.config.plugins.USRBG.nitroFirst
     # Use Nitro instead of USRBG banner if both are present
     # default: true
-programs.nixcord.config.plugins.uSRBG.voiceBackground
+programs.nixcord.config.plugins.USRBG.voiceBackground
     # Use USRBG banners as voice chat backgrounds
     # default: true
 ```
