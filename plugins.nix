@@ -104,12 +104,95 @@ with lib;
       '';
     };
   };
+  appleMusicRichPresence = {
+    enable = mkEnableOption ''
+      Discord rich presence for your Apple Music!
+    '';
+    activityType = mkOption {
+      type = types.str;
+      default = "playing";
+      example = "listening";
+      description = ''
+        Which type of activity
+      '';
+    };
+    refreshInterval = mkOption {
+      type = types.number;
+      default = 5;
+      description = ''
+        The interval between activity refreshes (seconds)
+      '';
+    };
+    enableTimestamps = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Whether or not to enable timestamps
+      '';
+    };
+    enableButtons = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Whether or not to enable buttons
+      '';
+    };
+    nameString = mkOption {
+      type = types.str;
+      default = "Apple Music";
+      description = ''
+        Activity name format string
+      '';
+    };
+    detailsString = mkOption {
+      type = types.str;
+      default = "{name}";
+      description = ''
+        Activity details format string
+      '';
+    };
+    stateString = mkOption {
+      type = types.str;
+      default = "{artist}";
+      description = ''
+        Activity state format string
+      '';
+    };
+    largeImageType = mkOption {
+      type = types.str;
+      default = "Album";
+      description = ''
+        Activity assets large image type
+      '';
+    };
+    largeTextString = mkOption {
+      type = types.str;
+      default = "{album}";
+      description = ''
+        Activity assets large text format string
+      '';
+    };
+    smallImageType = mkOption {
+      type = types.str;
+      default = "Artist";
+      description = ''
+        Activity assets small image type
+      '';
+    };
+    smallTextString = mkOption {
+      type = types.str;
+      default = "{artist}";
+      description = ''
+        Activity assets small text format string
+      '';
+    };
+  };
   automodContext = {
     enable = mkEnableOption ''
       Allows you to jump to the messages surrounding an automod hit
     '';
   };
-  BANger = {
+  banger = {
     enable = mkEnableOption ''
       Replaces the GIF in the ban dialogue with a custom one.
     '';
@@ -2899,6 +2982,22 @@ with lib;
       Block ads in the YouTube WatchTogether activity via AdGuard
     '';
   };
+  webKeybinds = {
+    enable = mkEnableOption ''
+      Re-adds keybinds missing in the web version of Discord: ctrl+t, ctrl+shift+t, ctrl+tab, ctrl+shift+tab, ctrl+1-9, ctrl+,.
+      Only works fully on Vesktop/ArmCord, not inside your browser
+    '';
+  };
+  webRichPresence = {
+    enable = mkEnableOption ''
+      Client plugin for arRPC to enable RPC on Discord Web (experimental)
+    '';
+  };
+  webScreenShareFixes = {
+    enable = mkEnableOption ''
+      Removes 2500kbps bitrate cap on chromium and vesktop clients.
+    '';
+  };
   whoReacted = {
     enable = mkEnableOption ''
       Renders the avatars of users who reacted to a message
@@ -3020,5 +3119,12 @@ with lib;
     enable = mkEnableOption ''
       Helps us provide support to you
     '' // { default = true; }; # Required
+  };
+  webContextMenus = {
+    enable = mkEnableOption ''
+      Re-adds context menus missing in the web version of Discord:
+      Links & Images (Copy/Open Link/Image), Text Area (Copy, Cut, Paste, SpellCheck)
+    '' // { default = true; }; # Required for Vesktop
+                               # Enabling doesn't cause problems for normal client
   };
 }
