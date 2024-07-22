@@ -1,7 +1,7 @@
 # Plugin Configs
 List of ever configuration option for Vencord plugins
 
-# Enabled by default:
+## Enabled by default:
 ```nix
 programs.nixcord.config.plugins.chatInputButtonAPI.enable
 programs.nixcord.config.plugins.commandsAPI.enable
@@ -19,7 +19,6 @@ programs.nixcord.config.plugins.userSettingsAPI.enable
 > These plugins are dependancies for other plugins to work but
 > are not hard required for Vencord to run.
 
-# Main Plugins:
 ## alwaysAnimate
 ```nix
 programs.nixcord.config.plugins.alwaysAnimate.enable
