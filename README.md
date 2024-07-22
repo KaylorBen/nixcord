@@ -112,7 +112,7 @@ This is an example home-manager configuration using Nixcord
 }
 ```
 
-I highly recommend configuring Nixcord with an open Vencord client
+It is highly recommend configuring Nixcord with an open Vencord client
 to look through available plugins and options. More comprehensive
 documentation is available [here](docs/INDEX.md).
 
