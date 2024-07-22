@@ -3,8 +3,8 @@ Below are all sections for available settings.
 This documentation is somewhat ad-hoc, please report any issues
 you experience with it.
 
-[Nixcord main settings](./MAIN.md)
+[Nixcord main settings](./main.md)
 
-[Vencord settings](./VENCORD.md)
+[Vencord settings](./vencord.md)
 
-[Plugin settings](./PLUGINS.md)
+[Plugin settings](./plugins.md)
