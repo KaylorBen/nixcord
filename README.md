@@ -114,7 +114,7 @@ This is an example home-manager configuration using Nixcord
 
 I highly recommend configuring Nixcord with an open Vencord client
 to look through available plugins and options. More comprehensive
-documentation is available [here](./docs/SETTINGS.md).
+documentation is available [here](docs/INDEX.md).
 
 ## Special Thanks
 Special Thanks to [Vencord](https://github.com/Vendicated/Vencord), [Home Manager](https://github.com/nix-community/home-manager), and [Nix](https://nixos.org/) and all the
