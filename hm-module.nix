@@ -18,7 +18,6 @@ let
     types
     mkIf
     mkMerge
-    literalExpression
     ;
 
   inherit (pkgs.callPackage ./lib.nix { })
@@ -117,10 +116,10 @@ in {
   config = mkIf cfg.enable (mkMerge [
     {
       home.packages = [
-        (mkIf cfg.discord.enable cfg.package.override {
+        (mkIf cfg.discord.enable (cfg.package.override {
           withVencord = cfg.vencord.enable;
           withOpenASAR = cfg.openASAR.enable;
-        })
+        }))
         (mkIf cfg.vesktop.enable cfg.vesktopPackage)
       ];
     }
@@ -136,7 +135,7 @@ in {
           builtins.toJSON (mkVencordCfg cfg.config);
       })
     ]))
-    (mkIf cfg.vesktop.enable mkMerge [
+    (mkIf cfg.vesktop.enable (mkMerge [
       {
         home.file."${cfg.vesktopConfigDir}/settings/quickCss.css".text = cfg.quickCss;
       }
@@ -147,6 +146,6 @@ in {
         home.file."${cfg.vesktopConfigDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg cfg.config);
       })
-    ])
+    ]))
   ]);
 }
