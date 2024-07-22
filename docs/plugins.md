@@ -55,16 +55,72 @@ programs.nixcord.config.plugins.anonymiseFileNames.consistent
     # type: str
     # default: "image"
 ```
+## appleMusicRichPresence
+```nix
+programs.nixcord.config.plugins.appleMusicRichPresence.enable
+    # Discord rich presence for your Apple Music!
+programs.nixcord.config.plugins.appleMusicRichPresence.activityType
+    # Which type of activity
+    # type: str
+    # default: "playing"
+    # can also be "listening"
+programs.nixcord.config.plugins.appleMusicRichPresence.refreshInterval
+    # The interval between activity refreshes (seconds)
+    # type: number
+    # default: 5
+programs.nixcord.config.plugins.appleMusicRichPresence.enableTimestamps
+    # Whether or not to enable timestamps
+    # default: true
+programs.nixcord.config.plugins.appleMusicRichPresence.enableButtons
+    # Whether or not to enable buttons
+    # default: true
+programs.nixcord.config.plugins.appleMusicRichPresence.nameString
+    # Activity name format string
+    # type: str
+    # default: "Apple Music"
+programs.nixcord.config.plugins.appleMusicRichPresence.detailsString
+    # Activity details format string
+    # type: str
+    # default: "{name}"
+programs.nixcord.config.plugins.appleMusicRichPresence.stateString
+    # Activity state format string
+    # type: str
+    # default: "{artist}"
+programs.nixcord.config.plugins.appleMusicRichPresence.largeImageType
+    # Activity assets large image type
+    # type: str
+    # default: "Album"
+    # one of:
+    #   "Album"
+    #   "Artist"
+    #   "Disabled"
+programs.nixcord.config.plugins.appleMusicRichPresence.largeTextString
+    # Activity assets large text format string
+    # type: str
+    # default: "{album}"
+programs.nixcord.config.plugins.appleMusicRichPresence.smallImageType
+    # Activity assets small image type
+    # type: str
+    # default: "Artist"
+    # one of:
+    #   "Album"
+    #   "Artist"
+    #   "Disabled"
+programs.nixcord.config.plugins.appleMusicRichPresence.smallTextString
+    # Activity assets small text format string
+    # type: str
+    # default: "{artist}"
+```
 ## automodContext
 ```nix
 programs.nixcord.config.plugins.automodContext.enable
     # Allows you to jump to the message surrounding an automod hit
 ```
-## BANger
+## banger
 ```nix
-programs.nixcord.config.plugins.BANger.enable
+programs.nixcord.config.plugins.banger.enable
     # Replaces the GIF in the ban dialogue with a custom one.
-programs.nixcord.config.plugins.BANger.source
+programs.nixcord.config.plugins.banger.source
     # Source to replace ban GIF with (Video or Gif)
     # type: str
     # default: "https://i.imgur.com/wp5q52C.mp4"
@@ -1892,4 +1948,21 @@ programs.nixcord.config.plugins.XSOverlay.volume
     # Volume
     # type: float
     # default: 0.2
+```
+## Vesktop exclusive
+## webKeybinds
+```nix
+programs.nixcord.config.plugins.webKeybinds.enable
+    # Re-adds keybinds missing in the web version of Discord: ctrl+t, ctrl+shift+t, ctrl+tab, ctrl+shift+tab, ctrl+1-9, ctrl+,.
+    # Only works fully on Vesktop/ArmCord, not inside your browser
+```
+## webRichPresence
+```nix
+programs.nixcord.config.plugins.webRichPresence.enable
+    # Client plugin for arRPC to enable RPC on Discord Web (experimental)
+```
+## webScreenShareFixes
+```nix
+programs.nixcord.config.plugins.webScreenShareFixes.enable
+    # Removes 2500kbps bitrate cap on chromium and vesktop clients.
 ```
