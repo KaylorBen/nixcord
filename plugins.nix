@@ -1520,7 +1520,7 @@ with lib;
     #     3 - Server default
     #   '';
     # };
-    message = mkOption {
+    messages = mkOption {
       type = types.str;
       default = "serverDefault";
       description = ''
@@ -1716,7 +1716,7 @@ with lib;
       '';
     };
   };
-  nSFWGateBypass = {
+  nsfwGateBypass = {
     enable = mkEnableOption ''
       Allows you to access NSFW channels without setting/verifying your age
     '';
@@ -2630,7 +2630,7 @@ with lib;
     # };
     indicatorMode = mkOption {
       type = types.str;
-      default = "avatarsAndDots";
+      default = "both";
       description = ''
         How should the indicator be displayed?
       '';
