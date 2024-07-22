@@ -104,18 +104,12 @@ with lib;
       '';
     };
   };
-  appleMusicRichPresence = {
-    # Darwin is not offically supported, still could work
-    enable = mkEnableOption ''
-      Apple music rich presence integration
-    '';
-  };
   automodContext = {
     enable = mkEnableOption ''
       Allows you to jump to the messages surrounding an automod hit
     '';
   };
-  bANger = {
+  BANger = {
     enable = mkEnableOption ''
       Replaces the GIF in the ban dialogue with a custom one.
     '';
@@ -434,7 +428,7 @@ with lib;
     appName = mkOption {
       type = with types; nullOr str;
       default = null;
-      example = "firefox";
+      example = "myRPC";
       description = ''
         Application name (required)
         Application name must be not longer than 128 characters.
@@ -443,7 +437,7 @@ with lib;
     details = mkOption {
       type = with types; nullOr str;
       default = null;
-      example = "A web browser";
+      example = "my RPC desc";
       description = ''
         Details (line 1)
         Details (line 1) must be not longer than 128 characters.
@@ -452,7 +446,7 @@ with lib;
     state = mkOption {
       type = with types; nullOr str;
       default = null;
-      example = "Browsing";
+      example = "my RPC state";
       description = ''
         State (line 2)
         State (line 2) must be not longer than 128 characters.
@@ -1125,7 +1119,7 @@ with lib;
         Enable double click to reply
       '';
     };
-    requireModifire = mkEnableOption ''
+    requireModifier = mkEnableOption ''
       Only do double click actions when shift/ctrl is held
     '';
   };
@@ -1807,7 +1801,7 @@ with lib;
     # };
     defaultLayout = mkOption {
       type = types.str;
-      default = "";
+      default = "list";
       description = ''
         Which layout to use as default
       '';
@@ -2004,7 +1998,7 @@ with lib;
       type = types.str;
       default = "preferPronounDB";
       description = ''
-        Where to source prnouns from
+        Where to source pronouns from
       '';
     };
     showSelf = mkOption {
@@ -2225,8 +2219,8 @@ with lib;
       Enables Discord's experimental Summaries feature on every server, displaying AI generated summaries of conversations
     '';
     summaryExpiryThresholdDays = mkOption {
-      type = types.float;
-      default = 3.0;
+      type = types.number;
+      default = 3;
       description = ''
         The time in days before a summary is removed. Note that only up to 50 summaries are kept per channel
       '';
@@ -2924,7 +2918,7 @@ with lib;
         Allow server notifications
       '';
     };
-    dmnotifications = mkOption {
+    dmNotifications = mkOption {
       type = types.bool;
       default = true;
       description = ''

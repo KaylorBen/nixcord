@@ -65,7 +65,7 @@ in {
       nofifyAboutUpdates = mkEnableOption "Notify when updates are available";
       autoUpdate = mkEnableOption "Automaticall update Vencord";
       autoUpdateNotification = mkEnableOption "Notify user about auto updates";
-      useQuickCSS = mkEnableOption "Enable quick CSS file";
+      useQuickCss = mkEnableOption "Enable quick CSS file";
       themeLinks = mkOption {
         type = with types; listOf str;
         default = [ ];
@@ -75,7 +75,7 @@ in {
       enabledThemes = mkOption {
         type = with types; listOf str;
         default = [ ];
-        description = "A list of themes to enable from themes folder";
+        description = "A list of themes to enable from themes directory";
       };
       enableReactDevtools = mkEnableOption "Enable React developer tools";
       frameless = mkEnableOption "Make client frameless";
