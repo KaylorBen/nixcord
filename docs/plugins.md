@@ -1843,33 +1843,33 @@ programs.nixcord.config.plugins.watchTogetherAdblock.enable
 programs.nixcord.config.plugins.whoReacted.enable
     # Renders the avatars of users who reacted to a message
 ```
-## xSOverlay
+## XSOverlay
 ```nix
-programs.nixcord.config.plugins.xSOverlay.enable
+programs.nixcord.config.plugins.XSOverlay.enable
     # Forwards discord notifications to XSOverlay, for easy viewing in VR
-programs.nixcord.config.plugins.xSOverlay.botNotifications
+programs.nixcord.config.plugins.XSOverlay.botNotifications
     # Allow bot notifications
-programs.nixcord.config.plugins.xSOverlay.serverNotifications
+programs.nixcord.config.plugins.XSOverlay.serverNotifications
     # Allow server notifications
     # default: true
-programs.nixcord.config.plugins.xSOverlay.dmNotifications
+programs.nixcord.config.plugins.XSOverlay.dmNotifications
     # Allow Direct Message notifications
     # default: true
-programs.nixcord.config.plugins.xSOverlay.groupDmNotifications
+programs.nixcord.config.plugins.XSOverlay.groupDmNotifications
     # Allow Group DM notifications
     # default: true
-programs.nixcord.config.plugins.xSOverlay.callNotifications
+programs.nixcord.config.plugins.XSOverlay.callNotifications
     # Allow call notifications
     # default: true
-programs.nixcord.config.plugins.xSOverlay.pingColor
+programs.nixcord.config.plugins.XSOverlay.pingColor
     # User mention color
     # type: str
     # default: "#7289da"
-programs.nixcord.config.plugins.xSOverlay.channelPingColor
+programs.nixcord.config.plugins.XSOverlay.channelPingColor
     # Channel mention color
     # type: str
     # default: "#8a2be2"
-programs.nixcord.config.plugins.xSOverlay.soundPath
+programs.nixcord.config.plugins.XSOverlay.soundPath
     # Notification sound (default/warning/error)
     # type: str
     # default: "default"
@@ -1877,18 +1877,18 @@ programs.nixcord.config.plugins.xSOverlay.soundPath
     #   "default"
     #   "warning"
     #   "error"
-programs.nixcord.config.plugins.xSOverlay.timeout
+programs.nixcord.config.plugins.XSOverlay.timeout
     # Notification duration (secs)
     # type: int
     # default: 3
-programs.nixcord.config.plugins.xSOverlay.lengthBasedTimeout
+programs.nixcord.config.plugins.XSOverlay.lengthBasedTimeout
     # Extend duration with message length
     # default: true
-programs.nixcord.config.plugins.xSOverlay.opacity
+programs.nixcord.config.plugins.XSOverlay.opacity
     # Notif opacity
     # type: float
     # default: 1.0
-programs.nixcord.config.plugins.xSOverlay.volume
+programs.nixcord.config.plugins.XSOverlay.volume
     # Volume
     # type: float
     # default: 0.2
