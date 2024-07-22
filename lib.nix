@@ -84,7 +84,7 @@ let
   ];
   threeOptions = [       # options which evaluate to int 3
     "watching"
-    "custom"
+    "customTime"
     "serverDefault"
     "both"    # This references 2 options that both = 3 in JSON
   ];
@@ -119,6 +119,7 @@ let
         if name == "enable" then "enabled" else
         if name == "tagSettings" then "tagSettings" else  # the only name that = attrset not in upperNames
         if name == "nsfwGateBypass" then "NSFWGateBypass" else # acronym needs special rule
+        if name == "useQuickCss" then "useQuickCSS" else
         if builtins.elem name upperNames then unNixify name else
         if builtins.elem name lowerPluginTitles then name else
         if builtins.isAttrs value
