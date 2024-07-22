@@ -46,7 +46,6 @@ let
     "mostRecent"
     "preferPronounDB"
     "disabled"
-    "onlyServerCount"
     "compact"
     "plain"
   ];
@@ -64,7 +63,7 @@ let
     "custom"
     "preferDiscord"
     "enabled"
-    "onlyFriendCount"
+    "onlyServerCount"
     "cozy"
     "muted"
     "animatedDots"
@@ -79,7 +78,7 @@ let
     "gallery"
     "projectX"
     "followNoReplyMention"
-    "both"
+    "onlyFriendCount"
     "roomy"
     "avatars"
   ];
@@ -87,7 +86,7 @@ let
     "watching"
     "custom"
     "serverDefault"
-    "avatarsAndDots"
+    "both"    # This references 2 options that both = 3 in JSON
   ];
   fourOptions = [
     "competing"
@@ -119,15 +118,16 @@ let
       (
         if name == "enable" then "enabled" else
         if name == "tagSettings" then "tagSettings" else  # the only name that = attrset not in upperNames
-        if (builtins.elem name) upperNames then (unNixify name) else
-        if (builtins.elem name) lowerPluginTitles then name else
-        if (builtins.isAttrs value
+        if name == "nsfwGateBypass" then "NSFWGateBypass" else # acronym needs special rule
+        if builtins.elem name upperNames then unNixify name else
+        if builtins.elem name lowerPluginTitles then name else
+        if builtins.isAttrs value
           && builtins.hasAttr "enable" value
-          && isLowerCamel name) then (toUpper name) else
+          && isLowerCamel name then toUpper name else
         name
       )
       (
-        if (builtins.isAttrs value) then (recurse value) else # recurse into subsequent attrs
+        if builtins.isAttrs value then recurse value else # recurse into subsequent attrs
         if builtins.elem value zeroOptions then 0 else # no concievable way to generalize
         if builtins.elem value oneOptions then 1 else  # these without an upstream
         if builtins.elem value twoOptions then 2 else  # change at Vencord since
