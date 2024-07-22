@@ -18,6 +18,7 @@ let
     types
     mkIf
     mkMerge
+    attrsets
     ;
 
   inherit (pkgs.callPackage ./lib.nix { })
@@ -129,7 +130,8 @@ in {
       }
       (mkIfElse (!builtins.isNull cfg.extraConfig) {
         home.file."${cfg.configDir}/settings/settings.json".text =
-          builtins.toJSON (mkVencordCfg (cfg.config // cfg.extraConfig));
+          builtins.toJSON (mkVencordCfg (
+            attrsets.recursiveUpdate cfg.config cfg.extraConfig));
       } {
         home.file."${cfg.configDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg cfg.config);
@@ -141,7 +143,8 @@ in {
       }
       (mkIfElse (!builtins.isNull cfg.vesktopConfig) {
         home.file."${cfg.vesktopConfigDir}/settings/settings.json".text =
-          builtins.toJSON (mkVencordCfg (cfg.config // cfg.vesktopConfig));
+          builtins.toJSON (mkVencordCfg (
+            attrsets.recursiveUpdate cfg.config cfg.vesktopConfig));
       } {
         home.file."${cfg.vesktopConfigDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg cfg.config);

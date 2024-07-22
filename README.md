@@ -22,8 +22,6 @@ configure once and save it to a git repo.
 
 ## How to use Nixcord
 Currently Nixcord only supports nix flakes as a [home-manager](https://github.com/nix-community/home-manager) module.
-Please submit a pull request if you use nix-channels and want
-to see an installation option for them.
 
 First, you need to import the module:
 ```nix
@@ -78,7 +76,7 @@ or to install to a specific home
 }
 ```
 After installation, you can easily start editing config
-## Usage
+## Configuration
 This is an example home-manager configuration using Nixcord
 ```nix
 # home.nix
@@ -113,8 +111,8 @@ This is an example home-manager configuration using Nixcord
 ```
 
 It is highly recommend configuring Nixcord with an open Vencord client
-to look through available plugins and options. More comprehensive
-documentation is available [here](docs/INDEX.md).
+to look through available plugins and options.
+A list of all available options is available [here](docs/INDEX.md).
 
 ## Special Thanks
 Special Thanks to [Vencord](https://github.com/Vendicated/Vencord), [Home Manager](https://github.com/nix-community/home-manager), and [Nix](https://nixos.org/) and all the
