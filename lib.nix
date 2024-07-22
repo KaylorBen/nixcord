@@ -116,10 +116,13 @@ let
   let
     recurse = mapAttrs' (name: value: nameValuePair
       (
+        # probably some kind of map function is better than this
         if name == "enable" then "enabled" else
         if name == "tagSettings" then "tagSettings" else  # the only name that = attrset not in upperNames
         if name == "nsfwGateBypass" then "NSFWGateBypass" else # acronym needs special rule
+        if name == "banger" then "BANger" else
         if name == "useQuickCss" then "useQuickCSS" else
+        if name == "webRichPresence" then "WebRichPresence (arRPC)" else
         if builtins.elem name upperNames then unNixify name else
         if builtins.elem name lowerPluginTitles then name else
         if builtins.isAttrs value
