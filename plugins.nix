@@ -2904,7 +2904,7 @@ with lib;
       Renders the avatars of users who reacted to a message
     '';
   };
-  xSOverlay = {
+  XSOverlay = {
     enable = mkEnableOption ''
       Forwards discord notifications to XSOverlay, for easy viewing in VR
     '';
