@@ -1,7 +1,7 @@
 # Plugin Configs
 List of ever configuration option for Vencord plugins
 
-## Enabled by default:
+# Enabled by default:
 ```nix
 programs.nixcord.config.plugins.chatInputButtonAPI.enable
 programs.nixcord.config.plugins.commandsAPI.enable
@@ -19,11 +19,13 @@ programs.nixcord.config.plugins.userSettingsAPI.enable
 > These plugins are dependancies for other plugins to work but
 > are not hard required for Vencord to run.
 
-## Main Plugins:
+# Main Plugins:
+## alwaysAnimate
 ```nix
 programs.nixcord.config.plugins.alwaysAnimate.enable
     # Animates anything that can be animated
 ```
+## alwaysTrust
 ```nix
 programs.nixcord.config.plugins.alwaysTrust.enable
     # Removes the annoying untrusted domain and suspicious file popup
@@ -33,6 +35,7 @@ programs.nixcord.config.plugins.alwaysTrust.domain
 programs.nixcord.config.plugins.alwaysTrust.file
     # Remove the 'Potentially Dangerous Download' popup when opening links
 ```
+## anonymiseFileNames
 ```nix
 programs.nixcord.config.plugins.anonymiseFileNames.enable
     # Anonymise uploaded file names
@@ -53,10 +56,12 @@ programs.nixcord.config.plugins.anonymiseFileNames.consistent
     # type: str
     # default: "image"
 ```
+## automodContext
 ```nix
 programs.nixcord.config.plugins.automodContext.enable
     # Allows you to jump to the message surrounding an automod hit
 ```
+## BANger
 ```nix
 programs.nixcord.config.plugins.BANger.enable
     # Replaces the GIF in the ban dialogue with a custom one.
@@ -65,6 +70,7 @@ programs.nixcord.config.plugins.BANger.source
     # type: str
     # default: "https://i.imgur.com/wp5q52C.mp4"
 ```
+## betterFolders
 ```nix
 programs.nixcord.config.plugins.betterFolders.enable
     # Shows server folders on dedicated sidebar and adds folder related imporovements
@@ -91,14 +97,17 @@ programs.nixcord.config.plugins.betterFolders.showFolderIcon
     # other options are "always" and "moreThanOne"
     # "moreThanOne" when more than one folder is expanded
 ```
+## betterGifAltText
 ```nix
 programs.nixcord.config.plugins.betterGifAltText.enable
     # Change GIF alt text from simply being 'GIF' to containing the gif tags / filename
 ```
+## betterGifPicker
 ```nix
 programs.nixcord.config.plugins.betterGifPicker.enable
     # Makes the gif picker open the favourite category by default
 ```
+## betterNotesBox
 ```nix
 programs.nixcord.config.plugins.betterNotesBox.enable
     # Hide notes or disable spellcheck (Configure in settings!!)
@@ -111,6 +120,7 @@ programs.nixcord.config.plugins.betterNotesBox.noSpellCheck
 > betterNotesBox is the only plugin which gives me consistent crashes.
 > the json file created by nixcord is identical to one from Vencord,
 > so not sure of the cause. (its probably not identical)
+## betterRoleContext
 ```nix
 programs.nixcord.config.plugins.betterRoleContext.enable
     # Adds options to copy role color / edit role / view role icon when right clicking roles in the user profile
@@ -120,6 +130,7 @@ programs.nixcord.config.plugins.betterRoleContext.roleIconFileFormat
     # default: "png"
     # valid formats are "png", "webp", and "jpg"
 ```
+## betterRoleDot
 ```nix
 programs.nixcord.config.plugins.betterRoleDot.enable
     # Copy role color on the RoleDot (accessibility setting) click. Also allows using both RoleDot and colored names simultaneously
@@ -128,6 +139,7 @@ programs.nixcord.config.plugins.betterRoleDot.bothStyles
 programs.nixcord.config.plugins.betterRoleDot.copyRoleColorInProfilePopout
     # Allow click on role dot in profile popout to copy role color
 ```
+## betterSessions
 ```nix
 programs.nixcord.config.plugins.betterSessions.enable
     # Enhances the sessions (devices) menu
@@ -138,6 +150,7 @@ programs.nixcord.config.plugins.betterSessions.checkInterval
     # type: int
     # default = 20
 ```
+## betterSettings
 ```nix
 programs.nixcord.config.plugins.betterSettings.enable
     # Enhances your settings-menu-opening experience
@@ -151,14 +164,17 @@ programs.nixcord.config.plugins.betterSettings.eagerLoad
     # Removes the loading delay when opening the menu for the first time
     # default: true
 ```
+## betterUploadButton
 ```nix
 programs.nixcord.config.plugins.betterUploadButton.enable
     # Upload with a singl click, open menu with right click
 ```
+## biggerStreamPreview
 ```nix
 programs.nixcord.config.plugins.biggerStreamPreview.enable
     # This plugin allows you to enlarge stream previews
 ```
+## blurNSFW
 ```nix
 programs.nixcord.config.plugins.blurNSFW.enable
     # Blur attachments in NSFW channels until hovered
@@ -167,6 +183,7 @@ programs.nixcord.config.plugins.blurNSFW.blurAmount
     # type: int
     # default: 10
 ```
+## callTimer
 ```nix
 programs.nixcord.config.plugins.callTimer.enable
     # Adds a timer to vcs
@@ -176,10 +193,12 @@ programs.nixcord.config.plugins.callTimer.format
     # default: "stopwatch"
     # "human" is common other option
 ```
+## clearURLs
 ```nix
 programs.nixcord.config.plugins.clearURLs.enable
     # Removes tracking garbage from URLs
 ```
+## clientTheme
 ```nix
 programs.nixcord.config.plugins.clientTheme.enable
     # Recreation of the old client theme experiment. Add a color to your Discord client theme
@@ -189,10 +208,12 @@ programs.nixcord.config.plugins.clientTheme.color
     # type: str
     # default: "313338"
 ```
+## colorSighted
 ```nix
 programs.nixcord.config.plugins.colorSighted.enable
     # Removes the colorblind-friendly icons from statuses, just like 2015-2017 Discord
 ```
+## consoleJanitor
 ```nix
 programs.nixcord.config.plugins.consoleJanitor.enable
     # Disables annoying console messages/errors
@@ -202,10 +223,12 @@ programs.nixcord.config.plugins.consoleJanitor.disableSpotifyLogger
     # Disable the Spotify logger, which leaks account information and access token
     # default: true
 ```
+## consoleShortcuts
 ```nix
 programs.nixcord.config.plugins.consoleShortcuts.enable
     # Adds shorter Aliases for many things on the window. Run `shortcutList` for a list.
 ```
+## copyEmojiMarkdown
 ```nix
 programs.nixcord.config.plugins.copyEmojiMarkdown.enable
     # Allows you to copy emojis as formatted string (<:blobcatcozy:1026533070955872337>)
@@ -213,10 +236,12 @@ programs.nixcord.config.plugins.copyEmojiMarkdown.copyUnicode
     # Copy the raw unicode character instead of :name: for default emojis (👽)
     # default: true
 ```
+## copyUserURLs
 ```nix
 programs.nixcord.config.plugins.copyUserURLs.enable
     # Adds a 'Copy User URL' option to the user context menu.
 ```
+## crashHandler
 ```nix
 programs.nixcord.config.plugins.crashHandler.enable
     # Utility plugin for handling and possibly recovering from crashes without a restart
@@ -227,6 +252,7 @@ programs.nixcord.config.plugins.crashHandler.attemptToPreventCrashes
 programs.nixcord.config.plugins.crashHandler.attemptToNavigateToHome
     # Whether to attempt to navigate to the home when preventing Discord crashes
 ```
+## ctrlEnterSend
 ```nix
 programs.nixcord.config.plugins.ctrlEnterSend.enable
     # Use Ctrl+Enter to send messages (customizable)
@@ -240,6 +266,7 @@ programs.nixcord.config.plugins.ctrlEnterSend.sendMessageInTheMiddleOfACodeBlock
     # Whether to send a message in the middle of a code block
     # default: true
 ```
+## customRPC
 ```nix
 programs.nixcord.config.plugins.customRPC.enable
     # Allows you to set a custom rich presence
@@ -336,6 +363,7 @@ programs.nixcord.config.plugins.customRPC.buttonTwoURL
     # type: str
     # default: ""
 ```
+## customIdle
 ```nix
 programs.nixcord.config.plugins.customIdle.enable
     # Allows you to set teh time before Discord goes idle (or diable auto-idle)
@@ -347,6 +375,7 @@ programs.nixcord.config.plugins.customIdle.remainInIdle
     # When you come back to Discord, remain idle until you confirm you want to go online
     # default: true
 ```
+## dearrow
 ```nix
 programs.nixcord.config.plugins.dearrow.enable
     # Makes YouTube embed titles and thumbnails less sensationalist, powered by Dearrow
@@ -358,32 +387,39 @@ programs.nixcord.config.plugins.dearrow.replaceElements
     # default: "everything"
     # other options are "titles" and "thumbnails"
 ```
+## decor
 ```nix
 programs.nixcord.config.plugins.decor.enable
     # Create and use your own custom avatar decorations, or pick your favorite from the presets.
 ```
+## disableCallIdle
 ```nix
 programs.nixcord.config.plugins.disableCallIdle.enable
     # Disables automatically getting kicked from a DM voice call after 3 minutes and being moved to an AFK voice channel.
 ```
+## dontRoundMyTimestamps
 ```nix
 programs.nixcord.config.plugins.dontRoundMyTimestamps.enable
     # Always rounds relative timestamps down, so 7.6y becomes 7y instead of 8y
 ```
+## emoteCloner
 ```nix
 programs.nixcord.config.plugins.emoteCloner.enable
     # Allows you to clone Emotes & Stickers to your own server (right click them)
 ```
+## experiments
 ```nix
 programs.nixcord.config.plugins.experiments.enable
     # Enable Access to Experiments & other dev-only features in Discord!
 programs.nixcord.config.plugins.experiments.toolbarDevMenu
     # Change the Help (?) toolbar button (top right in chat) to Discord's developer menu
 ```
+## f8Break
 ```nix
 programs.nixcord.config.plugins.f8Break.enable
     # Pause the client when you press F8 with DevTools (+ breakpoints) open.
 ```
+## fakeNitro
 ```nix
 programs.nixcord.config.plugins.fakeNitro.enable
     # Allows you to stream in nitro quality, send fake emojis/stickers,
@@ -427,6 +463,7 @@ programs.nixcord.config.plugins.fakeNitro.hyperLinkText
 programs.nixcord.config.plugins.fakeNitro.disableEmbedPermissionCheck
     # Whether to disable the embed permission check when sending fake emojis and stickers
 ```
+## fakeProfileThemes
 ```nix
 programs.nixcord.config.plugins.fakeProfileThemes.enable
     # Allows profile theming by hiding the colors in your bio thanks to invisible 3y3 encoding
@@ -434,10 +471,12 @@ programs.nixcord.config.plugins.fakeProfileThemes.nitroFirst
     # Use Nitro color source first if both are present
     # default: true
 ```
+## favoriteEmojiFirst
 ```nix
 programs.nixcord.config.plugins.favoriteEmojiFirst.enable
     # Puts your favorite emoji first in the emoji autocomplete.
 ```
+## favoriteGifSearch
 ```nix
 programs.nixcord.config.plugins.favoriteGifSearch.enable
     # Adds a search bar to favorite gifs. 
@@ -447,10 +486,12 @@ programs.nixcord.config.plugins.favoriteGifSearch.searchOption
     # default: "hostandpath"
     # other options are "url" and "path"
 ```
+## fixCodeblockGap
 ```nix
 programs.nixcord.config.plugins.fixCodeblockGap.enable
     # Removes the gap between codeblocks and text below it
 ```
+## fixSpotifyEmbeds
 ```nix
 programs.nixcord.config.plugins.fixSpotifyEmbeds.enable
     # Fixes spotify embeds being incredibly loud by letting you customise the volume
@@ -459,33 +500,40 @@ programs.nixcord.config.plugins.fixSpotifyEmbeds.volume
     # type: float
     # default: 10.0
 ```
+## fixYoutubeEmbeds
 ```nix
 programs.nixcord.config.plugins.fixYoutubeEmbeds.enable
     # Bypasses youtube videos being blocked from display on Discord (for example by UMG)
 ```
+## forceOwnerCrown
 ```nix
 programs.nixcord.config.plugins.forceOwnerCrown.enable
     # Force the owner crown next to usernames even if the server is large.
 ```
+## friendInvites
 ```nix
 programs.nixcord.config.plugins.friendInvites.enable
     # Create and manage friend invite links via slash commands
     # (/create friend invite, /view friend invites, /revoke friend invites).
 ```
+## friendsSince
 ```nix
 programs.nixcord.config.plugins.friendsSince.enable
     # Shows when you became friends with someone in the user popout
 ```
+## gameActivityToggle
 ```nix
 programs.nixcord.config.plugins.gameActivityToggle.enable
     # Adds a button next to the mic and deafen button to toggle game activity.
 programs.nixcord.config.plugins.gameActivityToggle.oldIcon
     # Use the old icon style before Discord icon redesign
 ```
+## gitPaste
 ```nix
 programs.nixcord.config.plugins.gitPaste.enable
     # Makes picking a gif in the gif picker insert a link into the chatbox instead of instantly sending it
 ```
+## greetStickerPicker
 ```nix
 programs.nixcord.config.plugins.greetStickerPicker.enable
     # Allows you to use any greet sticker instead of only the
@@ -496,14 +544,17 @@ programs.nixcord.config.plugins.greetStickerPicker.greetMode
     # default: "Greet"
     # other option is "Message" # allows greet spam
 ```
+## hideAttachments
 ```nix
 programs.nixcord.config.plugins.hideAttachments.enable
     # Hide attachments and Embeds for individual messages via hover button
 ```
+## iLoveSpam
 ```nix
 programs.nixcord.config.plugins.iLoveSpam.enable
     # Do not hide messages from 'likely spammers'
 ```
+## ignoreActivities
 ```nix
 programs.nixcord.config.plugins.ignoreActivities.enable
     # Ignore activities from showing up on your status ONLY.
@@ -525,16 +576,19 @@ programs.nixcord.config.plugins.ignoreActivities.ignoreWatching
 programs.nixcord.config.plugins.ignoreActivities.ignoreCompeting
     # Ignore all competing activities (These are normally special game activities)
 ```
+## imageLink
 ```nix
 programs.nixcord.config.plugins.imageLink.enable
     # Never hide image links in messages, even if it's the only content
 ```
+## imageZoom
 ```nix
 programs.nixcord.config.plugins.imageZoom.enable
     # Lets you zoom in to images and gifs.
     # Use scroll wheel to zoom in and shift + scroll wheel to increase lens radius / size
 programs.nixcord.config.plugins.imageZoom.saveZoomValues
     # Whether to save zoom and lens size values
+## imageZoom
     # default: true
 programs.nixcord.config.plugins.imageZoom.enable
     # Invert scroll
@@ -556,12 +610,14 @@ programs.nixcord.config.plugins.imageZoom.zoomSpeed
     # type: float
     # default: 0.5
 ```
+## implicitRelationships
 ```nix
 programs.nixcord.config.plugins.implicitRelationships.enable
     # Shows your implicit relationships in the Friends tab.
 programs.nixcord.config.plugins.implicitRelationships.sortByAffinity
     # Whether to sort implicit relationships by their affinity to you.
 ```
+## invisibleChat
 ```nix
 programs.nixcord.config.plugins.invisibleChat.enable
     # Encrypt your Messages in a non-suspicious way!
@@ -570,10 +626,12 @@ programs.nixcord.config.plugins.invisibleChat.savedPasswords
     # type: str
     # default: "password, Password"
 ```
+## keepCurrentChannel
 ```nix
 programs.nixcord.config.plugins.keepCurrentChannel.enable
     # Attempt to navigate to the channel you were in before switching accounts or loading Discord.
 ```
+## lastFMRichPresence
 ```nix
 programs.nixcord.config.plugins.lastFMRichPresence.enable
     # Little plugin for Last.fm rich presence
@@ -619,6 +677,7 @@ programs.nixcord.config.plugins.lastFMRichPresence.showLastFmLogo
     # show the Last.fm logo by the album cover
     # default: true
 ```
+## loadingQuotes
 ```nix
 programs.nixcord.config.plugins.loadingQuotes.enable
     # Replace Discords loading quotes
@@ -640,10 +699,12 @@ programs.nixcord.config.plugins.loadingQuotes.additionalQuotesDelimiter
     # type: str
     # default: "|"
 ```
+## maskedLinkedPaste
 ```nix
 programs.nixcord.config.plugins.maskedLinkedPaste.enable
     # Pasting a link while having text selected will paste a hyperlink
 ```
+## memberCount
 ```nix
 programs.nixcord.config.plugins.memberCount.enable
     # Shows the amount of online & total members in the server member list and tooltip
@@ -654,10 +715,12 @@ programs.nixcord.config.plugins.memberCount.memberList
     # If the member count should be displayed on the member list
     # default: true
 ```
+## mentionAvatars
 ```nix
 programs.nixcord.config.plugins.mentionAvatars.enable
     # Shows user avatars inside mentions
 ```
+## messageClickActions
 ```nix
 programs.nixcord.config.plugins.messageClickActions.enable
     # Hold Backspace and click to delete, double click to edit/reply
@@ -673,6 +736,7 @@ programs.nixcord.config.plugins.messageClickActions.enableDoubleClickToReply
 programs.nixcord.config.plugins.messageClickActions.requireModifier
     # Only do double click actions when shift/ctrl is held
 ```
+## messageLatency
 ```nix
 programs.nixcord.config.plugins.messageLatency.enable
     # Displays an indicator for messages that took ≥n seconds to send
@@ -686,6 +750,7 @@ programs.nixcord.config.plugins.messageLatency.detectDiscordKotlin
 programs.nixcord.config.plugins.messageLatency.showMillis
     # Show milliseconds
 ```
+## messageLinkEmbeds
 ```nix
 programs.nixcord.config.plugins.messageLinkEmbeds.enable
     # Adds a preview to messages that link another message
@@ -707,6 +772,7 @@ programs.nixcord.config.plugins.messageLinkEmbeds.idList
     # default: ""
     # example: "13, 4, 5"
 ```
+## messageLogger
 ```nix
 programs.nixcord.config.plugins.messageLogger.enable
     # Temporarily logs deleted and edited messages.
@@ -743,6 +809,7 @@ programs.nixcord.config.plugins.messageLogger.ignoreGuilds
     # type: str
     # default: ""
 ```
+## messageTags
 ```nix
 programs.nixcord.config.plugins.messageTags.enable
     # Allows you to save messages and to use them with a simple command.
@@ -750,14 +817,17 @@ programs.nixcord.config.plugins.messageTags.clyde
     # If enabled, clyde will send you an ephemeral message when a tag was used.
     # default: true
 ```
+## moreCommands
 ```nix
 programs.nixcord.config.plugins.moreCommands.enable
     # echo, lenny, mock
 ```
+## moreKaomoji
 ```nix
 programs.nixcord.config.plugins.moreKaomoji.enable
     # Adds more Kaomoji to discord. ヽ(´▽`)/
 ```
+## moreUserTags
 ```nix
 programs.nixcord.config.plugins.moreUserTags.enable
     # Adds tags for webhooks and moderative roles (owner, admin, etc.)
@@ -836,6 +906,7 @@ programs.nixcord.config.plugins.moreUserTags.tagSettings.chatModerator.showInNot
     # Show in member list and profiles
     # default: true
 ```
+## moyai
 ```nix
 programs.nixcord.config.plugins.moyai.enable
     # 🗿🗿🗿🗿🗿🗿🗿🗿
@@ -858,10 +929,12 @@ programs.nixcord.config.plugins.moyai.ignoreBlocked
     # Ignore blocked users
     # default: true
 ```
+## mutualGroupDMs
 ```nix
 programs.nixcord.config.plugins.mutualGroupDMs.enable
     # Shows mutual group dms in profiles
 ```
+## newGuildSettings
 ```nix
 programs.nixcord.config.plugins.newGuildSettings.enable
     # Shows mutual group dms in profiles
@@ -893,25 +966,30 @@ programs.nixcord.config.plugins.newGuildSettings.showAllChannels
     # Show all channels automatically
     # default: true
 ```
+## noBlockedMessages
 ```nix
 programs.nixcord.config.plugins.noBlockedMessages.enable
     # Hides all blocked messages from chat completely.
 programs.nixcord.config.plugins.noBlockedMessages.ignoreBlockedMessages
     # Completely ignores (recent) incoming messages from blocked users (locally).
 ```
+## noDefaultHangStatus
 ```nix
 programs.nixcord.config.plugins.noDefaultHangStatus.enable
     # Disable the default hang status when joining voice channels
 ```
+## noDevtoolsWarning
 ```nix
 programs.nixcord.config.plugins.noDevtoolsWarning.enable
     # Disables the 'HOLD UP' banner in the console. As a side effect,
     # also prevents Discord from hiding your token, which prevents random logouts.
 ```
+## noF1
 ```nix
 programs.nixcord.config.plugins.noF1.enable
     # Disables F1 help bind.
 ```
+## noMosaic
 ```nix
 programs.nixcord.config.plugins.noMosaic.enable
     # Removes Discord new image mosaic
@@ -919,10 +997,12 @@ programs.nixcord.config.plugins.noMosaic.inlineVideo
     # Play videos without carousel modal
     # default: true
 ```
+## noOnboardingDelay
 ```nix
 programs.nixcord.config.plugins.noOnboardingDelay.enable
     # Skips the slow and annoying onboarding delay
 ```
+## noPendingCount
 ```nix
 programs.nixcord.config.plugins.noPendingCount.enable
     # Removes the ping count of incoming friend requests, message requests, and nitro offers.
@@ -936,14 +1016,17 @@ programs.nixcord.config.plugins.noPendingCount.hidePremiumOffersCount
     # Hide nitro offers count
     # default: true
 ```
+## noProfileThemes
 ```nix
 programs.nixcord.config.plugins.noProfileThemes.enable
     # Completely removes Nitro profile themes
 ```
+## noRPC
 ```nix
 programs.nixcord.config.plugins.noRPC.enable
     # Disables Discord's RPC server.
 ```
+## noReplyMention
 ```nix
 programs.nixcord.config.plugins.noReplyMention.enable
     # Disables reply pings by default
@@ -958,10 +1041,12 @@ programs.nixcord.config.plugins.noReplyMention.shouldPingListed
 programs.nixcord.config.plugins.noReplyMention.inverseShiftReply
     # Invert Discord's shift replying behaviour (enable to make shift reply mention user)
 ```
+## noScreensharePreview
 ```nix
 programs.nixcord.config.plugins.noScreensharePreview.enable
     # Disables screenshare previews from being sent.
 ```
+## noServerEmojis
 ```nix
 programs.nixcord.config.plugins.noServerEmojis.enable
     # Do not show server emojis in the autocomplete menu.
@@ -974,22 +1059,27 @@ programs.nixcord.config.plugins.noServerEmojis.shownEmojis
     #   "currentServer"
     #   "all"
 ```
+## noSystemBadge
 ```nix
 programs.nixcord.config.plugins.noSystemBadge.enable
     # Disables the taskbar and system tray unread count badge.
 ```
+## noTypingAnimation
 ```nix
 programs.nixcord.config.plugins.noTypingAnimation.enable
     # Disables the CPU-intensive typing dots animation
 ```
+## noUnblockToJump
 ```nix
 programs.nixcord.config.plugins.noUnblockToJump.enable
     # Allows you to jump to messages of blocked users without unblocking them
 ```
+## normalizeMessageLinks
 ```nix
 programs.nixcord.config.plugins.normalizeMessageLinks.enable
     # Strip canary/ptb from message links
 ```
+## notificationVolume
 ```nix
 programs.nixcord.config.plugins.notificationVolume.enable
     # Save your ears and set a separate volume for notifications and in-app sounds
@@ -998,10 +1088,12 @@ programs.nixcord.config.plugins.notificationVolume.notificationVolume
     # type: float
     # default: 100.0
 ```
+## nsfwGateBypass
 ```nix
 programs.nixcord.config.plugins.nsfwGateBypass.enable
     # Allows you to access NSFW channels without setting/verifying your age
 ```
+## onePingPerDM
 ```nix
 programs.nixcord.config.plugins.onePingPerDM.enable
     # If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping.
@@ -1019,10 +1111,12 @@ programs.nixcord.config.plugins.onePingPerDM.allowMentions
 programs.nixcord.config.plugins.onePingPerDM.allowEveryone
     # Receive audio pings for @everyone and @here in group DMs
 ```
+## oneko
 ```nix
 programs.nixcord.config.plugins.oneko.enable
     # cat follow mouse (real)
 ```
+## openInApp
 ```nix
 programs.nixcord.config.plugins.openInApp.enable
     # Open Spotify, Tidal, Steam and Epic Games URLs in their respective apps instead of your browser
@@ -1035,6 +1129,7 @@ programs.nixcord.config.plugins.openInApp.epic
 programs.nixcord.config.plugins.openInApp.tidal
     # Open Tidal links in the Tidal app
 ```
+## overrideForumDefaults
 ```nix
 programs.nixcord.config.plugins.overrideForumDefaults.enable
     # Allows you to override default forum layout/sort order. you can still change it on a per-channel basis
@@ -1049,6 +1144,7 @@ programs.nixcord.config.plugins.overrideForumDefaults.defaultSortOrder
     # default: "recentlyActive"
     # can also be "datePosted"
 ```
+## partyMode
 ```nix
 programs.nixcord.config.plugins.partyMode.enable
     # Allows you to use party mode cause the party never ends ✨
@@ -1058,10 +1154,12 @@ programs.nixcord.config.plugins.partyMode.superIntensePartyMode
     # default: "normal"
     # other options are "better", and "projectX"
 ```
+## pauseInvitesForever
 ```nix
 programs.nixcord.config.plugins.pauseInvitesForever.enable
     # Brings back the option to pause invites indefinitely that stupit Discord removed.
 ```
+## permissionFreeWill
 ```nix
 programs.nixcord.config.plugins.permissionFreeWill.enable
     # Disables the client-side restrictions for channel permission management.
@@ -1072,6 +1170,7 @@ programs.nixcord.config.plugins.permissionFreeWill.onboarding
     # Bypass the onboarding requirements ("Making this change will make your server incompatible [...]")
     # default: true
 ```
+## permissionsViewer
 ```nix
 programs.nixcord.config.plugins.permissionsViewer.enable
     # View the permissions a user or channel has, and the roles of a server
@@ -1083,10 +1182,12 @@ programs.nixcord.config.plugins.permissionsViewer.permissionsSortOrder
 programs.nixcord.config.plugins.permissionsViewer.defaultPermissionsDropdownState
     # Whether the permissions dropdown on user popouts should be open by default
 ```
+## petpet
 ```nix
 programs.nixcord.config.plugins.petpet.enable
     # Adds a /petpet slash command to create headpet gifs from any image
 ```
+## pictureInPicture
 ```nix
 programs.nixcord.config.plugins.pictureInPicture.enable
     # Adds picture in picture to videos (next to the Download button)
@@ -1094,6 +1195,7 @@ programs.nixcord.config.plugins.pictureInPicture.loop
     # Whether to make the PiP video loop or not
     # default: true
 ```
+## pinDMs
 ```nix
 programs.nixcord.config.plugins.pinDMs.enable
     # Allows you to pin private channels to the top of your DM list.
@@ -1106,10 +1208,12 @@ programs.nixcord.config.plugins.pinDMs.pinOrder
 programs.nixcord.config.plugins.pinDMs.dmSectioncollapsed
     # Collapse DM sections
 ```
+## plainFolderIcon
 ```nix
 programs.nixcord.config.plugins.plainFolderIcon.enable
     # Doesn't show the small guild icons in folders
 ```
+## platformIndicators
 ```nix
 programs.nixcord.config.plugins.platformIndicators.enable
     # Adds platform indicators (Desktop, Mobile, Web...) to users
@@ -1126,10 +1230,12 @@ programs.nixcord.config.plugins.platformIndicators.colorMobileIndicator
     # Whether to make the mobile indicator match the color of the user status.
     # default: true
 ```
+## previewMessage
 ```nix
 programs.nixcord.config.plugins.previewMessage.enable
     # Lets you preview your message before sending it.
 ```
+## pronounDB
 ```nix
 programs.nixcord.config.plugins.pronounDB.enable
     # Adds pronouns to user messages using pronoundb
@@ -1153,10 +1259,12 @@ programs.nixcord.config.plugins.pronounDB.showInProfile
     # Show in profile
     # default: true
 ```
+## quickMention
 ```nix
 programs.nixcord.config.plugins.quickMention.enable
     # Adds a quick mention button to the message actions bar
 ```
+## quickReply
 ```nix
 programs.nixcord.config.plugins.quickReply.enable
     # Reply to (ctrl + up/down) and edit (ctrl + shift + up/down) messages via keybinds
@@ -1166,14 +1274,17 @@ programs.nixcord.config.plugins.quickReply.shouldMention
     # default: "followNoReplyMention"
     # other options are "disabled" or "enabled"
 ```
+## reactErrorDecoder
 ```nix
 programs.nixcord.config.plugins.reactErrorDecoder.enable
     # Replaces "Minifed React Error" with the actual error.
 ```
+## readAllNotificationsButton
 ```nix
 programs.nixcord.config.plugins.readAllNotificationsButton.enable
     # Read all server notifications with a single button click!
 ```
+## relationshipNotifier
 ```nix
 programs.nixcord.config.plugins.relationshipNotifier.enable
     # Notifies you when a friend, group chat, or server removes you.
@@ -1196,6 +1307,7 @@ programs.nixcord.config.plugins.relationshipNotifier.groups
     # Notify when removed from a group chat
     # default: true
 ```
+## replaceGoogleSearch
 ```nix
 programs.nixcord.config.plugins.replaceGoogleSearch.enable
     # Replaces the Google search with different Engines
@@ -1208,18 +1320,22 @@ programs.nixcord.config.plugins.replaceGoogleSearch.customEngineURL
     # type: str
     # default: ""
 ```
+## replyTimestamp
 ```nix
 programs.nixcord.config.plugins.replyTimestamp.enable
     # Shows a timestamp on replied-message previews
 ```
+## revealAllSpoilers
 ```nix
 programs.nixcord.config.plugins.revealAllSpoilers.enable
     # Reveal all spoilers in a message by Ctrl-clicking a spoiler, or in the chat with Ctrl+Shift-click
 ```
+## reverseImageSearch
 ```nix
 programs.nixcord.config.plugins.reverseImageSearch.enable
     # Adds ImageSearch to image context menus
 ```
+## reviewDB
 ```nix
 programs.nixcord.config.plugins.reviewDB.enable
     # Review other users (Adds a new settings to profiles)
@@ -1235,6 +1351,7 @@ programs.nixcord.config.plugins.reviewDB.hideBlockedUsers
     # Hide reviews from blocked users
     # default: true
 ```
+## roleColorEverywhere
 ```nix
 programs.nixcord.config.plugins.roleColorEverywhere.enable
     # Adds the top role color anywhere possible
@@ -1252,15 +1369,18 @@ programs.nixcord.config.plugins.roleColorEverywhere.reactorList
     # Show role colors in the reactors list
     # default: true
 ```
+## searchReply
 ```nix
 programs.nixcord.config.plugins.searchReply.enable
     # Adds a reply button to search results
 ```
+## secretRingToneEnabler
 ```nix
 programs.nixcord.config.plugins.secretRingToneEnabler.enable
     # Always play the secret version of the discord ringtone
     # (except during special ringtone events)
 ```
+## summaries
 ```nix
 programs.nixcord.config.plugins.summaries.enable
     # Enables Discord's experimental Summaries feature on every server, displaying AI generated summaries of conversations
@@ -1269,6 +1389,7 @@ programs.nixcord.config.plugins.summaries.summaryExpiryThresholdDays
     # type: number
     # default: 3
 ```
+## sendTimestamps
 ```nix
 programs.nixcord.config.plugins.sendTimestamps.enable
     # Send timestamps easily via chat box button & text shortcuts. Read the extended description!
@@ -1276,10 +1397,12 @@ programs.nixcord.config.plugins.sendTimestamps.replaceMessageContents
     # Replace timestamps in message contents
     # default: true
 ```
+## serverInfo
 ```nix
 programs.nixcord.config.plugins.serverInfo.enable
     # Allows you to view info about a server
 ```
+## serverListIndicators
 ```nix
 programs.nixcord.config.plugins.serverListIndicators.enable
     # Add online friend count or server count in the server list
@@ -1292,6 +1415,7 @@ programs.nixcord.config.plugins.serverListIndicators.mode
     #   "onlyServerCount"
     #   "both"
 ```
+## shikiCodeblocks
 ```nix
 programs.nixcord.config.plugins.shikiCodeblocks.enable
     # Brings vscode-style codeblocks into Discord, powered by Shiki
@@ -1318,14 +1442,17 @@ programs.nixcord.config.plugins.shikiCodeblocks.bgOpacity
     # type: float
     # default: 100.0
 ```
+## showAllMessageButtons
 ```nix
 programs.nixcord.config.plugins.showAllMessageButtons.enable
     # Always show all message buttons no matter if you are holding the shift key or not.
 ```
+## showAllRoles
 ```nix
 programs.nixcord.config.plugins.showAllRoles.enable
     # Show all roles in new profiles.
 ```
+## showConnections
 ```nix
 programs.nixcord.config.plugins.showConnections.enable
     # Show connected accounts in user popouts
@@ -1342,6 +1469,7 @@ programs.nixcord.config.plugins.showConnections.iconSpacing
     #   "cozy"
     #   "roomy"
 ```
+## showHiddenChannels
 ```nix
 programs.nixcord.config.plugins.showHiddenChannels.enable
     # Show channels that you do not have access to view.
@@ -1357,6 +1485,7 @@ programs.nixcord.config.plugins.showHiddenChannels.showHiddenChannels
     # Whether the allowed users and roles dropdown on hidden channels should be open by default
     # default: true
 ```
+## showHiddenThings
 ```nix
 programs.nixcord.config.plugins.showHiddenThings.enable
     # Displays various hidden & moderator-only things regardless of permissions.
@@ -1376,6 +1505,7 @@ programs.nixcord.config.plugins.showHiddenThings.disableDisallowedDiscoveryFilte
     # Disable filters in Server Discovery search that hide NSFW & disallowed servers.
     # default: true
 ```
+## showMeYourName
 ```nix
 programs.nixcord.config.plugins.showMeYourName.enable
     # Display usernames next to nicks, or no nicks at all
@@ -1388,6 +1518,7 @@ programs.nixcord.config.plugins.showMeYourName.mode
     #   "nick-user"
     #   "user"
 ```
+## showTimeoutDuration
 ```nix
 programs.nixcord.config.plugins.showTimeoutDuration.enable
     # Shows how much longer a user's timeout will last, either in the timeout icon tooltip or next to it
@@ -1397,6 +1528,7 @@ programs.nixcord.config.plugins.showTimeoutDuration.displayStyle
     # default: "ssalggnikool"
     # can also be "tooltip"
 ```
+## silentMessageToggle
 ```nix
 programs.nixcord.config.plugins.silentMessageToggle.enable
     # Adds a button to the chat bar to toggle sending a silent message.
@@ -1406,6 +1538,7 @@ programs.nixcord.config.plugins.silentMessageToggle.autoDiable
     # Automatically disable the silent message toggle again after sending one
     # default: true
 ```
+## silentTyping
 ```nix
 programs.nixcord.config.plugins.silentTyping.enable
     # Hide that you are typing
@@ -1418,12 +1551,14 @@ programs.nixcord.config.plugins.silentTyping.isEnabled
     # Toggle functionality
     # default: true
 ```
+## sortFriendRequests
 ```nix
 programs.nixcord.config.plugins.sortFriendRequests.enable
     # Sorts friend requests by date of receipt
 programs.nixcord.config.plugins.sortFriendRequests.showDates
     # Show dates on friend requests
 ```
+## spotifyControls
 ```nix
 programs.nixcord.config.plugins.spotifyControls.enable
     # Adds a Spotify player above the account panel
@@ -1432,27 +1567,33 @@ programs.nixcord.config.plugins.spotifyControls.hoverControls
 programs.nixcord.config.plugins.spotifyControls.useSpotifyUris
     # Open Spotify URIs instead of Spotify URLs. Will only work if you have Spotify installed and might not work on all platforms
 ```
+## spotifyCrack
 ```nix
 programs.nixcord.config.plugins.spotifyCrack.enable
     # Free listen along, no auto-pausing in voice chat, and allows activity to continue playing when idling
 programs.nixcord.config.plugins.spotifyCrack.noSpotifyAutoPause
     # Disable Spotify auto-pause
+## spotifyCrack
     # default: true
 programs.nixcord.config.plugins.spotifyCrack.enable
     # Keep Spotify activity playing when idling
 ```
+## spotifyShareCommands
 ```nix
 programs.nixcord.config.plugins.spotifyShareCommands.enable
     # Share your current Spotify track, album or artist via slash command (/track, /album, /artist)
 ```
+## startupTimings
 ```nix
 programs.nixcord.config.plugins.startupTimings.enable
     # Adds Startup Timings to the Settings menu
 ```
+## streamerModeOnStream
 ```nix
 programs.nixcord.config.plugins.streamerModeOnStream.enable
     # Automatically enables streamer mode when you start streaming in Discord
 ```
+## superReactionTweaks
 ```nix
 programs.nixcord.config.plugins.superReactionTweaks.enable
     # Customize the limit of Super Reactions playing at once, and super react by default
@@ -1466,19 +1607,23 @@ programs.nixcord.config.plugins.superReactionTweaks.superReactionPlayingLimit
     # type: int
     # default: 20
 ```
+## textReplace
 ```nix
 programs.nixcord.config.plugins.textReplace.enable
     # Replace text in your messages. You can find pre-made rules in the
     # #textreplace-rules channel in Vencord's Server
 ```
+## themeAttributes
 ```nix
 programs.nixcord.config.plugins.themeAttributes.enable
     # Adds data attributes to various elements for theming purposes
 ```
+## timeBarAllActivities
 ```nix
 programs.nixcord.config.plugins.timeBarAllActivities.enable
     # Adds the Spotify time bar to all activities if they have start and end timestamps
 ```
+## translate
 ```nix
 programs.nixcord.config.plugins.translate.enable
     # Translate messages with Google Translate
@@ -1489,6 +1634,7 @@ programs.nixcord.config.plugins.translate.showChatBarButton
     # Show translate button in chat bar
     # default: true
 ```
+## typingIndicator
 ```nix
 programs.nixcord.config.plugins.typingIndicator.enable
     # Adds an indicator if someone is typing on a channel.
@@ -1508,6 +1654,7 @@ programs.nixcord.config.plugins.typingIndicator.indicatorMode
     #   "avatars"
     #   "animatedDots"
 ```
+## typingTweaks
 ```nix
 programs.nixcord.config.plugins.typingTweaks.enable
     # Show avatars and role colours in the typing indicator
@@ -1521,10 +1668,12 @@ programs.nixcord.config.plugins.typingTweaks.alternativeFormatting
     # Show a more useful message when several users are typing
     # default: true
 ```
+## unindent
 ```nix
 programs.nixcord.config.plugins.unindent.enable
     # Trims leading indentation from codeblocks
 ```
+## unlockedAvatarZoom
 ```nix
 programs.nixcord.config.plugins.unlockedAvatarZoom.enable
     # Allows you to zoom in further in the image crop tool when changing your avatar
@@ -1533,10 +1682,12 @@ programs.nixcord.config.plugins.unlockedAvatarZoom.zoomMultiplier
     # type: int
     # default: 4
 ```
+## unsuppressEmbeds
 ```nix
 programs.nixcord.config.plugins.unsuppressEmbeds.enable
     # Allows you to unsuppress embeds in messages
 ```
+## userVoiceShow
 ```nix
 programs.nixcord.config.plugins.userVoiceShow.enable
     # Shows whether a User is currently in a voice channel somewhere in their profile
@@ -1547,6 +1698,7 @@ programs.nixcord.config.plugins.userVoiceShow.showVoiceChannelSectionHeader
     # Whether to show "IN A VOICE CHANNEL" above the join button
     # default: true
 ```
+## uSRBG
 ```nix
 programs.nixcord.config.plugins.uSRBG.enable
     # Displays user banners from USRBG, allowing anyone to get a banner without Nitro
@@ -1557,18 +1709,22 @@ programs.nixcord.config.plugins.uSRBG.voiceBackground
     # Use USRBG banners as voice chat backgrounds
     # default: true
 ```
+## validReply
 ```nix
 programs.nixcord.config.plugins.validReply.enable
     # Fixes "Message could not be loaded" upon hovering over the reply
 ```
+## validUser
 ```nix
 programs.nixcord.config.plugins.validUser.enable
     # Fix mentions for unknown users showing up as '@unknown-user' (hover over a mention to fix it)
 ```
+## voiceChatDoubleClick
 ```nix
 programs.nixcord.config.plugins.voiceChatDoubleClick.enable
     # Join voice chats via double click instead of single click
 ```
+## vcNarrator
 ```nix
 programs.nixcord.config.plugins.vcNarrator.enable
     # Announces when users join, leave, or move voice channels via narrator
@@ -1619,10 +1775,12 @@ programs.nixcord.config.plugins.vcNarrator.undeafenMessage
     # type: str
     # default: "{{USER}} undeafened"
 ```
+## vencordToolbox
 ```nix
 programs.nixcord.config.plugins.vencordToolbox.enable
     # Adds a button next to the inbox button in the channel header that houses Vencord quick actions
 ```
+## viewIcons
 ```nix
 programs.nixcord.config.plugins.viewIcons.enable
     # Makes avatars and banners in user profiles clickable,
@@ -1640,6 +1798,7 @@ programs.nixcord.config.plugins.viewIcons.imgSize
     # type: int
     # default: 1024
 ```
+## viewRaw
 ```nix
 programs.nixcord.config.plugins.viewRaw.enable
     # Copy and view the raw content/data of any message, channel or guild
@@ -1649,10 +1808,12 @@ programs.nixcord.config.plugins.viewRaw.clickMethod
     # default: "Left"
     # can also be "Right"
 ```
+## voiceDownload
 ```nix
 programs.nixcord.config.plugins.voiceDownload.enable
     # Adds a download to voice messages. (Opens a new browser tab)
 ```
+## voiceMessages
 ```nix
 programs.nixcord.config.plugins.voiceMessages.enable
     # Allows you to send voice messages like on mobile.
@@ -1664,6 +1825,7 @@ programs.nixcord.config.plugins.voiceMessages.echoCancellation
     # Echo Cancellation
     # default: true
 ```
+## volumeBooster
 ```nix
 programs.nixcord.config.plugins.volumeBooster.enable
     # Allows you to set the user and stream volume above the default maximum.
@@ -1672,14 +1834,17 @@ programs.nixcord.config.plugins.volumeBooster.multiplier
     # type: int
     # default: 2
 ```
+## watchTogetherAdblock
 ```nix
 programs.nixcord.config.plugins.watchTogetherAdblock.enable
     # Block ads in the YouTube WatchTogether activity via AdGuard
 ```
+## whoReacted
 ```nix
 programs.nixcord.config.plugins.whoReacted.enable
     # Renders the avatars of users who reacted to a message
 ```
+## xSOverlay
 ```nix
 programs.nixcord.config.plugins.xSOverlay.enable
     # Forwards discord notifications to XSOverlay, for easy viewing in VR
