@@ -2,7 +2,7 @@
 Manage [Vencord](https://github.com/Vendicated/Vencord) settings and plugins declaratively with Nix!
 
 This repo can be used to make a clean looking config for Vencord
-without needing to polute system config with needless utils to
+without needing to pollute system config with needless utils to
 override the discord pacakge, and write ugly JSON code directly
 in .nix files.
 
