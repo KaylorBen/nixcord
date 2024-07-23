@@ -83,7 +83,11 @@ with lib;
     #   '';
     # };
     method = mkOption {
-      type = types.str;
+      type = types.enum [
+        "randomCharacters"
+        "consistent"
+        "timestamp"
+      ];
       default = "randomCharacters";
       description = ''
         Anonymising Method
@@ -109,7 +113,10 @@ with lib;
       Discord rich presence for your Apple Music!
     '';
     activityType = mkOption {
-      type = types.str;
+      type = types.enum [
+        "playing"
+        "listening"
+      ];
       default = "playing";
       example = "listening";
       description = ''
@@ -159,7 +166,11 @@ with lib;
       '';
     };
     largeImageType = mkOption {
-      type = types.str;
+      type = types.enum [
+        "Album"
+        "Artist"
+        "Disabled"
+      ];
       default = "Album";
       description = ''
         Activity assets large image type
@@ -173,7 +184,11 @@ with lib;
       '';
     };
     smallImageType = mkOption {
-      type = types.str;
+      type = types.enum [
+        "Album"
+        "Artist"
+        "Disabled"
+      ];
       default = "Artist";
       description = ''
         Activity assets small image type
@@ -268,7 +283,11 @@ with lib;
     #   '';
     # };
     showFolderIcon = mkOption {
-      type = types.str;
+      type = types.enum [
+        "never"
+        "always"
+        "moreThanOne"
+      ];
       default = "never";
       description = ''
         Show the folder icon above the folder guilds in the BetterFolders sidebar
@@ -301,9 +320,12 @@ with lib;
       Adds options to copy role color / edit role / view role icon when right clicking roles in the user profile
     '';
     roleIconFileFormat = mkOption {
-      type = types.str;
+      type = types.enum [
+        "png"
+        "webp"
+        "jpg"
+      ];
       default = "png";
-      example = "webp";
       description = "File format to use when viewing role icons";
     };
   };
@@ -481,7 +503,11 @@ with lib;
       Use Ctrl+Enter to send messages (customizable)
     '';
     submitRule = mkOption {
-      type = types.str;
+      type = types.enum [
+        "ctrl+enter"
+        "shift+enter"
+        "enter"
+      ];
       default = "ctrl+enter";
       example = "shift+enter";
       description = ''
@@ -548,7 +574,13 @@ with lib;
     #   '';
     # };
     type = mkOption {
-      type = types.str;
+      type = types.enum [
+        "playing"
+        "streaming"
+        "listening"
+        "watching"
+        "competing"
+      ];
       default = "playing";
       description = ''
         Activity type
@@ -573,7 +605,12 @@ with lib;
     #   '';
     # };
     timestampMode = mkOption {
-      type = types.str;
+      type = types.enum [
+        "none"
+        "discordUptime"
+        "currentTime"
+        "customTime"
+      ];
       default = "none";
       description = ''
         Timestamp mode
@@ -693,7 +730,11 @@ with lib;
     #   '';
     # };
     replaceElements = mkOption {
-      type = types.str;
+      type = types.enum [
+        "everything"
+        "titles"
+        "thumbnails"
+      ];
       default = "everything";
       description = ''
         Which elements of the embed will be replaced
@@ -835,7 +876,11 @@ with lib;
       Adds a search bar to favorite gifs. 
     '';
     searchOption = mkOption {
-      type = types.str;
+      type = types.enum [
+        "hostandpath"
+        "url"
+        "path"
+      ];
       default = "hostandpath";
       example = "url";
       description = ''
@@ -903,7 +948,10 @@ with lib;
       random one by right-clicking the 'Wave to say hi!' button
     '';
     greetMode = mkOption {
-      type = types.str;
+      type = types.enum [
+        "Greet"
+        "Message"
+      ];
       default = "Greet";
       example = "Message";
       description = ''
@@ -1077,7 +1125,14 @@ with lib;
       '';
     };
     nameFormat = mkOption {
-      type = types.str;
+      type = types.enum [
+        "status-name"
+        "artist-first"
+        "song-first"
+        "artist"
+        "song"
+        "album"
+      ];
       default = "status-name";
       example = "artist-first";
       description = ''
@@ -1094,7 +1149,10 @@ with lib;
       show "Listening to" status instead of "Playing"
     '';
     missingArt = mkOption {
-      type = types.str;
+      type = types.enum [
+        "lastfmLogo"
+        "placeholder"
+      ];
       default = "lastfmLogo";
       example = "placeholder";
       description = ''
@@ -1236,7 +1294,11 @@ with lib;
       Background color for messages in rich embeds
     '';
     automodEmbeds = mkOption {
-      type = types.str;
+      type = types.enum [
+        "never"
+        "always"
+        "prefer"
+      ];
       default = "never";
       example = "always";
       description = ''
@@ -1247,7 +1309,10 @@ with lib;
       '';
     };
     listMode = mkOption {
-      type = types.str;
+      type = types.enum [
+        "blacklist"
+        "whitelist"
+      ];
       default = "blacklist";
       example = "whitelist";
       description = ''
@@ -1268,7 +1333,10 @@ with lib;
       Temporarily logs deleted and edited messages.
     '';
     deleteStyle = mkOption {
-      type = types.str;
+      type = types.enum [
+        "text"
+        "overlay"
+      ];
       default = "text";
       example = "overlay";
       description = ''
@@ -1541,7 +1609,10 @@ with lib;
       '';
     };
     quality = mkOption {
-      type = types.str;
+      type = types.enum [
+        "Normal"
+        "HD"
+      ];
       default = "Normal";
       example = "HD";
       description = ''
@@ -1598,7 +1669,12 @@ with lib;
     #   '';
     # };
     messages = mkOption {
-      type = types.str;
+      type = types.enum [
+        "serverDefault"
+        "all"
+        "only@Mentions"
+        "nothing"
+      ];
       default = "serverDefault";
       description = ''
         Server Notification Settings
@@ -1750,7 +1826,11 @@ with lib;
       Do not show server emojis in the autocomplete menu.
     '';
     shownEmojis = mkOption {
-      type = types.str;
+      type = types.enum [
+        "onlyUnicode"
+        "currentServer"
+        "all"
+      ];
       default = "onlyUnicode";
       example = "currentServer";
       description = ''
@@ -1804,7 +1884,11 @@ with lib;
       Read the messages to reset the limit
     '';
     channelToAffect = mkOption {
-      type = types.str;
+      type = types.enum [
+        "both_dms"
+        "user_dms"
+        "group_dms"
+      ];
       default = "both_dms";
       example = "user_dm";
       description = ''
@@ -1883,14 +1967,20 @@ with lib;
     #   '';
     # };
     defaultLayout = mkOption {
-      type = types.str;
+      type = types.enum [
+        "list"
+        "gallery"
+      ];
       default = "list";
       description = ''
         Which layout to use as default
       '';
     };
     defaultSortOrder = mkOption {
-      type = types.str;
+      type = types.enum [
+        "recentlyActive"
+        "datePosted"
+      ];
       default = "recentlyActive";
       description = ''
         Which sort order to use as default
@@ -1912,7 +2002,11 @@ with lib;
     #   '';
     # };
     superIntensePartyMode = mkOption {
-      type = types.str;
+      type = types.enum [
+        "normal"
+        "better"
+        "projectX"
+      ];
       default = "normal";
       description = ''
         Party intensity
@@ -1957,7 +2051,10 @@ with lib;
     #   '';
     # };
     permissionsSortOrder = mkOption {
-      type = types.str;
+      type = types.enum [
+        "highestRole"
+        "lowestRole"
+      ];
       default = "highestRole";
       description = ''
         The sort method used for defining which role grants an user a certain permission
@@ -1999,7 +2096,10 @@ with lib;
     #   '';
     # };
     pinOrder = mkOption {
-      type = types.str;
+      type = types.enum [
+        "mostRecent"
+        "custom"
+      ];
       default = "mostRecent";
       description = ''
         Which order should pinned DMs be displayed in?
@@ -2058,7 +2158,10 @@ with lib;
       Adds pronouns to user messages using pronoundb
     '';
     pronounsFormat = mkOption {
-      type = types.str;
+      type = types.enum [
+        "LOWERCASE"
+        "CAPITALIZED"
+      ];
       default = "LOWERCASE";
       example = "CAPITALIZED";
       description = ''
@@ -2078,7 +2181,10 @@ with lib;
     #   '';
     # };
     pronounSource = mkOption {
-      type = types.str;
+      type = types.enum [
+        "preferPronounDB"
+        "preferDiscord"
+      ];
       default = "preferPronounDB";
       description = ''
         Where to source pronouns from
@@ -2126,7 +2232,11 @@ with lib;
     #   '';
     # };
     shouldMention = mkOption {
-      type = types.str;
+      type = types.enum [
+        "followNoReplyMention"
+        "disabled"
+        "enabled"
+      ];
       default = "followNoReplyMention";
       description = ''
         Ping reply by default
@@ -2341,7 +2451,11 @@ with lib;
     #   '';
     # };
     mode = mkOption {
-      type = types.str;
+      type = types.enum [
+        "onlyFriendCount"
+        "onlyServerCount"
+        "both"
+      ];
       default = "onlyFriendCount";
       description = ''
         mode
@@ -2362,7 +2476,12 @@ with lib;
       '';
     };
     tryHljs = mkOption {
-      type = types.str;
+      type = types.enum [
+        "NEVER"
+        "SECONDARY"
+        "PRIMARY"
+        "ALWAYS"
+      ];
       default = "SECONDARY";
       example = "PRIMARY";
       description = ''
@@ -2374,7 +2493,11 @@ with lib;
       '';
     };
     useDevIcon = mkOption {
-      type = types.str;
+      type = types.enum [
+        "GREYSCALE"
+        "COLOR"
+        "DISABLED"
+      ];
       default = "GREYSCALE";
       example = "COLOR";
       description = ''
@@ -2424,7 +2547,11 @@ with lib;
     #   '';
     # };
     iconSpacing = mkOption {
-      type = types.str;
+      type = types.enum [
+        "compact"
+        "cozy"
+        "roomy"
+      ];
       default = "cozy";
       description = ''
         Icon margin
@@ -2452,7 +2579,10 @@ with lib;
     #   '';
     # };
     showMode = mkOption {
-      type = types.str;
+      type = types.enum [
+        "plain"
+        "muted"
+      ];
       default = "plain";
       description = ''
         The mode used to display hidden channels.
@@ -2511,7 +2641,11 @@ with lib;
       Display usernames next to nicks, or no nicks at all
     '';
     mode = mkOption {
-      type = types.str;
+      type = types.enum [
+        "user-nick"
+        "nick-user"
+        "user"
+      ];
       default = "user-nick";
       example = "nick-user";
       description = ''
@@ -2527,7 +2661,10 @@ with lib;
       Shows how much longer a user's timeout will last, either in the timeout icon tooltip or next to it
     '';
     displayStyle = mkOption {
-      type = types.str;
+      type = types.enum [
+        "ssalggnikool"
+        "tooltip"
+      ];
       default = "ssalggnikool";
       example = "tooltip";
       description = ''
@@ -2706,7 +2843,11 @@ with lib;
     #   '';
     # };
     indicatorMode = mkOption {
-      type = types.str;
+      type = types.enum [
+        "both"
+        "avatars"
+        "animatedDots"
+      ];
       default = "both";
       description = ''
         How should the indicator be displayed?
@@ -2910,7 +3051,11 @@ with lib;
       adds View Icon/Banner entries in the user, server and group channel context menu.
     '';
     format = mkOption {
-      type = types.str;
+      type = types.enum [
+        "webp"
+        "png"
+        "jpg"
+      ];
       default = "webp";
       description = ''
         Choose the image format to use for non animated images. Animated images will always use .gif
@@ -2932,7 +3077,10 @@ with lib;
       Copy and view the raw content/data of any message, channel or guild
     '';
     clickMethod = mkOption {
-      type = types.str;
+      type = types.enum [
+        "Left"
+        "Right"
+      ];
       default = "Left";
       example = "Right";
       description = ''
@@ -3053,7 +3201,11 @@ with lib;
       '';
     };
     soundPath = mkOption {
-      type = types.str;
+      type = types.enum [
+        "default"
+        "warning"
+        "error"
+      ];
       default = "default";
       description = ''
         Notification sound (default/warning/error)
@@ -3101,7 +3253,14 @@ with lib;
       Adds Settings UI and debug info
     '' // { default = true; }; # Required
     settingsLocation = mkOption {
-      type = types.str;
+      type = types.enum [
+        "top"
+        "aboveNitro"
+        "belowNitro"
+        "aboveActivity"
+        "belowActivity"
+        "bottom"
+      ];
       default = "aboveNitro";
       example = "top";
       description = ''
