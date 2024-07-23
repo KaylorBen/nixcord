@@ -86,7 +86,7 @@ This is an example home-manager configuration using Nixcord
     enable = true;  # enable Nixcord. Also installs discord package
     quickCss = "some CSS";  # quickCSS file
     config = {
-      useQuickCSS = true;   # use out quickCSS
+      useQuickCss = true;   # use out quickCSS
       themeLinks = [        # or use an online theme
         "https://raw.githubusercontent.com/link/to/some/theme.css"
       ];
