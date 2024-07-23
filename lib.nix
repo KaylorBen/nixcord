@@ -27,11 +27,7 @@ let
   ];
 
   # this is a really bad solution to this problem, but no matter what all
-  # solutions to it are bad, and this is all I can think of after coding
-  # for many hours on this
-  # technically these are all interchangable in config which is weird
-  # so plugins.anonymiseFileNames.method = "cozy" works
-  # and is equivilent to plugins.anonymiseFileNames.method = "consistent"
+  # solutions to it are bad
   # ALL OF THESE HAVE TO BE UNIQUE!!!
   zeroOptions = [       # options which evaluate to int 0
     "randomCharacters"
