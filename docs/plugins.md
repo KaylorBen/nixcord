@@ -42,7 +42,7 @@ programs.nixcord.config.plugins.anonymiseFileNames.anonymiseByDefault
     # anonymise filenames by default
 programs.nixcord.config.plugins.anonymiseFileNames.method
     # method to anonymise filenames
-    # type: str
+    # type: enum
     # default: "randomCharacters"
     # other options are "consistent" and "timestamp"
 programs.nixcord.config.plugins.anonymiseFileNames.randomisedLength
@@ -61,7 +61,7 @@ programs.nixcord.config.plugins.appleMusicRichPresence.enable
     # Discord rich presence for your Apple Music!
 programs.nixcord.config.plugins.appleMusicRichPresence.activityType
     # Which type of activity
-    # type: str
+    # type: enum
     # default: "playing"
     # can also be "listening"
 programs.nixcord.config.plugins.appleMusicRichPresence.refreshInterval
@@ -88,7 +88,7 @@ programs.nixcord.config.plugins.appleMusicRichPresence.stateString
     # default: "{artist}"
 programs.nixcord.config.plugins.appleMusicRichPresence.largeImageType
     # Activity assets large image type
-    # type: str
+    # type: enum
     # default: "Album"
     # one of:
     #   "Album"
@@ -100,7 +100,7 @@ programs.nixcord.config.plugins.appleMusicRichPresence.largeTextString
     # default: "{album}"
 programs.nixcord.config.plugins.appleMusicRichPresence.smallImageType
     # Activity assets small image type
-    # type: str
+    # type: enum
     # default: "Artist"
     # one of:
     #   "Album"
@@ -147,7 +147,7 @@ programs.nixcord.config.plugins.betterFolders.keepIcons
     # Keep showing guild icons in the primary guild bar folderr when it's open in the BetterFolders sidebar
 programs.nixcord.config.plugins.betterFolders.showFolderIcon
     # Show the folder icon above the folder guilds in the BetterFolders sidebar
-    # type: str
+    # type: enum
     # default: "never"
     # other options are "always" and "moreThanOne"
     # "moreThanOne" when more than one folder is expanded
@@ -313,7 +313,7 @@ programs.nixcord.config.plugins.ctrlEnterSend.enable
     # Use Ctrl+Enter to send messages (customizable)
 programs.nixcord.config.plugins.ctrlEnterSend.submitRule
     # The way to send a message
-    # type: str
+    # type: enum
     # default: "ctrl+enter"
     # example: "shift+enter"
     # this is an enum, it only excepts "ctrl+enter", "shift+enter", or "enter"
@@ -350,7 +350,7 @@ programs.nixcord.config.plugins.customRPC.state
     # must be not longer than 128 characters.
 programs.nixcord.config.plugins.customRPC.type
     # Activity type
-    # type: str
+    # type: enum
     # default: "playing"
     # can be one of:
     #   "playing"
@@ -364,7 +364,7 @@ programs.nixcord.config.plugins.customRPC.streamLink
     # default: null
 programs.nixcord.config.plugins.customRPC.timestampMode
     # Timestamp mode
-    # type: str
+    # type: enum
     # default: "none"
     # can be one of:
     #   "none"
@@ -537,7 +537,7 @@ programs.nixcord.config.plugins.favoriteGifSearch.enable
     # Adds a search bar to favorite gifs. 
 programs.nixcord.config.plugins.favoriteGifSearch.searchOption
     # The part of the url you want to search
-    # type: str
+    # type: enum
     # default: "hostandpath"
     # other options are "url" and "path"
 ```
@@ -712,7 +712,7 @@ programs.nixcord.config.plugins.lastFMRichPresence.statusName
     # default: "some music"
 programs.nixcord.config.plugins.lastFMRichPresence.nameFormat
     # Show name of song and artist in status name
-    # type: str
+    # type: enum
     # default "status-name"
     # one of:
     #   "status-name"
@@ -725,7 +725,7 @@ programs.nixcord.config.plugins.lastFMRichPresence.useListeningStatus
     # show "Listening to" status instead of "Playing"
 programs.nixcord.config.plugins.lastFMRichPresence.missingArt
     # When album or album art is missing
-    # type: str
+    # type: enum
     # default: "lastfmLogo"
     # can also be "placeholder"
 programs.nixcord.config.plugins.lastFMRichPresence.showLastFmLogo
@@ -813,12 +813,12 @@ programs.nixcord.config.plugins.messageLinkEmbeds.messageBackgroundColor
     # Background color for messages in rich embeds
 programs.nixcord.config.plugins.messageLinkEmbeds.automodEmbeds
     # Use automod embeds instead of rich embeds (smaller but less info)
-    # type: str
+    # type: enum
     # default: "never"
     # other options are "always" or "prefer"
 programs.nixcord.config.plugins.messageLinkEmbeds.listMode
     # Whether to use ID list as blacklist or whitelist
-    # type: str
+    # type: enum
     # default: "blacklist"
     # can also be "whitelist"
 programs.nixcord.config.plugins.messageLinkEmbeds.idList
@@ -833,7 +833,7 @@ programs.nixcord.config.plugins.messageLogger.enable
     # Temporarily logs deleted and edited messages.
 programs.nixcord.config.plugins.messageLogger.deleteStyle
     # The style of deleted messages
-    # type: str
+    # type: enum
     # default: "text"
     # can also be "overlay"
 programs.nixcord.config.plugins.messageLogger.logDeletes
@@ -971,7 +971,7 @@ programs.nixcord.config.plugins.moyai.volume
     # default: 0.5
 programs.nixcord.config.plugins.moyai.quality
     # Quality of the 🗿🗿🗿
-    # type: str
+    # type: enum
     # default: "Normal"
     # can also be "HD"
 programs.nixcord.config.plugins.moyai.triggerWhenUnfocused
@@ -998,7 +998,7 @@ programs.nixcord.config.plugins.newGuildSettings.guild
     # default: true
 programs.nixcord.config.plugins.newGuildSettings.messages
     # Mute Guild automatically
-    # type: str
+    # type: enum
     # default: "serverDefault"
     # one of:
     #   "serverDefault"
@@ -1107,7 +1107,7 @@ programs.nixcord.config.plugins.noServerEmojis.enable
     # Do not show server emojis in the autocomplete menu.
 programs.nixcord.config.plugins.noServerEmojis.shownEmojis
     # The types of emojis to show in the autocomplete menu.
-    # type: str
+    # type: enum
     # default: "onlyUnicode"
     # one of:
     #   "onlyUnicode"
@@ -1155,7 +1155,7 @@ programs.nixcord.config.plugins.onePingPerDM.enable
     # Read the messages to reset the limit
 programs.nixcord.config.plugins.onePingPerDM.channelToAffect
     # Select the type of DM for the plugin to affect
-    # type: str
+    # type: enum
     # default: "both_dms"
     # one of:
     #   "both_dms"
@@ -1190,12 +1190,12 @@ programs.nixcord.config.plugins.overrideForumDefaults.enable
     # Allows you to override default forum layout/sort order. you can still change it on a per-channel basis
 programs.nixcord.config.plugins.overrideForumDefaults.defaultLayout
     # Which layout to use as default
-    # type: str
+    # type: enum
     # default: "list"
     # can also be "gallery"
 programs.nixcord.config.plugins.overrideForumDefaults.defaultSortOrder
     # Which sort order to use as default
-    # type: str
+    # type: enum
     # default: "recentlyActive"
     # can also be "datePosted"
 ```
@@ -1205,7 +1205,7 @@ programs.nixcord.config.plugins.partyMode.enable
     # Allows you to use party mode cause the party never ends ✨
 programs.nixcord.config.plugins.partyMode.superIntensePartyMode
     # Party intensity
-    # type: str
+    # type: enum
     # default: "normal"
     # other options are "better", and "projectX"
 ```
@@ -1231,7 +1231,7 @@ programs.nixcord.config.plugins.permissionsViewer.enable
     # View the permissions a user or channel has, and the roles of a server
 programs.nixcord.config.plugins.permissionsViewer.permissionsSortOrder
     # The sort method used for defining which role grants an user a certain permission
-    # type: str
+    # type: enum
     # default: "highestRole"
     # can also be "lowestRole"
 programs.nixcord.config.plugins.permissionsViewer.defaultPermissionsDropdownState
@@ -1257,7 +1257,7 @@ programs.nixcord.config.plugins.pinDMs.enable
     # To pin/unpin or reorder pins, right click DMs
 programs.nixcord.config.plugins.pinDMs.pinOrder
     # Which order should pinned DMs be displayed in?
-    # type: str
+    # type: enum
     # default: "mostRecent"
     # can also be "custom"
 programs.nixcord.config.plugins.pinDMs.dmSectioncollapsed
@@ -1296,12 +1296,12 @@ programs.nixcord.config.plugins.pronounDB.enable
     # Adds pronouns to user messages using pronoundb
 programs.nixcord.config.plugins.pronounDB.pronounsFormat
     # The format for pronouns to appear in chat
-    # type: str
+    # type: enum
     # default: "LOWERCASE"
     # can be "CAPITALIZED"
 programs.nixcord.config.plugins.pronounDB.pronounsSource
     # Where to source pronouns from
-    # type: str
+    # type: enum
     # default: "preferPronounDB"
     # can be "preferDiscord"
 programs.nixcord.config.plugins.pronounDB.showSelf
@@ -1325,7 +1325,7 @@ programs.nixcord.config.plugins.quickReply.enable
     # Reply to (ctrl + up/down) and edit (ctrl + shift + up/down) messages via keybinds
 programs.nixcord.config.plugins.quickReply.shouldMention
     # Ping reply by default
-    # type: str
+    # type: enum
     # default: "followNoReplyMention"
     # other options are "disabled" or "enabled"
 ```
@@ -1463,7 +1463,7 @@ programs.nixcord.config.plugins.serverListIndicators.enable
     # Add online friend count or server count in the server list
 programs.nixcord.config.plugins.serverListIndicators.mode
     # mode
-    # type: str
+    # type: enum
     # default: "onlyFriendCount"
     # one of:
     #   "onlyFriendCount"
@@ -1480,7 +1480,7 @@ programs.nixcord.config.plugins.shikiCodeblocks.theme
     # default: "https://raw.githubusercontent.com/shikijs/shiki/0b28ad8ccfbf2615f2d9d38ea8255416b8ac3043/packages/shiki/themes/dark-plus.json"
 programs.nixcord.config.plugins.shikiCodeblocks.tryHljs
     # Use the more lightweight default Discord highlighter and theme.
-    # type: str
+    # type: enum
     # default: "SECONDARY"
     # one of:
     #   "NEVER"
@@ -1489,7 +1489,7 @@ programs.nixcord.config.plugins.shikiCodeblocks.tryHljs
     #   "ALWAYS"
 programs.nixcord.config.plugins.shikiCodeblocks.useDevIcon
     # How to show language icons on codeblocks
-    # type: str
+    # type: enum
     # default: "GREYSCALE"
     # can also be "COLOR" or "DISABLED"
 programs.nixcord.config.plugins.shikiCodeblocks.bgOpacity
@@ -1517,7 +1517,7 @@ programs.nixcord.config.plugins.showConnections.iconSize
     # default: 32
 programs.nixcord.config.plugins.showConnections.iconSpacing
     # Icon margin
-    # type: str
+    # type: enum
     # default: "cozy"
     # one of:
     #   "compact"
@@ -1533,7 +1533,7 @@ programs.nixcord.config.plugins.showHiddenChannels.hideUnreads
     # default: true
 programs.nixcord.config.plugins.showHiddenChannels.showMode
     # The mode used to display hidden channels.
-    # type: str
+    # type: enum
     # default: "plain"
     # can also be "muted"
 programs.nixcord.config.plugins.showHiddenChannels.showHiddenChannels
@@ -1566,7 +1566,7 @@ programs.nixcord.config.plugins.showMeYourName.enable
     # Display usernames next to nicks, or no nicks at all
 programs.nixcord.config.plugins.showMeYourName.mode
     # How to display usernames and nicks
-    # type: str
+    # type: enum
     # default: "user-nick"
     # one of:
     #   "user-nick"
@@ -1579,7 +1579,7 @@ programs.nixcord.config.plugins.showTimeoutDuration.enable
     # Shows how much longer a user's timeout will last, either in the timeout icon tooltip or next to it
 programs.nixcord.config.plugins.showTimeoutDuration.displayStyle
     # How to display the timout duration
-    # type: str
+    # type: enum
     # default: "ssalggnikool"
     # can also be "tooltip"
 ```
@@ -1702,7 +1702,7 @@ programs.nixcord.config.plugins.typingIndicator.includeBlockedUsers
     # Whether to show the typing indicator for blocked users.
 programs.nixcord.config.plugins.typingIndicator.indicatorMode
     # How should the indicator be displayed?
-    # type: str
+    # type: enum
     # default: "both"
     # one of:
     #   "both"
@@ -1842,7 +1842,7 @@ programs.nixcord.config.plugins.viewIcons.enable
     # adds View Icon/Banner entries in the user, server and group channel context menu.
 programs.nixcord.config.plugins.viewIcons.format
     # Choose the image format to use for non animated images. Animated images will always use .gif
-    # type: str
+    # type: enum
     # default: "webp"
     # one of:
     #   "webp"
@@ -1859,7 +1859,7 @@ programs.nixcord.config.plugins.viewRaw.enable
     # Copy and view the raw content/data of any message, channel or guild
 programs.nixcord.config.plugins.viewRaw.clickMethod
     # Change the button to view the raw content/data of any message.
-    # type: str
+    # type: enum
     # default: "Left"
     # can also be "Right"
 ```
@@ -1927,7 +1927,7 @@ programs.nixcord.config.plugins.XSOverlay.channelPingColor
     # default: "#8a2be2"
 programs.nixcord.config.plugins.XSOverlay.soundPath
     # Notification sound (default/warning/error)
-    # type: str
+    # type: enum
     # default: "default"
     # one of:
     #   "default"
