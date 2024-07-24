@@ -78,7 +78,7 @@ in {
       description = "Vencord quick CSS";
     };
     config = {
-      nofifyAboutUpdates = mkEnableOption "Notify when updates are available";
+      notifyAboutUpdates = mkEnableOption "Notify when updates are available";
       autoUpdate = mkEnableOption "Automaticall update Vencord";
       autoUpdateNotification = mkEnableOption "Notify user about auto updates";
       useQuickCss = mkEnableOption "Enable quick CSS file";
