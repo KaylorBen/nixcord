@@ -817,7 +817,7 @@ with lib;
         Size of the stickers when sending
       '';
     };
-    transformSitckers = mkOption {
+    transformStickers = mkOption {
       type = types.bool;
       default = true;
       description = ''
