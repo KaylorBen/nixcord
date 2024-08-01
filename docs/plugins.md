@@ -1183,6 +1183,8 @@ programs.nixcord.config.plugins.openInApp.epic
     # Open Epic Games links in the Epic Games Launcher
 programs.nixcord.config.plugins.openInApp.tidal
     # Open Tidal links in the Tidal app
+programs.nixcord.config.plugins.openInApp.itunes
+    # Open Itunes links in the Itunes app
 ```
 ## overrideForumDefaults
 ```nix
