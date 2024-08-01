@@ -1903,6 +1903,9 @@ programs.nixcord.config.plugins.whoReacted.enable
 ```nix
 programs.nixcord.config.plugins.XSOverlay.enable
     # Forwards discord notifications to XSOverlay, for easy viewing in VR
+programs.nixcord.config.plugins.XSOverlay.webSocketPort
+    # Websocket Port
+    # default: 42070
 programs.nixcord.config.plugins.XSOverlay.botNotifications
     # Allow bot notifications
 programs.nixcord.config.plugins.XSOverlay.serverNotifications

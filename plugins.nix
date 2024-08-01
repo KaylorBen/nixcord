@@ -3155,6 +3155,13 @@ with lib;
     enable = mkEnableOption ''
       Forwards discord notifications to XSOverlay, for easy viewing in VR
     '';
+    webSocketPort = mkOption {
+      type = types.int;
+      default = 42070;
+      description = ''
+        Websocket port
+      '';
+    };
     botNotifications = mkEnableOption ''
       Allow bot notifications
     '';
