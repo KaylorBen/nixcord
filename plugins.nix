@@ -1942,6 +1942,13 @@ with lib;
         Open Tidal links in the Tidal app
       '';
     };
+    itunes = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Open Itunes links in the Itunes app
+      '';
+    };
   };
   overrideForumDefaults = {
     enable = mkEnableOption ''
