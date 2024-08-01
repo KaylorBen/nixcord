@@ -1942,6 +1942,13 @@ with lib;
         Open Tidal links in the Tidal app
       '';
     };
+    itunes = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Open Itunes links in the Itunes app
+      '';
+    };
   };
   overrideForumDefaults = {
     enable = mkEnableOption ''
@@ -3155,6 +3162,13 @@ with lib;
     enable = mkEnableOption ''
       Forwards discord notifications to XSOverlay, for easy viewing in VR
     '';
+    webSocketPort = mkOption {
+      type = types.int;
+      default = 42070;
+      description = ''
+        Websocket port
+      '';
+    };
     botNotifications = mkEnableOption ''
       Allow bot notifications
     '';

@@ -1183,6 +1183,8 @@ programs.nixcord.config.plugins.openInApp.epic
     # Open Epic Games links in the Epic Games Launcher
 programs.nixcord.config.plugins.openInApp.tidal
     # Open Tidal links in the Tidal app
+programs.nixcord.config.plugins.openInApp.itunes
+    # Open Itunes links in the Itunes app
 ```
 ## overrideForumDefaults
 ```nix
@@ -1903,6 +1905,9 @@ programs.nixcord.config.plugins.whoReacted.enable
 ```nix
 programs.nixcord.config.plugins.XSOverlay.enable
     # Forwards discord notifications to XSOverlay, for easy viewing in VR
+programs.nixcord.config.plugins.XSOverlay.webSocketPort
+    # Websocket Port
+    # default: 42070
 programs.nixcord.config.plugins.XSOverlay.botNotifications
     # Allow bot notifications
 programs.nixcord.config.plugins.XSOverlay.serverNotifications
