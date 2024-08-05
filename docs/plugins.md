@@ -1911,6 +1911,9 @@ programs.nixcord.config.plugins.XSOverlay.enable
 programs.nixcord.config.plugins.XSOverlay.webSocketPort
     # Websocket Port
     # default: 42070
+programs.nixcord.config.plugins.XSOverlay.preferUDP
+    # Enable if you use an older build of XSOverlay unable to connect through websockets.
+    # This setting is ignored on the web.
 programs.nixcord.config.plugins.XSOverlay.botNotifications
     # Allow bot notifications
 programs.nixcord.config.plugins.XSOverlay.serverNotifications
