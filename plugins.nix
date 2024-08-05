@@ -1232,7 +1232,7 @@ with lib;
     showAtSymbol = mkOption {
       type = types.bool;
       default = true;
-      decsription = ''
+      description = ''
         Whether the @ symbol should be displayed
       '';
     };
