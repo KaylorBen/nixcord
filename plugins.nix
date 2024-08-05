@@ -1234,6 +1234,13 @@ with lib;
     enable = mkEnableOption ''
       Shows user avatars inside mentions
     '';
+    showAtSymbol = mkOption {
+      type = types.bool;
+      default = true;
+      decsription = ''
+        Whether the the @ symbol should be displayed
+      '';
+    };
   };
   messageClickActions = {
     enable = mkEnableOption ''
