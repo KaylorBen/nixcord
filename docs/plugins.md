@@ -774,6 +774,9 @@ programs.nixcord.config.plugins.memberCount.memberList
 ```nix
 programs.nixcord.config.plugins.mentionAvatars.enable
     # Shows user avatars inside mentions
+programs.nixcord.config.plugins.mentionAvatars.showAtSymbol
+    # Whether the the @ symbol should be displayed
+    # default: true
 ```
 ## messageClickActions
 ```nix
