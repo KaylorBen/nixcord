@@ -754,11 +754,6 @@ programs.nixcord.config.plugins.loadingQuotes.additionalQuotesDelimiter
     # type: str
     # default: "|"
 ```
-## maskedLinkedPaste
-```nix
-programs.nixcord.config.plugins.maskedLinkedPaste.enable
-    # Pasting a link while having text selected will paste a hyperlink
-```
 ## memberCount
 ```nix
 programs.nixcord.config.plugins.memberCount.enable
@@ -774,6 +769,9 @@ programs.nixcord.config.plugins.memberCount.memberList
 ```nix
 programs.nixcord.config.plugins.mentionAvatars.enable
     # Shows user avatars inside mentions
+programs.nixcord.config.plugins.mentionAvatars.showAtSymbol
+    # Whether the @ symbol should be displayed
+    # default: true
 ```
 ## messageClickActions
 ```nix
@@ -1908,6 +1906,9 @@ programs.nixcord.config.plugins.XSOverlay.enable
 programs.nixcord.config.plugins.XSOverlay.webSocketPort
     # Websocket Port
     # default: 42070
+programs.nixcord.config.plugins.XSOverlay.preferUDP
+    # Enable if you use an older build of XSOverlay unable to connect through websockets.
+    # This setting is ignored on the web.
 programs.nixcord.config.plugins.XSOverlay.botNotifications
     # Allow bot notifications
 programs.nixcord.config.plugins.XSOverlay.serverNotifications
@@ -1953,6 +1954,11 @@ programs.nixcord.config.plugins.XSOverlay.volume
     # Volume
     # type: float
     # default: 0.2
+```
+## youtubeAdblock
+```nix
+programs.nixcord.config.plugins.youtubeAdblock.enable
+    # Block ads in YouTube embeds and the WatchTogether activity via AdGuard
 ```
 ## Vesktop exclusive
 ## webKeybinds
