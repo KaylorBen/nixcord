@@ -775,7 +775,7 @@ programs.nixcord.config.plugins.memberCount.memberList
 programs.nixcord.config.plugins.mentionAvatars.enable
     # Shows user avatars inside mentions
 programs.nixcord.config.plugins.mentionAvatars.showAtSymbol
-    # Whether the the @ symbol should be displayed
+    # Whether the @ symbol should be displayed
     # default: true
 ```
 ## messageClickActions
@@ -1956,6 +1956,11 @@ programs.nixcord.config.plugins.XSOverlay.volume
     # Volume
     # type: float
     # default: 0.2
+```
+## youtubeAdblock
+```nix
+programs.nixcord.config.plugins.youtubeAdblock.enable
+    # Block ads in YouTube embeds and the WatchTogether activity via AdGuard
 ```
 ## Vesktop exclusive
 ## webKeybinds

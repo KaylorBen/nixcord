@@ -1238,7 +1238,7 @@ with lib;
       type = types.bool;
       default = true;
       decsription = ''
-        Whether the the @ symbol should be displayed
+        Whether the @ symbol should be displayed
       '';
     };
   };
@@ -3260,6 +3260,11 @@ with lib;
         Volume
       '';
     };
+  };
+  youtubeAdblock = {
+    enable = mkEnableOption ''
+      Block ads in YouTube embeds and the WatchTogether activity via AdGuard
+    '';
   };
   noTrack = {
     enable = mkEnableOption ''
