@@ -754,11 +754,6 @@ programs.nixcord.config.plugins.loadingQuotes.additionalQuotesDelimiter
     # type: str
     # default: "|"
 ```
-## maskedLinkedPaste
-```nix
-programs.nixcord.config.plugins.maskedLinkedPaste.enable
-    # Pasting a link while having text selected will paste a hyperlink
-```
 ## memberCount
 ```nix
 programs.nixcord.config.plugins.memberCount.enable
