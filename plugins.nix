@@ -3176,6 +3176,10 @@ with lib;
         Websocket port
       '';
     };
+    preferUDP = mkEnableOption ''
+      Enable if you use an older build of XSOverlay unable to connect through websockets.
+      This setting is ignored on web.
+    '';
     botNotifications = mkEnableOption ''
       Allow bot notifications
     '';
