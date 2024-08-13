@@ -35,14 +35,14 @@ programs.nixcord.vesktopPackage
 programs.nixcord.configDir
     # path to discord config
     # type: path
-    # default: ${config.xdg.configHome}/Vencord
+    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/Vencord
 ```
 ## vesktopConfigDir
 ```nix
 programs.nixcord.vesktopConfigDir
     # path to vesktop config
     # type: path
-    # default: ${config.xdg.configHome}/vesktop
+    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop
 ```
 ## vencord
 ```nix

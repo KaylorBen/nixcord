@@ -54,12 +54,12 @@ in {
     };
     configDir = mkOption {
       type = types.path;
-      default = "${config.xdg.configHome}/Vencord";
+      default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/Vencord";
       description = "Vencord config directory";
     };
     vesktopConfigDir = mkOption {
       type = types.path;
-      default = "${config.xdg.configHome}/vesktop";
+      default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop";
       description = "Config path for vesktop";
     };
     vencord.enable = mkOption {
