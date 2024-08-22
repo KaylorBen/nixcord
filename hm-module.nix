@@ -25,10 +25,6 @@ let
         (attrsets.recursiveUpdate (builtins.elemAt list 0) (builtins.elemAt list 1))
       ] ++ (lists.drop 2 list));
 
-
-  inherit (pkgs.callPackage ./lib.nix { })
-    mkVencordCfg
-    ;
 in {
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
@@ -139,16 +135,71 @@ in {
           someCoolPlugin = "github:someUser/someCoolPlugin/someHashHere";
         };
       };
+    parseRules = {
+      upperNames = mkOption {
+        type = with types; listOf str;
+        description = "option names to become UPPER_SNAKE_CASE";
+        default = [];
+      };
+      lowerPluginTitles = mkOption {
+        type = with types; listOf str;
+        description = "plugins with lowercase names in json";
+        default = [];
+        example = [ "moyai" "petpet" ];
+      };
+      fakeEnums = {
+        zero = mkOption {
+          type = with types; listOf str;
+          description = "strings to evaluate to 0 in JSON";
+          default = [];
+        };
+        one = mkOption {
+          type = with types; listOf str;
+          description = "strings to evaluate to 1 in JSON";
+          default = [];
+        };
+        two = mkOption {
+          type = with types; listOf str;
+          description = "strings to evaluate to 2 in JSON";
+          default = [];
+        };
+        three = mkOption {
+          type = with types; listOf str;
+          description = "strings to evaluate to 3 in JSON";
+          default = [];
+        };
+        four = mkOption {
+          type = with types; listOf str;
+          description = "string to evalueate to 4 in JSON";
+          default = [];
+        };
+        # I've never seen a plugin with more than 5 options for 1 setting
+      };
+    };
   };
 
   config = let
+    inherit (pkgs.callPackage ./lib.nix {})
+      mkVencordCfg;
+
     applyPostPatch = pkg: pkg.overrideAttrs {
       postPatch = lib.concatLines(
         lib.optional (cfg.userPlugins != {}) "mkdir -p src/userplugins"
           ++ lib.mapAttrsToList (name: path: "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins") cfg.userPlugins
       );
     };
-    vencord = applyPostPatch pkgs.vencord;
+    # nixpkgs is always really far behind
+    # so instead we maintain our own vencord package
+    vencord = applyPostPatch (
+      pkgs.callPackage ./vencord.nix {
+        inherit (pkgs)
+          buildNpmPackage
+          fetchFromGitHub
+          lib
+          esbuild
+          ;
+      }
+    );
   in mkIf cfg.enable (mkMerge [
     {
       home.packages = [
