@@ -28,6 +28,7 @@ let
 
   # this is a really bad solution to this problem, but no matter what all
   # solutions to it are bad
+  # this is since many json options in Vencord are just int values with no description
   # ALL OF THESE HAVE TO BE UNIQUE!!!
   zeroOptions = [       # options which evaluate to int 0
     "randomCharacters"

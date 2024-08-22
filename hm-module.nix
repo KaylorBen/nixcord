@@ -7,11 +7,6 @@
 let
   cfg = config.programs.nixcord;
 
-  mkIfElse = p: yes: no: mkMerge [
-    (mkIf p yes)
-    (mkIf (!p) no)
-  ];
-
   inherit (lib)
     mkEnableOption
     mkOption
@@ -19,7 +14,17 @@ let
     mkIf
     mkMerge
     attrsets
+    lists
     ;
+
+  dop = with types; coercedTo package (a: a.outPath) pathInStore;
+
+  recursiveUpdateAttrsList = list:
+    if (builtins.length list <= 1) then (builtins.elemAt list 0) else
+      recursiveUpdateAttrsList ([
+        (attrsets.recursiveUpdate (builtins.elemAt list 0) (builtins.elemAt list 1))
+      ] ++ (lists.drop 2 list));
+
 
   inherit (pkgs.callPackage ./lib.nix { })
     mkVencordCfg
@@ -100,55 +105,85 @@ in {
       plugins = import ./plugins.nix { inherit lib; };
     };
     vesktopConfig = mkOption {
-      type = with types; nullOr attrs;
-      default = null;
+      type = types.attrs;
+      default = {};
       description = ''
         Options to override vencord config for Vesktop. Use to set different
         settings between configs
       '';
     };
+    vencordConfig = mkOption {
+      type = types.attrs;
+      default = {};
+      description = '''';
+    };
     extraConfig = mkOption {
-      type = with types; nullOr attrs;
-      default = null;
+      type = types.attrs;
+      default = {};
       description = "Vencord extra config";
     };
+    userPlugins = let
+      regex = "github:([[:alnum:].-]+)/([[:alnum:]/-]+)/([0-9a-f]{40})";
+      coerce = value: let
+        matches = builtins.match regex value;
+        owner = builtins.elemAt matches 0;
+        repo = builtins.elemAt matches 1;
+        rev = builtins.elemAt matches 2;
+      in builtins.fetchGit { url = "https://github.com/${owner}/${repo}"; inherit rev; };
+    in
+      mkOption {
+        type = with types; attrsOf (coercedTo (strMatching regex) coerce dop);
+        description = "User plugin to fetch and install. Note that any json required must be enabled in extraConfig";
+        default = {};
+        example = {
+          someCoolPlugin = "github:someUser/someCoolPlugin/someHashHere";
+        };
+      };
   };
 
-  config = mkIf cfg.enable (mkMerge [
+  config = let
+    applyPostPatch = pkg: pkg.overrideAttrs {
+      postPatch = lib.concatLines(
+        lib.optional (cfg.userPlugins != {}) "mkdir -p src/userplugins"
+          ++ lib.mapAttrsToList (name: path: "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins") cfg.userPlugins
+      );
+    };
+    vencord = applyPostPatch pkgs.vencord;
+  in mkIf cfg.enable (mkMerge [
     {
       home.packages = [
         (mkIf cfg.discord.enable (cfg.package.override {
           withVencord = cfg.vencord.enable;
           withOpenASAR = cfg.openASAR.enable;
+          inherit vencord;
         }))
-        (mkIf cfg.vesktop.enable cfg.vesktopPackage)
+        (mkIf cfg.vesktop.enable (cfg.vesktopPackage.override {
+          withSystemVencord = true;
+          inherit vencord;
+        }))
       ];
     }
     (mkIf cfg.discord.enable (mkMerge [
       {
         home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
       }
-      (mkIfElse (!builtins.isNull cfg.extraConfig) {
+      {
         home.file."${cfg.configDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
-            attrsets.recursiveUpdate cfg.config cfg.extraConfig));
-      } {
-        home.file."${cfg.configDir}/settings/settings.json".text =
-          builtins.toJSON (mkVencordCfg cfg.config);
-      })
+            recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vencordConfig ]
+          ));
+      }
     ]))
     (mkIf cfg.vesktop.enable (mkMerge [
       {
         home.file."${cfg.vesktopConfigDir}/settings/quickCss.css".text = cfg.quickCss;
       }
-      (mkIfElse (!builtins.isNull cfg.vesktopConfig) {
+      {
         home.file."${cfg.vesktopConfigDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
-            attrsets.recursiveUpdate cfg.config cfg.vesktopConfig));
-      } {
-        home.file."${cfg.vesktopConfigDir}/settings/settings.json".text =
-          builtins.toJSON (mkVencordCfg cfg.config);
-      })
+            recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vesktopConfig ]
+          ));
+      }
     ]))
   ]);
 }
