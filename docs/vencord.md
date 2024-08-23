@@ -1,26 +1,10 @@
 # Vencord Options
 All general options related to Vencord not encompassing plugins
-## notifyAboutUpdates
-```nix
-programs.nixcord.config.notifyAboutUpdates
-    # Notify user when updates are available
-```
-## autoUpdate
-```nix
-programs.nixcord.config.autoUpdate
-    # Auto update
-    # afaik this doesn't work with nix
-```
-## autoUpdateNotification
-```nix
-programs.nixcord.config.autoUpdateNotification
-    # notify use when Vencord auto updates
-```
 ## useQuickCss
 ```nix
 programs.nixcord.config.useQuickCss
     # use the quick-CSS theme provided by
-    # programs.nixcord.quickCss
+    # type: str
 ```
 ## themeLinks
 ```nix
