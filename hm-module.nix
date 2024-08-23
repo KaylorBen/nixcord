@@ -179,7 +179,8 @@ in {
   };
 
   config = let
-    inherit (pkgs.callPackage ./lib.nix {})
+    parseRules = cfg.parseRules;
+    inherit (pkgs.callPackage ./lib.nix { inherit lib parseRules; })
       mkVencordCfg;
 
     applyPostPatch = pkg: pkg.overrideAttrs {
