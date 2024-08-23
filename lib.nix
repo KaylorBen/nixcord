@@ -1,4 +1,4 @@
-{ lib }:
+{ lib, parseRules, ... }:
 let
   inherit (lib)
     attrsets
@@ -18,16 +18,15 @@ let
     "moderator"
     "voiceModerator"
     "chatModerator"
-  ];
+  ] ++ parseRules.upperNames;
 
   lowerPluginTitles = [ # these are the only plugins with lowercase names in json
     "iLoveSpam"
     "moyai"
     "petpet"
-  ];
+  ] ++ parseRules.lowerPluginTitles;
 
-  # this is a really bad solution to this problem, but no matter what all
-  # solutions to it are bad
+  # this is since many json options in Vencord are just int values with no description
   # ALL OF THESE HAVE TO BE UNIQUE!!!
   zeroOptions = [       # options which evaluate to int 0
     "randomCharacters"
@@ -44,7 +43,7 @@ let
     "disabled"
     "compact"
     "plain"
-  ];
+  ] ++ parseRules.fakeEnums.zero;
   oneOptions = [       # options which evaluate to int 1
     "consistent"
     "always"
@@ -63,7 +62,7 @@ let
     "cozy"
     "muted"
     "animatedDots"
-  ];
+  ] ++ parseRules.fakeEnums.one;
   twoOptions = [       # options which evaluate to int 2
     "timestamp"
     "moreThanOne"
@@ -77,16 +76,16 @@ let
     "onlyFriendCount"
     "roomy"
     "avatars"
-  ];
+  ] ++ parseRules.fakeEnums.two;
   threeOptions = [       # options which evaluate to int 3
     "watching"
     "customTime"
     "serverDefault"
     "both"    # This references 2 options that both = 3 in JSON
-  ];
+  ] ++ parseRules.fakeEnums.three;
   fourOptions = [
     "competing"
-  ];
+  ] ++ parseRules.fakeEnums.four;
 
   isLowerCase = s: strings.toLower s == s;
 

@@ -7,11 +7,6 @@
 let
   cfg = config.programs.nixcord;
 
-  mkIfElse = p: yes: no: mkMerge [
-    (mkIf p yes)
-    (mkIf (!p) no)
-  ];
-
   inherit (lib)
     mkEnableOption
     mkOption
@@ -19,11 +14,17 @@ let
     mkIf
     mkMerge
     attrsets
+    lists
     ;
 
-  inherit (pkgs.callPackage ./lib.nix { })
-    mkVencordCfg
-    ;
+  dop = with types; coercedTo package (a: a.outPath) pathInStore;
+
+  recursiveUpdateAttrsList = list:
+    if (builtins.length list <= 1) then (builtins.elemAt list 0) else
+      recursiveUpdateAttrsList ([
+        (attrsets.recursiveUpdate (builtins.elemAt list 0) (builtins.elemAt list 1))
+      ] ++ (lists.drop 2 list));
+
 in {
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
@@ -100,55 +101,158 @@ in {
       plugins = import ./plugins.nix { inherit lib; };
     };
     vesktopConfig = mkOption {
-      type = with types; nullOr attrs;
-      default = null;
+      type = types.attrs;
+      default = {};
       description = ''
         Options to override vencord config for Vesktop. Use to set different
         settings between configs
       '';
     };
+    vencordConfig = mkOption {
+      type = types.attrs;
+      default = {};
+      description = '''';
+    };
     extraConfig = mkOption {
-      type = with types; nullOr attrs;
-      default = null;
+      type = types.attrs;
+      default = {};
       description = "Vencord extra config";
+    };
+    userPlugins = let
+      regex = "github:([[:alnum:].-]+)/([[:alnum:]/-]+)/([0-9a-f]{40})";
+      coerce = value: let
+        matches = builtins.match regex value;
+        owner = builtins.elemAt matches 0;
+        repo = builtins.elemAt matches 1;
+        rev = builtins.elemAt matches 2;
+      in builtins.fetchGit { url = "https://github.com/${owner}/${repo}"; inherit rev; };
+    in
+      mkOption {
+        type = with types; attrsOf (coercedTo (strMatching regex) coerce dop);
+        description = "User plugin to fetch and install. Note that any json required must be enabled in extraConfig";
+        default = {};
+        example = {
+          someCoolPlugin = "github:someUser/someCoolPlugin/someHashHere";
+        };
+      };
+    parseRules = {
+      upperNames = mkOption {
+        type = with types; listOf str;
+        description = "option names to become UPPER_SNAKE_CASE";
+        default = [];
+      };
+      lowerPluginTitles = mkOption {
+        type = with types; listOf str;
+        description = "plugins with lowercase names in json";
+        default = [];
+        example = [ "moyai" "petpet" ];
+      };
+      fakeEnums = {
+        zero = mkOption {
+          type = with types; listOf str;
+          description = "strings to evaluate to 0 in JSON";
+          default = [];
+        };
+        one = mkOption {
+          type = with types; listOf str;
+          description = "strings to evaluate to 1 in JSON";
+          default = [];
+        };
+        two = mkOption {
+          type = with types; listOf str;
+          description = "strings to evaluate to 2 in JSON";
+          default = [];
+        };
+        three = mkOption {
+          type = with types; listOf str;
+          description = "strings to evaluate to 3 in JSON";
+          default = [];
+        };
+        four = mkOption {
+          type = with types; listOf str;
+          description = "string to evalueate to 4 in JSON";
+          default = [];
+        };
+        # I've never seen a plugin with more than 5 options for 1 setting
+      };
     };
   };
 
-  config = mkIf cfg.enable (mkMerge [
+  config = let
+    parseRules = cfg.parseRules;
+    inherit (pkgs.callPackage ./lib.nix { inherit lib parseRules; })
+      mkVencordCfg;
+
+    applyPostPatch = pkg: pkg.overrideAttrs {
+      postPatch = lib.concatLines(
+        lib.optional (cfg.userPlugins != {}) "mkdir -p src/userplugins"
+          ++ lib.mapAttrsToList (name: path: "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins") cfg.userPlugins
+      );
+    };
+    # nixpkgs is always really far behind
+    # so instead we maintain our own vencord package
+    vencord = applyPostPatch (
+      pkgs.callPackage ./vencord.nix {
+        inherit (pkgs)
+          buildNpmPackage
+          fetchFromGitHub
+          lib
+          esbuild
+          ;
+      }
+    );
+  in mkIf cfg.enable (mkMerge [
     {
       home.packages = [
         (mkIf cfg.discord.enable (cfg.package.override {
           withVencord = cfg.vencord.enable;
           withOpenASAR = cfg.openASAR.enable;
+          inherit vencord;
         }))
-        (mkIf cfg.vesktop.enable cfg.vesktopPackage)
+        (mkIf cfg.vesktop.enable (cfg.vesktopPackage.override {
+          withSystemVencord = true;
+          inherit vencord;
+        }))
       ];
     }
     (mkIf cfg.discord.enable (mkMerge [
       {
         home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
       }
-      (mkIfElse (!builtins.isNull cfg.extraConfig) {
+      {
         home.file."${cfg.configDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
-            attrsets.recursiveUpdate cfg.config cfg.extraConfig));
-      } {
-        home.file."${cfg.configDir}/settings/settings.json".text =
-          builtins.toJSON (mkVencordCfg cfg.config);
-      })
+            recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vencordConfig ]
+          ));
+      }
     ]))
     (mkIf cfg.vesktop.enable (mkMerge [
       {
         home.file."${cfg.vesktopConfigDir}/settings/quickCss.css".text = cfg.quickCss;
       }
-      (mkIfElse (!builtins.isNull cfg.vesktopConfig) {
+      {
         home.file."${cfg.vesktopConfigDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
-            attrsets.recursiveUpdate cfg.config cfg.vesktopConfig));
-      } {
-        home.file."${cfg.vesktopConfigDir}/settings/settings.json".text =
-          builtins.toJSON (mkVencordCfg cfg.config);
-      })
+            recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vesktopConfig ]
+          ));
+      }
     ]))
-  ]);
+    # Warnings
+    {
+      warnings = [
+        (mkIf (cfg.config.notifyAboutUpdates || cfg.config.autoUpdate || cfg.config.autoUpdateNotification) ''
+          Nixcord is now pinned to a specific Vencord version to ensure compatability.
+          Config options relating to auto-update no longer function
+        '')
+        (mkIf cfg.config.plugins.watchTogetherAdblock.enable ''
+          nixcord.config.plugins.watchTogetherAdblock is deprecated and replaced by
+          nixcord.config.plugins.youtubeAdblock which provides more functionality
+        '')
+        (mkIf cfg.config.plugins.maskedLinkPaste.enable ''
+          nixcord.config.plugins.maksedLinkPaste is now a stock Discord feature and
+          redundant. It will cease to function in the next Vencord release
+        '')
+      ]; # notifyAboutUpdates = m
+    }    # autoUpdate = mkEnableO
+  ]);    # autoUpdateNotification
 }
