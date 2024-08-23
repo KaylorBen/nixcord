@@ -1206,6 +1206,11 @@ with lib;
       '';
     };
   };
+  maskedLinkPaste = {
+    enable = mkEnableOption ''
+      Pasting a link while having text selected will paste a hyperlink
+    '';
+  };
   memberCount = {
     enable = mkEnableOption ''
       Shows the amount of online & total members in the server member list and tooltip

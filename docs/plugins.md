@@ -534,7 +534,7 @@ programs.nixcord.config.plugins.favoriteEmojiFirst.enable
 ## favoriteGifSearch
 ```nix
 programs.nixcord.config.plugins.favoriteGifSearch.enable
-    # Adds a search bar to favorite gifs. 
+    # Adds a search bar to favorite gifs.
 programs.nixcord.config.plugins.favoriteGifSearch.searchOption
     # The part of the url you want to search
     # type: enum
@@ -753,6 +753,11 @@ programs.nixcord.config.plugins.loadingQuotes.additionalQuotesDelimiter
     # Delimiter for additional quotes
     # type: str
     # default: "|"
+```
+## maskedLinkedPaste
+```nix
+programs.nixcord.config.plugins.maskedLinkedPaste.enable
+    # Pasting a link while having text selected will paste a hyperlink
 ```
 ## memberCount
 ```nix
@@ -1888,11 +1893,6 @@ programs.nixcord.config.plugins.volumeBooster.multiplier
     # Volume Multiplier
     # type: int
     # default: 2
-```
-## watchTogetherAdblock
-```nix
-programs.nixcord.config.plugins.watchTogetherAdblock.enable
-    # Block ads in the YouTube WatchTogether activity via AdGuard
 ```
 ## whoReacted
 ```nix
