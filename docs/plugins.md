@@ -111,11 +111,6 @@ programs.nixcord.config.plugins.appleMusicRichPresence.smallTextString
     # type: str
     # default: "{artist}"
 ```
-## automodContext
-```nix
-programs.nixcord.config.plugins.automodContext.enable
-    # Allows you to jump to the message surrounding an automod hit
-```
 ## banger
 ```nix
 programs.nixcord.config.plugins.banger.enable
@@ -754,11 +749,6 @@ programs.nixcord.config.plugins.loadingQuotes.additionalQuotesDelimiter
     # type: str
     # default: "|"
 ```
-## maskedLinkedPaste
-```nix
-programs.nixcord.config.plugins.maskedLinkedPaste.enable
-    # Pasting a link while having text selected will paste a hyperlink
-```
 ## memberCount
 ```nix
 programs.nixcord.config.plugins.memberCount.enable
@@ -1046,6 +1036,11 @@ programs.nixcord.config.plugins.noDevtoolsWarning.enable
 ```nix
 programs.nixcord.config.plugins.noF1.enable
     # Disables F1 help bind.
+```
+## noMaskedUrlPaste
+```nix
+programs.nixcord.config.plugins.noMaskedUrlPaste.enable
+    # Pasting a link while having text selected will not paste as masked URL
 ```
 ## noMosaic
 ```nix
@@ -1506,11 +1501,6 @@ programs.nixcord.config.plugins.shikiCodeblocks.bgOpacity
 ```nix
 programs.nixcord.config.plugins.showAllMessageButtons.enable
     # Always show all message buttons no matter if you are holding the shift key or not.
-```
-## showAllRoles
-```nix
-programs.nixcord.config.plugins.showAllRoles.enable
-    # Show all roles in new profiles.
 ```
 ## showConnections
 ```nix
