@@ -242,17 +242,26 @@ in {
       warnings = [
         (mkIf (cfg.config.notifyAboutUpdates || cfg.config.autoUpdate || cfg.config.autoUpdateNotification) ''
           Nixcord is now pinned to a specific Vencord version to ensure compatability.
-          Config options relating to auto-update no longer function
+          Config options relating to auto-update no longer function.
+          To update Nixcord to the latest version, use nixos-rebuild
         '')
         (mkIf cfg.config.plugins.watchTogetherAdblock.enable ''
           nixcord.config.plugins.watchTogetherAdblock is deprecated and replaced by
           nixcord.config.plugins.youtubeAdblock which provides more functionality
         '')
         (mkIf cfg.config.plugins.maskedLinkPaste.enable ''
-          nixcord.config.plugins.maksedLinkPaste is now a stock Discord feature and
-          redundant. It will cease to function in the next Vencord release
+          nixcord.config.plugins.maksedLinkPaste is deprecated since it is a discord stock
+          feature and redundant.
         '')
-      ]; # notifyAboutUpdates = m
-    }    # autoUpdate = mkEnableO
-  ]);    # autoUpdateNotification
+        (mkIf cfg.config.plugins.automodContext.enable ''
+          nixcord.config.plugins.automodContext is deprecated since it is a discord stock
+          feature and redundant.
+        '')
+        (mkIf cfg.config.plugins.showAllRoles.enable ''
+          nixcord.config.plugins.showAllRoles is deprecated since it is a discord stock
+          feature and redundant.
+        '')
+      ];
+    }
+  ]);
 }

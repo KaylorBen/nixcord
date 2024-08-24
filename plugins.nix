@@ -72,21 +72,11 @@ with lib;
     anonymiseByDefault = mkEnableOption ''
       Whether to anonymise file names by default
     '';
-    # method = mkOption {
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     Anonymising Method
-    #     0 - Random Characters
-    #     1 - Consistent
-    #     2 - Timestamp
-    #   '';
-    # };
     method = mkOption {
       type = types.enum [
-        "randomCharacters"
-        "consistent"
-        "timestamp"
+        "randomCharacters"  # 0
+        "consistent"        # 1
+        "timestamp"         # 2
       ];
       default = "randomCharacters";
       description = ''
@@ -202,6 +192,8 @@ with lib;
       '';
     };
   };
+  # depricated
+  # TODO remove after some time
   automodContext = {
     enable = mkEnableOption ''
       Allows you to jump to the messages surrounding an automod hit
@@ -272,21 +264,11 @@ with lib;
         Keep showing guild icons in the primary guild bar folder when it
       's open in the BetterFolders sidebar'';
     };
-    # showFolderIcon = mkOption{
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     Show the folder icon above the folder guilds in the BetterFolders sidebar
-    #     0 - Never
-    #     1 - Always
-    #     2 - When more than one folder is expanded
-    #   '';
-    # };
     showFolderIcon = mkOption {
       type = types.enum [
-        "never"
-        "always"
-        "moreThanOne"
+        "never"       # 0
+        "always"      # 1
+        "moreThanOne" # 2
       ];
       default = "never";
       description = ''
@@ -561,25 +543,13 @@ with lib;
         State (line 2) must be not longer than 128 characters.
       '';
     };
-    # type = mkOption {
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     Activity type
-    #     0 - Playing
-    #     1 - Streaming
-    #     2 - Listening
-    #     3 - Watching
-    #     4 - Competing
-    #   '';
-    # };
     type = mkOption {
       type = types.enum [
-        "playing"
-        "streaming"
-        "listening"
-        "watching"
-        "competing"
+        "playing"   # 0
+        "streaming" # 1
+        "listening" # 2
+        "watching"  # 3
+        "competing" # 4
       ];
       default = "playing";
       description = ''
@@ -593,23 +563,12 @@ with lib;
         Twitch.tv or Youtube.com link (only for Streaming activity type)
       '';
     };
-    # timestampMode = mkOption {
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     Timestamp mode
-    #     0 - None
-    #     1 - Since discord open
-    #     2 - Same as your current time
-    #     3 - Custom
-    #   '';
-    # };
     timestampMode = mkOption {
       type = types.enum [
-        "none"
-        "discordUptime"
-        "currentTime"
-        "customTime"
+        "none"          # 0
+        "discordUptime" # 1
+        "currentTime"   # 2
+        "customTime"    # 3
       ];
       default = "none";
       description = ''
@@ -719,21 +678,11 @@ with lib;
     hideButton = mkEnableOption ''
       Hides the Dearrow button from YouTube embeds
     '';
-    # replaceElements = mkOption {
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     Choose which elements of the embed will be replaced
-    #     0 - Everything (Titles & Thumbnails)
-    #     1 - Titles
-    #     2 - Thumbnails
-    #   '';
-    # };
     replaceElements = mkOption {
       type = types.enum [
-        "everything"
-        "titles"
-        "thumbnails"
+        "everything"  # 0
+        "titles"      # 1
+        "thumbnails"  # 2
       ];
       default = "everything";
       description = ''
@@ -1206,6 +1155,8 @@ with lib;
       '';
     };
   };
+  # depricated
+  # TODO remove after some time
   maskedLinkPaste = {
     enable = mkEnableOption ''
       Pasting a link while having text selected will paste a hyperlink
@@ -1664,23 +1615,12 @@ with lib;
         Mute Guild automatically
       '';
     };
-    # messages = mkOption {
-    #   type = types.int;
-    #   default = 3;
-    #   description = ''
-    #     Server Notification Settings
-    #     0 - All messages
-    #     1 - Only @mentions
-    #     2 - Nothing
-    #     3 - Server default
-    #   '';
-    # };
     messages = mkOption {
       type = types.enum [
-        "serverDefault"
-        "all"
-        "only@Mentions"
-        "nothing"
+        "serverDefault" # 0
+        "all"           # 1
+        "only@Mentions" # 2
+        "nothing"       # 3
       ];
       default = "serverDefault";
       description = ''
@@ -1745,6 +1685,11 @@ with lib;
   noF1 = {
     enable = mkEnableOption ''
       Disables F1 help bind.
+    '';
+  };
+  noMaskedUrlPaste = {
+    enable = mkEnableOption ''
+     Pasting a link while having text selected will not paste as masked URL
     '';
   };
   noMosaic = {
@@ -1962,28 +1907,10 @@ with lib;
       Allows you to override default forum layout/sort order. you can still change it on a per-channel basis
     '';
     # I have no idea why this uses 1 based indexing, it is driving me crazy
-    # defaultLayout = mkOption {
-    #   type = types.int;
-    #   default = 1;
-    #   description = ''
-    #     Which layout to use as default
-    #     1 - List
-    #     2 - Gallery
-    #   '';
-    # };
-    # defaultSortOrder = mkOption {
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     Which sort order to use as default
-    #     0 - Recently Active
-    #     1 - Date Posted
-    #   '';
-    # };
     defaultLayout = mkOption {
       type = types.enum [
-        "list"
-        "gallery"
+        "list"    # 1
+        "gallery" # 2
       ];
       default = "list";
       description = ''
@@ -1992,8 +1919,8 @@ with lib;
     };
     defaultSortOrder = mkOption {
       type = types.enum [
-        "recentlyActive"
-        "datePosted"
+        "recentlyActive"  # 0
+        "datePosted"      # 1
       ];
       default = "recentlyActive";
       description = ''
@@ -2005,21 +1932,11 @@ with lib;
     enable = mkEnableOption ''
       Allows you to use party mode cause the party never ends ✨
     '';
-    # superIntensePartyMode = mkOption {
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     Party intensity
-    #     0 - Normal
-    #     1 - Better
-    #     2 - Project X
-    #   '';
-    # };
     superIntensePartyMode = mkOption {
       type = types.enum [
-        "normal"
-        "better"
-        "projectX"
+        "normal"    # 0
+        "better"    # 1
+        "projectX"  # 2
       ];
       default = "normal";
       description = ''
@@ -2055,19 +1972,10 @@ with lib;
     enable = mkEnableOption ''
       View the permissions a user or channel has, and the roles of a server
     '';
-    # permissionsSortOrder = mkOption {
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     The sort method used for defining which role grants an user a certain permission
-    #     0 - Highest Role
-    #     1 - Lowest Role
-    #   '';
-    # };
     permissionsSortOrder = mkOption {
       type = types.enum [
-        "highestRole"
-        "lowestRole"
+        "highestRole" # 0
+        "lowestRole"  # 1
       ];
       default = "highestRole";
       description = ''
@@ -2100,19 +2008,10 @@ with lib;
       Allows you to pin private channels to the top of your DM list.
       To pin/unpin or reorder pins, right click DMs
     '';
-    # pinOrder = mkOption {
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     Which order should pinned DMs be displayed in?
-    #     0 - Most recent message
-    #     1 - Custom (right click channels to reorder)
-    #   '';
-    # };
     pinOrder = mkOption {
       type = types.enum [
-        "mostRecent"
-        "custom"
+        "mostRecent"  # 0
+        "custom"      # 1
       ];
       default = "mostRecent";
       description = ''
@@ -2184,20 +2083,10 @@ with lib;
         CAPITALIZED - Capitalized
       '';
     };
-    # pronounSource = mkOption {
-    #   # Are you kidding? This plugin just used a string enum!
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     Where to source pronouns from
-    #     0 - Prefer PronounDB, fall back to Discord
-    #     1 - Prefer Discord, fall back to PronounDB (might lead to inconsistency between pronouns in chat and profile)
-    #   '';
-    # };
     pronounSource = mkOption {
       type = types.enum [
-        "preferPronounDB"
-        "preferDiscord"
+        "preferPronounDB" # 0
+        "preferDiscord"   # 1
       ];
       default = "preferPronounDB";
       description = ''
@@ -2235,21 +2124,11 @@ with lib;
     enable = mkEnableOption ''
       Reply to (ctrl + up/down) and edit (ctrl + shift + up/down) messages via keybinds
     '';
-    # shouldMention = mkOption {
-    #   type = types.int;
-    #   default = 2;
-    #   description = ''
-    #     Ping reply by default
-    #     0 - Disabled
-    #     1 - Enabled
-    #     2 - Follow NoReplyMention
-    #   '';
-    # };
     shouldMention = mkOption {
       type = types.enum [
-        "followNoReplyMention"
-        "disabled"
-        "enabled"
+        "followNoReplyMention"  # 0
+        "disabled"              # 1
+        "enabled"               # 2
       ];
       default = "followNoReplyMention";
       description = ''
@@ -2454,21 +2333,11 @@ with lib;
     enable = mkEnableOption ''
       Add online friend count or server count in the server list
     '';
-    # mode = mkOption {
-    #   type = types.int;
-    #   default = 2;
-    #   description = ''
-    #     mode
-    #     1 - Only server count
-    #     2 - Only online friend count
-    #     3 - Both server and onine friend counts
-    #   '';
-    # };
     mode = mkOption {
       type = types.enum [
-        "onlyFriendCount"
-        "onlyServerCount"
-        "both"
+        "onlyFriendCount" # 1
+        "onlyServerCount" # 2
+        "both"            # 3
       ];
       default = "onlyFriendCount";
       description = ''
@@ -2534,6 +2403,8 @@ with lib;
       Always show all message buttons no matter if you are holding the shift key or not.
     '';
   };
+  # depricated
+  # TODO remove after some time
   showAllRoles = {
     enable = mkEnableOption ''
       Show all roles in new profiles.
@@ -2550,21 +2421,11 @@ with lib;
         Icon size (px)
       '';
     };
-    # iconSpacing = mkOption {
-    #   type = types.int;
-    #   default = 1;
-    #   description = ''
-    #     Icon margin
-    #     0 - Compact
-    #     1 - Cozy
-    #     2 - Roomy
-    #   '';
-    # };
     iconSpacing = mkOption {
       type = types.enum [
-        "compact"
-        "cozy"
-        "roomy"
+        "compact" # 0
+        "cozy"    # 1
+        "roomy"   # 2
       ];
       default = "cozy";
       description = ''
@@ -2583,19 +2444,10 @@ with lib;
         Hide Unreads
       '';
     };
-    # showMode = mkOption {
-    #   type = types.int;
-    #   default = 0;
-    #   description = ''
-    #     The mode used to display hidden channels.
-    #     0 - Plain style with Lock Icon instead
-    #     1 - Muted style with hidden eye icon on the right
-    #   '';
-    # };
     showMode = mkOption {
       type = types.enum [
-        "plain"
-        "muted"
+        "plain" # 0
+        "muted" # 1
       ];
       default = "plain";
       description = ''
@@ -2846,21 +2698,11 @@ with lib;
     includeBlockedUsers = mkEnableOption ''
       Whether to show the typing indicator for blocked users.
     '';
-    # indicatorMode = mkOption {
-    #   type = types.int;
-    #   default = 3;
-    #   description = ''
-    #     How should the indicator be displayed?
-    #     1 - Animated dots
-    #     2 - Avatars
-    #     3 - Avatars and animated dots
-    #   '';
-    # };
     indicatorMode = mkOption {
       type = types.enum [
-        "both"
-        "avatars"
-        "animatedDots"
+        "both"          # 1
+        "avatars"       # 2
+        "animatedDots"  # 3
       ];
       default = "both";
       description = ''
@@ -3139,6 +2981,8 @@ with lib;
       '';
     };
   };
+  # depricated
+  # TODO remove after some time
   watchTogetherAdblock = {
     enable = mkEnableOption ''
       Block ads in the YouTube WatchTogether activity via AdGuard
