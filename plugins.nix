@@ -192,7 +192,7 @@ with lib;
       '';
     };
   };
-  # depricated
+  # deprecated
   # TODO remove after some time
   automodContext = {
     enable = mkEnableOption ''
@@ -1155,7 +1155,7 @@ with lib;
       '';
     };
   };
-  # depricated
+  # deprecated
   # TODO remove after some time
   maskedLinkPaste = {
     enable = mkEnableOption ''
@@ -2403,7 +2403,7 @@ with lib;
       Always show all message buttons no matter if you are holding the shift key or not.
     '';
   };
-  # depricated
+  # deprecated
   # TODO remove after some time
   showAllRoles = {
     enable = mkEnableOption ''
@@ -2981,7 +2981,7 @@ with lib;
       '';
     };
   };
-  # depricated
+  # deprecated
   # TODO remove after some time
   watchTogetherAdblock = {
     enable = mkEnableOption ''
