@@ -156,7 +156,7 @@ programs.nixcord.parseRules.lowerPluginTitles
 > Vencord plugins using integer values in JSON to represent more descriptive values
 > in the settings menu.
 > Once a more suitable solution has been found (possible an attrset), then these options
-> will be completely depreciated.
+> will be completely deprecated.
 > If you want to avoid using these for that reason you can figure out the int value required
 > in the user plugin you're trying to add, and write it as the value. This is less readable,
 > but will always match to the correct value unless something happens upstream with the plugin.
