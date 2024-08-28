@@ -202,7 +202,7 @@ in {
       }
     );
 
-    isQuickCssEnabled = vencordConfig: (cfg.config.useQuickCss || vencordConfig ? "useQuickCss" && vencordConfig.useQuickCss) && cfg.quickCss != "";
+    isQuickCssUsed = appConfig: (cfg.config.useQuickCss || appConfig ? "useQuickCss" && appConfig.useQuickCss) && cfg.quickCss != "";
   in mkIf cfg.enable (mkMerge [
     {
       home.packages = [
@@ -218,7 +218,7 @@ in {
       ];
     }
     (mkIf cfg.discord.enable (mkMerge [
-      (mkIf (isQuickCssEnabled cfg.vesktopConfig) {
+      (mkIf (isQuickCssUsed cfg.vesktopConfig) {
         home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
       })
       {
@@ -229,7 +229,7 @@ in {
       }
     ]))
     (mkIf cfg.vesktop.enable (mkMerge [
-      (mkIf (isQuickCssEnabled cfg.vencordConfig) {
+      (mkIf (isQuickCssUsed cfg.vencordConfig) {
         home.file."${cfg.vesktopConfigDir}/settings/quickCss.css".text = cfg.quickCss;
       })
       {
