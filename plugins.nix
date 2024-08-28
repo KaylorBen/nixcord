@@ -2547,7 +2547,7 @@ with lib;
     persistentState = mkEnableOption ''
       Whether to persist the state of the silent message toggle when changing channels
     '';
-    autoDiable = mkOption {
+    autoDisable = mkOption {
       type = types.bool;
       default = true;
       description = ''
