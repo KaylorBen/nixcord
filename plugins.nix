@@ -2544,10 +2544,10 @@ with lib;
     enable = mkEnableOption ''
       Adds a button to the chat bar to toggle sending a silent message.
     '';
-    persistentState = mkEnableOption ''
+    persistState = mkEnableOption ''
       Whether to persist the state of the silent message toggle when changing channels
     '';
-    autoDiable = mkOption {
+    autoDisable = mkOption {
       type = types.bool;
       default = true;
       description = ''
