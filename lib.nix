@@ -18,6 +18,15 @@ let
     "moderator"
     "voiceModerator"
     "chatModerator"
+    "skipHostUpdate"
+    "dangerousEnableDevtoolsOnlyEnableIfYouKnowWhatYoureDoing"
+    "minWidth"
+    "minHeight"
+    "isMaximized"
+    "isMinimized"
+    "windowBounds"
+    "openOnStartup"
+    "minimizeToTray"
   ] ++ parseRules.upperNames;
 
   lowerPluginTitles = [ # these are the only plugins with lowercase names in json

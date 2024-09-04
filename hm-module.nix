@@ -61,7 +61,12 @@ in {
     vesktopConfigDir = mkOption {
       type = types.path;
       default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop";
-      description = "Config path for vesktop";
+      description = "Config path for Vesktop";
+    };
+    discordConfigDir = mkOption {
+      type = types.path;
+      default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/discord";
+      description = "Config path for Discord";
     };
     vencord.enable = mkOption {
       type = types.bool;
@@ -104,19 +109,46 @@ in {
       type = types.attrs;
       default = {};
       description = ''
-        Options to override vencord config for Vesktop. Use to set different
-        settings between configs
+        additional config to be added to programs.nixcord.config
+        for vesktop only
       '';
     };
     vencordConfig = mkOption {
       type = types.attrs;
       default = {};
-      description = '''';
+      description = ''
+        additional config to be added to programs.nixcord.config
+        for vencord only
+      '';
     };
     extraConfig = mkOption {
       type = types.attrs;
       default = {};
-      description = "Vencord extra config";
+      description = ''
+        additional config to be added to programs.nixcord.config
+        for both vencord and vesktop
+      '';
+    };
+    vesktopSettings = mkOption {
+      type = types.attrs;
+      defautlt = {};
+      description =  ''
+        Settings to be placed in vesktopConfigDir/settings.json
+      '';
+    };
+    vesktopState = mkOption {
+      type = types.attrs;
+      defautlt = {};
+      description =  ''
+        Settings to be placed in vesktopConfigDir/state.json
+      '';
+    };
+    discordSettings = mkOption {
+      type = types.attrs;
+      defautlt = {};
+      description =  ''
+        Settings to be placed in discordConfigDir/settings.json
+      '';
     };
     userPlugins = let
       regex = "github:([[:alnum:].-]+)/([[:alnum:]/-]+)/([0-9a-f]{40})";
@@ -218,26 +250,45 @@ in {
       ];
     }
     (mkIf cfg.discord.enable (mkMerge [
+      # QuickCSS
       (mkIf (isQuickCssUsed cfg.vesktopConfig) {
         home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
       })
+      # Vencord Settings
       {
         home.file."${cfg.configDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
             recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vencordConfig ]
           ));
       }
+      # Client Settings
+      (mkIf cfg.discordSettings {
+        home.file."${cfg.discordConfigDir}/settings.json".text =
+            builtins.toJSON mkVencordCfg cfg.discordSettings;
+      })
     ]))
     (mkIf cfg.vesktop.enable (mkMerge [
+      # QuickCSS
       (mkIf (isQuickCssUsed cfg.vencordConfig) {
         home.file."${cfg.vesktopConfigDir}/settings/quickCss.css".text = cfg.quickCss;
       })
+      # Vencord Settings
       {
         home.file."${cfg.vesktopConfigDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
             recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vesktopConfig ]
           ));
       }
+      # Vesktop Client Settings
+      (mkIf cfg.vesktopSettings {
+        home.file."${cfg.vesktopConfigDir}/settings.json".text =
+            builtins.toJSON mkVencordCfg cfg.vesktopSettings;
+      })
+      # Vesktop Client State
+      (mkIf cfg.vesktopState {
+        home.file."${cfg.vesktopConfigDir}/state.json".text =
+            builtins.toJSON mkVencordCfg cfg.vesktopState;
+      })
     ]))
     # Warnings
     {
