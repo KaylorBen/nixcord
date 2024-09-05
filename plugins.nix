@@ -46,6 +46,11 @@ with lib;
       Animates anything that can be animated
     '';
   };
+  alwaysExpandRoles = {
+    enable = mkEnableOption ''
+      Always expands the role list in profile popouts
+    '';
+  };
   alwaysTrust = {
     enable = mkEnableOption ''
       Removes the annoying untrusted domain and suspicious file popup
@@ -456,6 +461,11 @@ with lib;
       '';
     };
   };
+  copyFileContents = {
+    enable = mkEnableOption ''
+      Adds a button to text file attachments to copy their contents
+    '';
+  };
   copyUserURLs = {
     enable = mkEnableOption ''
       Adds a 'Copy User URL' option to the user context menu.
@@ -687,6 +697,13 @@ with lib;
       default = "everything";
       description = ''
         Which elements of the embed will be replaced
+      '';
+    };
+    dearrowByDefault = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Dearrow videos automatically
       '';
     };
   };
@@ -2299,6 +2316,9 @@ with lib;
       Always play the secret version of the discord ringtone
       (except during special ringtone events)
     '';
+    onlySnow = mkEnableOption ''
+      Only play the Snow Halation Theme
+    '';
   };
   summaries = {
     enable = mkEnableOption ''
@@ -2621,6 +2641,11 @@ with lib;
       Adds Startup Timings to the Settings menu
     '';
   };
+  stickerPaste = {
+    enable = mkEnableOption ''
+      Makes picking a sticker in the sticker picker insert it into the chatbox instead of instantly sending it
+    '';
+  };
   streamerModeOnStream = {
     enable = mkEnableOption ''
       Automatically enables streamer mode when you start streaming in Discord
@@ -2644,7 +2669,8 @@ with lib;
       type = types.int;
       default = 20;
       description = ''
-        Max Super Reactions to play at once
+        Max Super Reactions to play at once.
+        0 to disable playing Super Reactions
       '';
     };
   };
@@ -2664,6 +2690,20 @@ with lib;
     enable = mkEnableOption ''
       Adds the Spotify time bar to all activities if they have start and end timestamps
     '';
+    hideActivityDetailText = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Hide the large title text next to the activity
+      '';
+    };
+    hideActivityTimerBadges = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Hide the timer badges next to the activity
+      '';
+    };
   };
   translate = {
     enable = mkEnableOption ''
