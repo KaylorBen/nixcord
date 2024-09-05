@@ -87,28 +87,28 @@ in {
         type = types.attrs;
         default = {};
         description =  ''
-          Settings to be placed in vesktopConfigDir/settings.json
+          Settings to be placed in vesktop.configDir/settings.json
         '';
       };
       state = mkOption {
         type = types.attrs;
         default = {};
         description =  ''
-          Settings to be placed in vesktopConfigDir/state.json
+          Settings to be placed in vesktop.configDir/state.json
         '';
       };
     };
     package = mkOption {
-      type = types.package;
-      default = pkgs.discord;
+      type = with types; nullOr package;
+      default = null;
       description = ''
         Deprecated
         The Discord package to use
       '';
     };
     vesktopPackage = mkOption {
-      type = types.package;
-      default = pkgs.vesktop;
+      type = with types; nullOr package;
+      default = null;
       description = ''
         The Vesktop package to use
       '';
@@ -119,23 +119,18 @@ in {
       description = "Vencord config directory";
     };
     vesktopConfigDir = mkOption {
-      type = types.path;
-      default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop";
+      type = with types; nullOr path;
+      default = null;
       description = "Config path for Vesktop";
     };
-    discordConfigDir = mkOption {
-      type = types.path;
-      default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/discord";
-      description = "Config path for Discord";
-    };
     vencord.enable = mkOption {
-      type = types.bool;
-      default = true;
+      type = with types; nullOr bool;
+      default = null;
       description = "Enable Vencord (for non-vesktop)";
     };
     openASAR.enable = mkOption {
-      type = types.bool;
-      default = true;
+      type = with types; nullOr bool;
+      default = null;
       description = "Enable OpenASAR (for non-vesktop)";
     };
     quickCss = mkOption {
@@ -313,7 +308,7 @@ in {
       })
       # Vencord Settings
       {
-        home.file."${cfg.vesktopConfigDir}/settings/settings.json".text =
+        home.file."${cfg.vesktop.configDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
             recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vesktopConfig ]
           ));
@@ -336,6 +331,18 @@ in {
           Nixcord is now pinned to a specific Vencord version to ensure compatability.
           Config options relating to auto-update no longer function.
           To update Nixcord to the latest version, use nixos-rebuild
+        '')
+        (mkIf (!builtins.isNull cfg.package) ''
+          nixcord.package has been moved to nixcord.discord.package
+        '')
+        (mkIf (!builtins.isNull cfg.vencord.enable) ''
+          nixcord.vencord has been moved to nixcord.discord.vencord
+        '')
+        (mkIf (!builtins.isNull cfg.openASAR.enable) ''
+          nixcord.openASAR has been moved to nixcord.discord.openASAR
+        '')
+        (mkIf (!builtins.isNull cfg.vesktopPackage) ''
+          nixcord.vesktopPackage has been moved to nixcord.vesktop.package
         '')
         (mkIf cfg.config.plugins.watchTogetherAdblock.enable ''
           nixcord.config.plugins.watchTogetherAdblock is deprecated and replaced by
