@@ -28,21 +28,81 @@ let
 in {
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
-    discord.enable = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Whether to enable discord
-        Disable to only install Vesktop
-      '';
+    discord = {
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Whether to enable discord
+          Disable to only install Vesktop
+        '';
+      };
+      package = mkOption {
+        type = types.package;
+        default = pkgs.discord;
+        description = ''
+          The Discord package to use
+        '';
+      };
+      configDir = mkOption {
+        type = types.path;
+        default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/discord";
+        description = "Config path for Discord";
+      };
+      vencord.enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable Vencord (for non-vesktop)";
+      };
+      openASAR.enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable OpenASAR (for non-vesktop)";
+      };
+      settings = mkOption {
+        type = types.attrs;
+        default = {};
+        description =  ''
+          Settings to be placed in discordConfigDir/settings.json
+        '';
+      };
     };
-    vesktop.enable = mkEnableOption ''
-      Whether to enable Vesktop
-    '';
+    vesktop = {
+      enable = mkEnableOption ''
+        Whether to enable Vesktop
+      '';
+      package = mkOption {
+        type = types.package;
+        default = pkgs.vesktop;
+        description = ''
+          The Vesktop package to use
+        '';
+      };
+      configDir = mkOption {
+        type = types.path;
+        default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop";
+        description = "Config path for Vesktop";
+      };
+      settings = mkOption {
+        type = types.attrs;
+        default = {};
+        description =  ''
+          Settings to be placed in vesktopConfigDir/settings.json
+        '';
+      };
+      state = mkOption {
+        type = types.attrs;
+        default = {};
+        description =  ''
+          Settings to be placed in vesktopConfigDir/state.json
+        '';
+      };
+    };
     package = mkOption {
       type = types.package;
       default = pkgs.discord;
       description = ''
+        Deprecated
         The Discord package to use
       '';
     };
@@ -127,27 +187,6 @@ in {
       description = ''
         additional config to be added to programs.nixcord.config
         for both vencord and vesktop
-      '';
-    };
-    vesktopSettings = mkOption {
-      type = types.attrs;
-      defautlt = {};
-      description =  ''
-        Settings to be placed in vesktopConfigDir/settings.json
-      '';
-    };
-    vesktopState = mkOption {
-      type = types.attrs;
-      defautlt = {};
-      description =  ''
-        Settings to be placed in vesktopConfigDir/state.json
-      '';
-    };
-    discordSettings = mkOption {
-      type = types.attrs;
-      defautlt = {};
-      description =  ''
-        Settings to be placed in discordConfigDir/settings.json
       '';
     };
     userPlugins = let
@@ -238,12 +277,12 @@ in {
   in mkIf cfg.enable (mkMerge [
     {
       home.packages = [
-        (mkIf cfg.discord.enable (cfg.package.override {
-          withVencord = cfg.vencord.enable;
-          withOpenASAR = cfg.openASAR.enable;
+        (mkIf cfg.discord.enable (cfg.discord.package.override {
+          withVencord = cfg.discord.vencord.enable;
+          withOpenASAR = cfg.discord.openASAR.enable;
           inherit vencord;
         }))
-        (mkIf cfg.vesktop.enable (cfg.vesktopPackage.override {
+        (mkIf cfg.vesktop.enable (cfg.vesktop.package.override {
           withSystemVencord = true;
           inherit vencord;
         }))
@@ -251,26 +290,26 @@ in {
     }
     (mkIf cfg.discord.enable (mkMerge [
       # QuickCSS
-      (mkIf (isQuickCssUsed cfg.vesktopConfig) {
+      (mkIf (isQuickCssUsed cfg.vencordConfig) {
         home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
       })
       # Vencord Settings
       {
-        home.file."${cfg.configDir}/settings/settings.json".text =
+        home.file."${cfg.discord.configDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
             recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vencordConfig ]
           ));
       }
       # Client Settings
-      (mkIf cfg.discordSettings {
-        home.file."${cfg.discordConfigDir}/settings.json".text =
-            builtins.toJSON mkVencordCfg cfg.discordSettings;
+      (mkIf (cfg.discord.settings != {}) {
+        home.file."${cfg.discord.configDir}/settings.json".text =
+            builtins.toJSON mkVencordCfg cfg.discord.settings;
       })
     ]))
     (mkIf cfg.vesktop.enable (mkMerge [
       # QuickCSS
-      (mkIf (isQuickCssUsed cfg.vencordConfig) {
-        home.file."${cfg.vesktopConfigDir}/settings/quickCss.css".text = cfg.quickCss;
+      (mkIf (isQuickCssUsed cfg.vesktopConfig) {
+        home.file."${cfg.vesktop.configDir}/settings/quickCss.css".text = cfg.quickCss;
       })
       # Vencord Settings
       {
@@ -280,13 +319,13 @@ in {
           ));
       }
       # Vesktop Client Settings
-      (mkIf cfg.vesktopSettings {
-        home.file."${cfg.vesktopConfigDir}/settings.json".text =
+      (mkIf (cfg.vesktop.settings != {}) {
+        home.file."${cfg.vesktop.configDir}/settings.json".text =
             builtins.toJSON mkVencordCfg cfg.vesktopSettings;
       })
       # Vesktop Client State
-      (mkIf cfg.vesktopState {
-        home.file."${cfg.vesktopConfigDir}/state.json".text =
+      (mkIf (cfg.vesktop.state != {}) {
+        home.file."${cfg.vesktop.configDir}/state.json".text =
             builtins.toJSON mkVencordCfg cfg.vesktopState;
       })
     ]))

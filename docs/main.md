@@ -20,33 +20,33 @@ programs.nixcord.vesktop.enable
 ```
 ## package
 ```nix
-programs.nixcord.package
+programs.nixcord.discord.package
     # package of discord to install
     # default: pkgs.discord
 ```
 ## vesktopPackage
 ```nix
-programs.nixcord.vesktopPackage
+programs.nixcord.vesktop.package
     # package of vesktop to install
     # default: pkgs.vesktop
 ```
 ## configDir
 ```nix
 programs.nixcord.configDir
-    # path to discord config
+    # path to vencord config
     # type: path
     # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/Vencord
 ```
-## vesktopConfigDir
+## vesktop.ConfigDir
 ```nix
-programs.nixcord.vesktopConfigDir
+programs.nixcord.vesktop.configDir
     # path to vesktop config
     # type: path
     # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop
 ```
-## discordConfigDir
+## discord.ConfigDir
 ```nix
-programs.nixcord.discordConfigDir
+programs.nixcord.discord.configDir
     # path to discord config
     # this is only useful for changing discord/settings.json
     # type: path
@@ -113,19 +113,19 @@ programs.nixcord = {
 > installations.
 ## vesktopSettings
 ```nix
-programs.nixcord.vesktopConfig
+programs.nixcord.vesktop.settings
     # Settings to be placed in vesktopConfigDir/settings.json
     # type: attrs
 ```
 ## vesktopState
 ```nix
-programs.nixcord.vesktopConfig
+programs.nixcord.vesktop.state
     # Settings to be placed in vesktopConfigDir/state.json
     # type: attrs
 ```
 ## discordSettings
 ```nix
-programs.nixcord.vesktopConfig
+programs.nixcord.discord.settings
     # Settings to be placed in discordConfigDir/settings.json
     # type: attrs
 ```

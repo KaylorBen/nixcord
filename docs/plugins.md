@@ -24,6 +24,11 @@ programs.nixcord.config.plugins.userSettingsAPI.enable
 programs.nixcord.config.plugins.alwaysAnimate.enable
     # Animates anything that can be animated
 ```
+## alwaysExpandRoles
+```nix
+programs.nixcord.config.plugins.alwaysExpandRoles.enable
+    # Always expands the role list in profile popouts
+```
 ## alwaysTrust
 ```nix
 programs.nixcord.config.plugins.alwaysTrust.enable
@@ -286,6 +291,11 @@ programs.nixcord.config.plugins.copyEmojiMarkdown.copyUnicode
     # Copy the raw unicode character instead of :name: for default emojis (👽)
     # default: true
 ```
+## copyFileContents
+```nix
+programs.nixcord.config.plugins.copyFileContents.enable
+    # Adds a button to text file attachments to copy their contents
+```
 ## copyUserURLs
 ```nix
 programs.nixcord.config.plugins.copyUserURLs.enable
@@ -436,6 +446,9 @@ programs.nixcord.config.plugins.dearrow.replaceElements
     # type: str
     # default: "everything"
     # other options are "titles" and "thumbnails"
+programs.nixcord.config.plugins.dearrow.dearrowByDefault
+    # Dearrow videos automatically
+    # default: true
 ```
 ## decor
 ```nix
@@ -1434,6 +1447,8 @@ programs.nixcord.config.plugins.searchReply.enable
 programs.nixcord.config.plugins.secretRingToneEnabler.enable
     # Always play the secret version of the discord ringtone
     # (except during special ringtone events)
+programs.nixcord.config.plugins.secretRingToneEnabler.onlySnow
+    # Only play the snow Halation Theme
 ```
 ## summaries
 ```nix
@@ -1638,6 +1653,11 @@ programs.nixcord.config.plugins.spotifyShareCommands.enable
 programs.nixcord.config.plugins.startupTimings.enable
     # Adds Startup Timings to the Settings menu
 ```
+## stickerPaste
+```nix
+programs.nixcord.config.plugins.stickerPaste.enable
+    # Makes picking a sticker in the sticker picker insert it into the chatbox instead of instantly sending it
+```
 ## streamerModeOnStream
 ```nix
 programs.nixcord.config.plugins.streamerModeOnStream.enable
@@ -1653,7 +1673,8 @@ programs.nixcord.config.plugins.superReactionTweaks.superReactByDefault
 programs.nixcord.config.plugins.superReactionTweaks.unlimitedSuperReactionPlaying
     # Remove the limit on Super Reactions playing at once
 programs.nixcord.config.plugins.superReactionTweaks.superReactionPlayingLimit
-    # Max Super Reactions to play at once
+    # Max Super Reactions to play at once.
+    # 0 to disable playing Super Reactions
     # type: int
     # default: 20
 ```
@@ -1672,6 +1693,12 @@ programs.nixcord.config.plugins.themeAttributes.enable
 ```nix
 programs.nixcord.config.plugins.timeBarAllActivities.enable
     # Adds the Spotify time bar to all activities if they have start and end timestamps
+programs.nixcord.config.plugins.timeBarAllActivities.hideActivityDetailText
+    # Hide the large title text next to the activity
+    # default: true
+programs.nixcord.config.plugins.timeBarAllActivities.hideActivityTimerBadges
+    # Hide the timer badges next to the activity
+    # default: true
 ```
 ## translate
 ```nix
