@@ -623,8 +623,13 @@ programs.nixcord.config.plugins.ignoreActivities.enable
     # Ignore activities from showing up on your status ONLY.
     # You can configure which ones are specifically ignored from the
     # Registered Games and Activities tabs, or use the general settings below.
-programs.nixcord.config.plugins.ignoreActivities.allowedIds
-    # Comma separated list of activity IDs to allow (Useful for allowing RPC activities and CustomRPC)
+programs.nixcord.config.plugins.ignoreActivities.listMode
+    # whether idsList acts as a whitelist or blacklist
+    # type: enum
+    # default: "whitelist"
+    # can also be "blacklist"
+programs.nixcord.config.plugins.ignoreActivities.idsList
+    # Comma separated list of activity IDs (Useful for allowing RPC activities and CustomRPC)
     # type: str
     # default: ""
     # example: "235834946571337729, 343383572805058560";

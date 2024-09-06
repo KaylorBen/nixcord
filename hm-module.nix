@@ -344,6 +344,10 @@ in {
         (mkIf (!builtins.isNull cfg.vesktopPackage) ''
           nixcord.vesktopPackage has been moved to nixcord.vesktop.package
         '')
+        (mkIf (!builtins.isNull cfg.config.plugins.ignoreActivities.allowedIds) ''
+          nixcord.config.plugins.ignoreActivities.allowedIds is deprecated and replaced by
+          nixcord.config.plugins.ignoreActivities.idsList
+        '')
         (mkIf cfg.config.plugins.watchTogetherAdblock.enable ''
           nixcord.config.plugins.watchTogetherAdblock is deprecated and replaced by
           nixcord.config.plugins.youtubeAdblock which provides more functionality

@@ -52,6 +52,7 @@ let
     "disabled"
     "compact"
     "plain"
+    "whitelist"
   ] ++ parseRules.fakeEnums.zero;
   oneOptions = [       # options which evaluate to int 1
     "consistent"
@@ -71,6 +72,7 @@ let
     "cozy"
     "muted"
     "animatedDots"
+    "blacklist"
   ] ++ parseRules.fakeEnums.one;
   twoOptions = [       # options which evaluate to int 2
     "timestamp"

@@ -943,12 +943,30 @@ with lib;
       You can configure which ones are specifically ignored from the
       Registered Games and Activities tabs, or use the general settings below.
     '';
-    allowedIds = mkOption {
+    idsList = mkOption {
       type = types.str;
       default = "";
       example = "235834946571337729, 343383572805058560";
       description = ''
+        Comma separated list of activity IDs (Useful for allowing RPC activities and CustomRPC)
+      '';
+    };
+    allowedIds = mkOption {
+      type = with types; nullOr str;
+      default = null;
+      example = "235834946571337729, 343383572805058560";
+      description = ''
         Comma separated list of activity IDs to allow (Useful for allowing RPC activities and CustomRPC)
+      '';
+    };
+    listMode = mkOption {
+      type = types.enum [
+        "whitelist"
+        "blacklist"
+      ];
+      default = "whitelist";
+      description = ''
+        Make id list function as a whitelist or blacklist
       '';
     };
     ignorePlaying = mkEnableOption ''
