@@ -290,7 +290,7 @@ in {
       })
       # Vencord Settings
       {
-        home.file."${cfg.discord.configDir}/settings/settings.json".text =
+        home.file."${cfg.configDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
             recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vencordConfig ]
           ));
