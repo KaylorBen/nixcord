@@ -145,7 +145,7 @@ in {
         type = with types; listOf str;
         description = "plugins with lowercase names in json";
         default = [];
-        example = [ "moyai" "petpet" ];
+        example = [ "petpet" ];
       };
       fakeEnums = {
         zero = mkOption {
