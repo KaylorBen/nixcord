@@ -145,8 +145,8 @@ programs.nixcord.parseRules.upperNames
 programs.nixcord.parseRules.lowerPluginTitles
     # plugins with lowercase names in json
     # type: listOf str
-    # example: [ "moyai" "petpet" ]
-    # only 3 plugins in main repo follow this convention
+    # example: [ "petpet" ]
+    # only 2 plugins in main repo follow this convention
     # skips the toUpper call on these specific plugin names
 ```
 ## parseRules.fakeEnums
