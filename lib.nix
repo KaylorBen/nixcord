@@ -31,7 +31,6 @@ let
 
   lowerPluginTitles = [ # these are the only plugins with lowercase names in json
     "iLoveSpam"
-    "moyai"
     "petpet"
   ] ++ parseRules.lowerPluginTitles;
 
