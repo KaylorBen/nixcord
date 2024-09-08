@@ -28,27 +28,87 @@ let
 in {
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
-    discord.enable = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Whether to enable discord
-        Disable to only install Vesktop
-      '';
+    discord = {
+      enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          Whether to enable discord
+          Disable to only install Vesktop
+        '';
+      };
+      package = mkOption {
+        type = types.package;
+        default = pkgs.discord;
+        description = ''
+          The Discord package to use
+        '';
+      };
+      configDir = mkOption {
+        type = types.path;
+        default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/discord";
+        description = "Config path for Discord";
+      };
+      vencord.enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable Vencord (for non-vesktop)";
+      };
+      openASAR.enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable OpenASAR (for non-vesktop)";
+      };
+      settings = mkOption {
+        type = types.attrs;
+        default = {};
+        description =  ''
+          Settings to be placed in discordConfigDir/settings.json
+        '';
+      };
     };
-    vesktop.enable = mkEnableOption ''
-      Whether to enable Vesktop
-    '';
+    vesktop = {
+      enable = mkEnableOption ''
+        Whether to enable Vesktop
+      '';
+      package = mkOption {
+        type = types.package;
+        default = pkgs.vesktop;
+        description = ''
+          The Vesktop package to use
+        '';
+      };
+      configDir = mkOption {
+        type = types.path;
+        default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop";
+        description = "Config path for Vesktop";
+      };
+      settings = mkOption {
+        type = types.attrs;
+        default = {};
+        description =  ''
+          Settings to be placed in vesktop.configDir/settings.json
+        '';
+      };
+      state = mkOption {
+        type = types.attrs;
+        default = {};
+        description =  ''
+          Settings to be placed in vesktop.configDir/state.json
+        '';
+      };
+    };
     package = mkOption {
-      type = types.package;
-      default = pkgs.discord;
+      type = with types; nullOr package;
+      default = null;
       description = ''
+        Deprecated
         The Discord package to use
       '';
     };
     vesktopPackage = mkOption {
-      type = types.package;
-      default = pkgs.vesktop;
+      type = with types; nullOr package;
+      default = null;
       description = ''
         The Vesktop package to use
       '';
@@ -59,18 +119,18 @@ in {
       description = "Vencord config directory";
     };
     vesktopConfigDir = mkOption {
-      type = types.path;
-      default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop";
-      description = "Config path for vesktop";
+      type = with types; nullOr path;
+      default = null;
+      description = "Config path for Vesktop";
     };
     vencord.enable = mkOption {
-      type = types.bool;
-      default = true;
+      type = with types; nullOr bool;
+      default = null;
       description = "Enable Vencord (for non-vesktop)";
     };
     openASAR.enable = mkOption {
-      type = types.bool;
-      default = true;
+      type = with types; nullOr bool;
+      default = null;
       description = "Enable OpenASAR (for non-vesktop)";
     };
     quickCss = mkOption {
@@ -104,19 +164,25 @@ in {
       type = types.attrs;
       default = {};
       description = ''
-        Options to override vencord config for Vesktop. Use to set different
-        settings between configs
+        additional config to be added to programs.nixcord.config
+        for vesktop only
       '';
     };
     vencordConfig = mkOption {
       type = types.attrs;
       default = {};
-      description = '''';
+      description = ''
+        additional config to be added to programs.nixcord.config
+        for vencord only
+      '';
     };
     extraConfig = mkOption {
       type = types.attrs;
       default = {};
-      description = "Vencord extra config";
+      description = ''
+        additional config to be added to programs.nixcord.config
+        for both vencord and vesktop
+      '';
     };
     userPlugins = let
       regex = "github:([[:alnum:].-]+)/([[:alnum:]/-]+)/([0-9a-f]{40})";
@@ -206,38 +272,57 @@ in {
   in mkIf cfg.enable (mkMerge [
     {
       home.packages = [
-        (mkIf cfg.discord.enable (cfg.package.override {
-          withVencord = cfg.vencord.enable;
-          withOpenASAR = cfg.openASAR.enable;
+        (mkIf cfg.discord.enable (cfg.discord.package.override {
+          withVencord = cfg.discord.vencord.enable;
+          withOpenASAR = cfg.discord.openASAR.enable;
           inherit vencord;
         }))
-        (mkIf cfg.vesktop.enable (cfg.vesktopPackage.override {
+        (mkIf cfg.vesktop.enable (cfg.vesktop.package.override {
           withSystemVencord = true;
           inherit vencord;
         }))
       ];
     }
     (mkIf cfg.discord.enable (mkMerge [
-      (mkIf (isQuickCssUsed cfg.vesktopConfig) {
+      # QuickCSS
+      (mkIf (isQuickCssUsed cfg.vencordConfig) {
         home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
       })
+      # Vencord Settings
       {
         home.file."${cfg.configDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
             recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vencordConfig ]
           ));
       }
+      # Client Settings
+      (mkIf (cfg.discord.settings != {}) {
+        home.file."${cfg.discord.configDir}/settings.json".text =
+            builtins.toJSON mkVencordCfg cfg.discord.settings;
+      })
     ]))
     (mkIf cfg.vesktop.enable (mkMerge [
-      (mkIf (isQuickCssUsed cfg.vencordConfig) {
-        home.file."${cfg.vesktopConfigDir}/settings/quickCss.css".text = cfg.quickCss;
+      # QuickCSS
+      (mkIf (isQuickCssUsed cfg.vesktopConfig) {
+        home.file."${cfg.vesktop.configDir}/settings/quickCss.css".text = cfg.quickCss;
       })
+      # Vencord Settings
       {
-        home.file."${cfg.vesktopConfigDir}/settings/settings.json".text =
+        home.file."${cfg.vesktop.configDir}/settings/settings.json".text =
           builtins.toJSON (mkVencordCfg (
             recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vesktopConfig ]
           ));
       }
+      # Vesktop Client Settings
+      (mkIf (cfg.vesktop.settings != {}) {
+        home.file."${cfg.vesktop.configDir}/settings.json".text =
+            builtins.toJSON mkVencordCfg cfg.vesktopSettings;
+      })
+      # Vesktop Client State
+      (mkIf (cfg.vesktop.state != {}) {
+        home.file."${cfg.vesktop.configDir}/state.json".text =
+            builtins.toJSON mkVencordCfg cfg.vesktopState;
+      })
     ]))
     # Warnings
     {
@@ -246,6 +331,22 @@ in {
           Nixcord is now pinned to a specific Vencord version to ensure compatability.
           Config options relating to auto-update no longer function.
           To update Nixcord to the latest version, use nixos-rebuild
+        '')
+        (mkIf (!builtins.isNull cfg.package) ''
+          nixcord.package has been moved to nixcord.discord.package
+        '')
+        (mkIf (!builtins.isNull cfg.vencord.enable) ''
+          nixcord.vencord has been moved to nixcord.discord.vencord
+        '')
+        (mkIf (!builtins.isNull cfg.openASAR.enable) ''
+          nixcord.openASAR has been moved to nixcord.discord.openASAR
+        '')
+        (mkIf (!builtins.isNull cfg.vesktopPackage) ''
+          nixcord.vesktopPackage has been moved to nixcord.vesktop.package
+        '')
+        (mkIf (!builtins.isNull cfg.config.plugins.ignoreActivities.allowedIds) ''
+          nixcord.config.plugins.ignoreActivities.allowedIds is deprecated and replaced by
+          nixcord.config.plugins.ignoreActivities.idsList
         '')
         (mkIf cfg.config.plugins.watchTogetherAdblock.enable ''
           nixcord.config.plugins.watchTogetherAdblock is deprecated and replaced by

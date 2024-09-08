@@ -18,6 +18,15 @@ let
     "moderator"
     "voiceModerator"
     "chatModerator"
+    "skipHostUpdate"
+    "dangerousEnableDevtoolsOnlyEnableIfYouKnowWhatYoureDoing"
+    "minWidth"
+    "minHeight"
+    "isMaximized"
+    "isMinimized"
+    "windowBounds"
+    "openOnStartup"
+    "minimizeToTray"
   ] ++ parseRules.upperNames;
 
   lowerPluginTitles = [ # these are the only plugins with lowercase names in json
@@ -43,6 +52,7 @@ let
     "disabled"
     "compact"
     "plain"
+    "whitelist"
   ] ++ parseRules.fakeEnums.zero;
   oneOptions = [       # options which evaluate to int 1
     "consistent"
@@ -62,6 +72,7 @@ let
     "cozy"
     "muted"
     "animatedDots"
+    "blacklist"
   ] ++ parseRules.fakeEnums.one;
   twoOptions = [       # options which evaluate to int 2
     "timestamp"

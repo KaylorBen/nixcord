@@ -6,55 +6,54 @@ All options relating to nixcord config outside of Vencord itself
 programs.nixcord.enable
     # enables nixcord
 ```
-## discord.enable
+## discord
 ```nix
 programs.nixcord.discord.enable
     # enable the discord package and discord config
     # default: true
     # disable this only if you want vesktop without discord
+programs.nixcord.discord.package
+    # package of discord to install
+    # default: pkgs.discord
+programs.nixcord.discord.configDir
+    # path to discord config
+    # this is only useful for changing discord/settings.json
+    # type: path
+    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/discord
+programs.nixcord.discord.vencord.enable
+    # whether to install vencord for discord
+    # default: true
+programs.nixcord.discord.openASAR.enable
+    # whether to install OpenASAR with discord
+    # default: true
+programs.nixcord.discord.settings
+    # Settings to be placed in discord.configDir/settings.json
+    # type: attrs
 ```
-## vesktop.enable
+## vesktop
 ```nix
 programs.nixcord.vesktop.enable
     # enable the vesktop package and discord config
-```
-## package
-```nix
-programs.nixcord.package
-    # package of discord to install
-    # default: pkgs.discord
-```
-## vesktopPackage
-```nix
-programs.nixcord.vesktopPackage
+programs.nixcord.vesktop.package
     # package of vesktop to install
     # default: pkgs.vesktop
+programs.nixcord.vesktop.configDir
+    # path to vesktop config
+    # type: path
+    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop
+programs.nixcord.vesktop.settings
+    # Settings to be placed in vesktop.configDir/settings.json
+    # type: attrs
+programs.nixcord.vesktop.state
+    # Settings to be placed in vesktop.configDir/state.json
+    # type: attrs
 ```
 ## configDir
 ```nix
 programs.nixcord.configDir
-    # path to discord config
+    # path to vencord config
     # type: path
     # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/Vencord
-```
-## vesktopConfigDir
-```nix
-programs.nixcord.vesktopConfigDir
-    # path to vesktop config
-    # type: path
-    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop
-```
-## vencord
-```nix
-programs.nixcord.vencord.enable
-    # whether to install vencord for discord
-    # default: true
-```
-## openASAR
-```nix
-programs.nixcord.openASAR.enable
-    # whether to install OpenASAR with discord
-    # default: true
 ```
 ## quickCss
 ```nix
