@@ -257,16 +257,9 @@ in {
     };
     # nixpkgs is always really far behind
     # so instead we maintain our own vencord package
-    vencord = applyPostPatch (
-      pkgs.callPackage ./vencord.nix {
-        inherit (pkgs)
-          buildNpmPackage
-          fetchFromGitHub
-          lib
-          esbuild
-          ;
-      }
-    );
+    #
+    # vencord nixpkgs is up to date for now <---
+    vencord = applyPostPatch (pkgs.vencord);
 
     isQuickCssUsed = appConfig: (cfg.config.useQuickCss || appConfig ? "useQuickCss" && appConfig.useQuickCss) && cfg.quickCss != "";
   in mkIf cfg.enable (mkMerge [
@@ -328,9 +321,7 @@ in {
     {
       warnings = [
         (mkIf (cfg.config.notifyAboutUpdates || cfg.config.autoUpdate || cfg.config.autoUpdateNotification) ''
-          Nixcord is now pinned to a specific Vencord version to ensure compatability.
-          Config options relating to auto-update no longer function.
-          To update Nixcord to the latest version, use nixos-rebuild
+          Nixcord is now pinned to a specific Vencord version to ensure compatability. Config options relating to auto-update no longer function. To update Nixcord to the latest version, use nixos-rebuild
         '')
         (mkIf (!builtins.isNull cfg.package) ''
           nixcord.package has been moved to nixcord.discord.package
@@ -345,24 +336,25 @@ in {
           nixcord.vesktopPackage has been moved to nixcord.vesktop.package
         '')
         (mkIf (!builtins.isNull cfg.config.plugins.ignoreActivities.allowedIds) ''
-          nixcord.config.plugins.ignoreActivities.allowedIds is deprecated and replaced by
-          nixcord.config.plugins.ignoreActivities.idsList
+          nixcord.config.plugins.ignoreActivities.allowedIds is deprecated and replaced by nixcord.config.plugins.ignoreActivities.idsList
         '')
         (mkIf cfg.config.plugins.watchTogetherAdblock.enable ''
-          nixcord.config.plugins.watchTogetherAdblock is deprecated and replaced by
-          nixcord.config.plugins.youtubeAdblock which provides more functionality
+          nixcord.config.plugins.watchTogetherAdblock is deprecated and replaced by nixcord.config.plugins.youtubeAdblock which provides more functionality
         '')
         (mkIf cfg.config.plugins.maskedLinkPaste.enable ''
-          nixcord.config.plugins.maksedLinkPaste is deprecated since it is a discord stock
-          feature and redundant.
+          nixcord.config.plugins.maksedLinkPaste is deprecated since it is a discord stock feature and redundant.
         '')
         (mkIf cfg.config.plugins.automodContext.enable ''
-          nixcord.config.plugins.automodContext is deprecated since it is a discord stock
-          feature and redundant.
+          nixcord.config.plugins.automodContext is deprecated since it is a discord stock feature and redundant.
         '')
         (mkIf cfg.config.plugins.showAllRoles.enable ''
-          nixcord.config.plugins.showAllRoles is deprecated since it is a discord stock
-          feature and redundant.
+          nixcord.config.plugins.showAllRoles is deprecated since it is a discord stock feature and redundant.
+        '')
+        (mkIf cfg.config.plugins.timeBarAllActivities.enable ''
+          nixcord.config.plugins.timeBarAllActivities is deprecated since it is a discord stock feature and redundant.
+        '')
+        (mkIf cfg.config.plugins.noDefaultHangStatus.enable ''
+          nixcord.config.plugins.noDefaultHangStatus is deprecated since discord fixed this issue and removed the hang status.
         '')
       ];
     }
