@@ -257,16 +257,9 @@ in {
     };
     # nixpkgs is always really far behind
     # so instead we maintain our own vencord package
-    vencord = applyPostPatch (
-      pkgs.callPackage ./vencord.nix {
-        inherit (pkgs)
-          buildNpmPackage
-          fetchFromGitHub
-          lib
-          esbuild
-          ;
-      }
-    );
+    #
+    # vencord nixpkgs is up to date for now <---
+    vencord = applyPostPatch (pkgs.vencord);
 
     isQuickCssUsed = appConfig: (cfg.config.useQuickCss || appConfig ? "useQuickCss" && appConfig.useQuickCss) && cfg.quickCss != "";
   in mkIf cfg.enable (mkMerge [
@@ -363,6 +356,14 @@ in {
         (mkIf cfg.config.plugins.showAllRoles.enable ''
           nixcord.config.plugins.showAllRoles is deprecated since it is a discord stock
           feature and redundant.
+        '')
+        (mkIf cfg.config.plugins.timeBarAllActivities.enable ''
+          nixcord.config.plugins.timeBarAllActivities is deprecated since it is a discord
+          stock feature and redundant.
+        '')
+        (mkIf cfg.config.plugins.noDefaultHangStatus.enable ''
+          nixcord.config.plugins.noDefaultHangStatus is deprecated since discord fixed this
+          issue and removed the hang status.
         '')
       ];
     }

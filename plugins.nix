@@ -41,6 +41,15 @@ with lib;
     type = types.bool;
     default = true;
   };
+  accountPanelServiceIcon = {
+    enable = mkEnableOption ''
+      Right click your account panel in the bottom left to
+      view your profile in the current server
+    '';
+    prioritizeServerProfile = mkEnableOption ''
+      Prioritize Server Profile when left clicking your account panel
+    '';
+  };
   alwaysAnimate = {
     enable = mkEnableOption ''
       Animates anything that can be animated
@@ -1706,6 +1715,8 @@ with lib;
       Completely ignores (recent) incoming messages from blocked users (locally).
     '';
   };
+  # deprecated
+  # TODO remove after some time
   noDefaultHangStatus = {
     enable = mkEnableOption ''
       Disable the default hang status when joining voice channels
@@ -2704,6 +2715,8 @@ with lib;
       Adds data attributes to various elements for theming purposes
     '';
   };
+  # deprecated
+  # TODO remove after some time
   timeBarAllActivities = {
     enable = mkEnableOption ''
       Adds the Spotify time bar to all activities if they have start and end timestamps

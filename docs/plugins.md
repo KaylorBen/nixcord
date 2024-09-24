@@ -19,6 +19,14 @@ programs.nixcord.config.plugins.userSettingsAPI.enable
 > These plugins are dependancies for other plugins to work but
 > are not hard required for Vencord to run.
 
+## accountPanelServerProfile
+```nix
+programs.nixcord.config.plugins.accountPanelServerProfile.enable
+    # Right click your account panel in the bottom left to view
+    # your profile in the current server
+programs.nixcord.config.plugins.accountPanelServerProfile.prioritizeServerProfile
+    # Prioritize Server Profile when left clicking your account panel
+```
 ## alwaysAnimate
 ```nix
 programs.nixcord.config.plugins.alwaysAnimate.enable
@@ -1039,11 +1047,6 @@ programs.nixcord.config.plugins.noBlockedMessages.enable
 programs.nixcord.config.plugins.noBlockedMessages.ignoreBlockedMessages
     # Completely ignores (recent) incoming messages from blocked users (locally).
 ```
-## noDefaultHangStatus
-```nix
-programs.nixcord.config.plugins.noDefaultHangStatus.enable
-    # Disable the default hang status when joining voice channels
-```
 ## noDevtoolsWarning
 ```nix
 programs.nixcord.config.plugins.noDevtoolsWarning.enable
@@ -1693,17 +1696,6 @@ programs.nixcord.config.plugins.textReplace.enable
 ```nix
 programs.nixcord.config.plugins.themeAttributes.enable
     # Adds data attributes to various elements for theming purposes
-```
-## timeBarAllActivities
-```nix
-programs.nixcord.config.plugins.timeBarAllActivities.enable
-    # Adds the Spotify time bar to all activities if they have start and end timestamps
-programs.nixcord.config.plugins.timeBarAllActivities.hideActivityDetailText
-    # Hide the large title text next to the activity
-    # default: true
-programs.nixcord.config.plugins.timeBarAllActivities.hideActivityTimerBadges
-    # Hide the timer badges next to the activity
-    # default: true
 ```
 ## translate
 ```nix
