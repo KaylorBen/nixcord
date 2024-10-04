@@ -442,6 +442,14 @@ with lib;
     enable = mkEnableOption ''
       Disables annoying console messages/errors
     '';
+    disableLoggers = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Disables Discords loggers
+      '';
+    };
+    # deprecated
     disableNoisyLoggers = mkEnableOption ''
       Disable noisy loggers like the MessageActionCreators
     '';
@@ -450,6 +458,13 @@ with lib;
       default = true;
       description = ''
         Disable the Spotify logger, which leaks account information and access token
+      '';
+    };
+    whitelistedLoggers = mkOption {
+      type = types.str;
+      default = "GatewaySocket; Routing/Utils";
+      descrption = ''
+        Semi colon separated list of loggers to allow even if others are hidden
       '';
     };
   };
@@ -902,6 +917,11 @@ with lib;
   friendsSince = {
     enable = mkEnableOption ''
       Shows when you became friends with someone in the user popout
+    '';
+  };
+  fullSearchContext = {
+    enable = mkEnableOption ''
+      Makes the message context menu in message search results have all options you'd expect
     '';
   };
   gameActivityToggle = {
@@ -2334,7 +2354,19 @@ with lib;
         Show role colors in the reactors list
       '';
     };
+    colorChatMessages = mkEnableOption ''
+      Color chat messages based on the author's role color
+    '';
+    messageSaturation = mkOption {
+      type = types.int;
+      default = 30;
+      description = ''
+        Intensity of message coloring.
+      '';
+    };
   };
+  # deprecated
+  # TODO remove after some time
   searchReply = {
     enable = mkEnableOption ''
       Adds a reply button to search results
@@ -2840,8 +2872,24 @@ with lib;
         Show a user's voice channel in their profile modal
       '';
     };
+    showInMemberList = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Show a user's Voice Channel indicator in the member and DMs list
+      '';
+    };
+    showInMessages = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Show a user's Voice Channel indicator in messages
+      '';
+    };
+    # deprecated
     showVoiceChannelSectionHeader = mkOption {
       type = types.bool;
+      # left true, warning if its false
       default = true;
       description = ''
         Whether to show "IN A VOICE CHANNEL" above the join button
