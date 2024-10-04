@@ -463,7 +463,7 @@ with lib;
     whitelistedLoggers = mkOption {
       type = types.str;
       default = "GatewaySocket; Routing/Utils";
-      descrption = ''
+      description = ''
         Semi colon separated list of loggers to allow even if others are hidden
       '';
     };
