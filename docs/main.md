@@ -26,9 +26,6 @@ programs.nixcord.discord.vencord.enable
 programs.nixcord.discord.openASAR.enable
     # whether to install OpenASAR with discord
     # default: true
-programs.nixcord.discord.settings
-    # Settings to be placed in discord.configDir/settings.json
-    # type: attrs
 ```
 ## vesktop
 ```nix
@@ -41,12 +38,6 @@ programs.nixcord.vesktop.configDir
     # path to vesktop config
     # type: path
     # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop
-programs.nixcord.vesktop.settings
-    # Settings to be placed in vesktop.configDir/settings.json
-    # type: attrs
-programs.nixcord.vesktop.state
-    # Settings to be placed in vesktop.configDir/state.json
-    # type: attrs
 ```
 ## configDir
 ```nix
@@ -176,4 +167,20 @@ programs.nixcord.parseRules.fakeEnums.three
 programs.nixcord.parseRules.fakeEnums.four
     # plugin strings to map to 4
     # type: listOf str
+```
+## settings.json and state.json control
+>[!WARNING]
+> Due to Vencord/Vesktop#220 this will not be possible without upstream changes.
+> Anyways the options are provided in case you figure something out or want to PR
+> Messing with these will likely cause issues since nix store is read only
+```nix
+programs.nixcord.discord.settings
+    # Settings to be placed in discord.configDir/settings.json
+    # type: attrs
+programs.nixcord.vesktop.settings
+    # Settings to be placed in vesktop.configDir/settings.json
+    # type: attrs
+programs.nixcord.vesktop.state
+    # Settings to be placed in vesktop.configDir/state.json
+    # type: attrs
 ```
