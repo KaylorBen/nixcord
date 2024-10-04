@@ -280,11 +280,16 @@ programs.nixcord.config.plugins.colorSighted.enable
 ```nix
 programs.nixcord.config.plugins.consoleJanitor.enable
     # Disables annoying console messages/errors
-programs.nixcord.config.plugins.consoleJanitor.disableNoisyLoggers
-    # Disable noisy loggers like the MessageActionCreators
+programs.nixcord.config.plugins.consoleJanitor.disableLoggers
+    # Disables Discords loggers
+    # default: true
 programs.nixcord.config.plugins.consoleJanitor.disableSpotifyLogger
     # Disable the Spotify logger, which leaks account information and access token
     # default: true
+programs.nixcord.config.plugins.consoleJanitor.whitelistedLoggers
+    # Semi colon seperated list of loggers to allow even if others are hidden
+    # type: str
+    # default: "GatewaySocket; Routing/Utils"
 ```
 ## consoleShortcuts
 ```nix
@@ -592,6 +597,11 @@ programs.nixcord.config.plugins.friendInvites.enable
 programs.nixcord.config.plugins.friendsSince.enable
     # Shows when you became friends with someone in the user popout
 ```
+## fullSearchContext
+```nix
+programs.nixcord.config.plugins.fullSearchContext.enable
+    # Makes the message context menu in message search results have all options you'd expect
+```
 ## gameActivityToggle
 ```nix
 programs.nixcord.config.plugins.gameActivityToggle.enable
@@ -599,9 +609,9 @@ programs.nixcord.config.plugins.gameActivityToggle.enable
 programs.nixcord.config.plugins.gameActivityToggle.oldIcon
     # Use the old icon style before Discord icon redesign
 ```
-## gitPaste
+## gifPaste
 ```nix
-programs.nixcord.config.plugins.gitPaste.enable
+programs.nixcord.config.plugins.gifPaste.enable
     # Makes picking a gif in the gif picker insert a link into the chatbox instead of instantly sending it
 ```
 ## greetStickerPicker
@@ -1441,14 +1451,15 @@ programs.nixcord.config.plugins.roleColorEverywhere.memberList
 programs.nixcord.config.plugins.roleColorEverywhere.voiceUsers
     # Show role colors in the voice chat user list
     # default: true
-programs.nixcord.config.plugins.roleColorEverywhere.reactorList
+programs.nixcord.config.plugins.roleColorEverywhere.reactorsList
     # Show role colors in the reactors list
     # default: true
-```
-## searchReply
-```nix
-programs.nixcord.config.plugins.searchReply.enable
-    # Adds a reply button to search results
+programs.nixcord.config.plugins.roleColorEverywhere.colorChatMessages
+    # Color chat messages based on the author's role color
+programs.nixcord.config.plugins.roleColorEverywhere.messageSaturation
+    # Intensity of message coloring.
+    # type: int
+    # default: 30
 ```
 ## secretRingToneEnabler
 ```nix
@@ -1464,7 +1475,7 @@ programs.nixcord.config.plugins.summaries.enable
     # Enables Discord's experimental Summaries feature on every server, displaying AI generated summaries of conversations
 programs.nixcord.config.plugins.summaries.summaryExpiryThresholdDays
     # The time in days before a summary is removed. Note that only up to 50 summaries are kept per channel
-    # type: number
+    # type: int
     # default: 3
 ```
 ## sendTimestamps
@@ -1768,8 +1779,11 @@ programs.nixcord.config.plugins.userVoiceShow.enable
 programs.nixcord.config.plugins.userVoiceShow.showInUserProfileModal
     # Show a user's voice channel in their profile modal
     # default: true
-programs.nixcord.config.plugins.userVoiceShow.showVoiceChannelSectionHeader
-    # Whether to show "IN A VOICE CHANNEL" above the join button
+programs.nixcord.config.plugins.showInMemberList
+    # Show a user's Voice Channel indicator in the member and DMs list
+    # default: true
+programs.nixcord.config.plugins.showInMessages
+    # Show a user's Voice Channel indicator in messages
     # default: true
 ```
 ## USRBG
