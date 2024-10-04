@@ -267,7 +267,7 @@ in {
           jq
           lib
           nix-update
-          node-js
+          nodejs
           pnpm
           stdenv
           writeShellScript
