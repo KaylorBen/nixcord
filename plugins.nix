@@ -41,7 +41,7 @@ with lib;
     type = types.bool;
     default = true;
   };
-  accountPanelServiceIcon = {
+  accountPanelServerProfile = {
     enable = mkEnableOption ''
       Right click your account panel in the bottom left to
       view your profile in the current server
