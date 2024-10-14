@@ -19,7 +19,7 @@ programs.nixcord.discord.configDir
     # path to discord config
     # this is only useful for changing discord/settings.json
     # type: path
-    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/discord
+    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/discord
 programs.nixcord.discord.vencord.enable
     # whether to install vencord for discord
     # default: true
@@ -37,14 +37,14 @@ programs.nixcord.vesktop.package
 programs.nixcord.vesktop.configDir
     # path to vesktop config
     # type: path
-    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop
+    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/vesktop
 ```
 ## configDir
 ```nix
 programs.nixcord.configDir
     # path to vencord config
     # type: path
-    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/Vencord
+    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/Vencord
 ```
 ## quickCss
 ```nix
