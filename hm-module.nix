@@ -46,7 +46,7 @@ in {
       };
       configDir = mkOption {
         type = types.path;
-        default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/discord";
+        default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/discord";
         description = "Config path for Discord";
       };
       vencord.enable = mkOption {
@@ -80,7 +80,7 @@ in {
       };
       configDir = mkOption {
         type = types.path;
-        default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/vesktop";
+        default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/vesktop";
         description = "Config path for Vesktop";
       };
       settings = mkOption {
@@ -115,7 +115,7 @@ in {
     };
     configDir = mkOption {
       type = types.path;
-      default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${builtins.getEnv "HOME"}/Library/Application Support"}/Vencord";
+      default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/Vencord";
       description = "Vencord config directory";
     };
     vesktopConfigDir = mkOption {
