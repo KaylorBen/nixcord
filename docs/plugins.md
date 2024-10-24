@@ -567,6 +567,11 @@ programs.nixcord.config.plugins.favoriteGifSearch.searchOption
 programs.nixcord.config.plugins.fixCodeblockGap.enable
     # Removes the gap between codeblocks and text below it
 ```
+## fixImagesQuality
+```nix
+programs.nixcord.config.plugins.fixImagesQuality.enable
+    # Prevents images from being loaded as webp, which can cause quality loss
+```
 ## fixSpotifyEmbeds
 ```nix
 programs.nixcord.config.plugins.fixSpotifyEmbeds.enable
