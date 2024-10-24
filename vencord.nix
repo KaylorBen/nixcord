@@ -1,7 +1,3 @@
-# Made from nixpkgs pkg and updated with nix-update
-# identical to nixpkgs source, but maintained here for
-# quicker updates that don't wait on hydra
-
 {
   curl,
   esbuild,
@@ -30,7 +26,7 @@ stdenv.mkDerivation (finalAttrs: {
   pnpmDeps = pnpm.fetchDeps {
     inherit (finalAttrs) pname src;
 
-    hash = "sha256-YBWe4MEmFu8cksOIxuTK0deO7q0QuqgOUc9WkUNBwp0=";
+    hash = "sha256-bosCE9gBFCcM3Ww6sJmhps/cl4lovXKMieYpkqAMst8=";
   };
 
   nativeBuildInputs = [
