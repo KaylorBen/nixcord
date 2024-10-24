@@ -1328,26 +1328,15 @@ programs.nixcord.config.plugins.previewMessage.enable
 ```
 ## pronounDB
 ```nix
-programs.nixcord.config.plugins.pronounDB.enable
-    # Adds pronouns to user messages using pronoundb
-programs.nixcord.config.plugins.pronounDB.pronounsFormat
+programs.nixcord.config.plugins.userMessagesPronouns.enable
+    # Adds pronouns to user messages using UserMessagesPronouns
+programs.nixcord.config.plugins.userMessagesPronouns.pronounsFormat
     # The format for pronouns to appear in chat
     # type: enum
     # default: "LOWERCASE"
     # can be "CAPITALIZED"
-programs.nixcord.config.plugins.pronounDB.pronounsSource
-    # Where to source pronouns from
-    # type: enum
-    # default: "preferPronounDB"
-    # can be "preferDiscord"
-programs.nixcord.config.plugins.pronounDB.showSelf
+programs.nixcord.config.plugins.userMessagesPronouns.showSelf
     # Enable or disable showing pronouns for the current user
-    # default: true
-programs.nixcord.config.plugins.pronounDB.showInMessages
-    # Show in messages
-    # default: true
-programs.nixcord.config.plugins.pronounDB.showInProfile
-    # Show in profile
     # default: true
 ```
 ## quickMention

@@ -2137,7 +2137,7 @@ with lib;
     '';
   };
   # This is now a discord feature so somewhat redundent
-  pronounDB = {
+  userMessagesPronouns = {
     enable = mkEnableOption ''
       Adds pronouns to user messages using pronoundb
     '';
@@ -2154,35 +2154,11 @@ with lib;
         CAPITALIZED - Capitalized
       '';
     };
-    pronounSource = mkOption {
-      type = types.enum [
-        "preferPronounDB" # 0
-        "preferDiscord"   # 1
-      ];
-      default = "preferPronounDB";
-      description = ''
-        Where to source pronouns from
-      '';
-    };
     showSelf = mkOption {
       type = types.bool;
       default = true;
       description = ''
         Enable or disable showing pronouns for the current user
-      '';
-    };
-    showInMessages = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Show in messages
-      '';
-    };
-    showInProfile = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Show in profile
       '';
     };
   };
