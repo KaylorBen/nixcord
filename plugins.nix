@@ -886,6 +886,11 @@ with lib;
       Removes the gap between codeblocks and text below it
     '';
   };
+  fixImagesQuality = {
+    enable = mkEnableOption ''
+      Prevents images from being loaded as webp, which can cause quality loss
+    '';
+  };
   fixSpotifyEmbeds = {
     enable = mkEnableOption ''
       Fixes spotify embeds being incredibly loud by letting you customise the volume
