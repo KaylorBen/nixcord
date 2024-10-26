@@ -19,17 +19,45 @@ let
 
   dop = with types; coercedTo package (a: a.outPath) pathInStore;
 
-  recursiveUpdateAttrsList =
-    list:
-    if (builtins.length list <= 1) then
-      (builtins.elemAt list 0)
+  # Define regular expressions for GitHub and Git URLs
+  regexGithub = "github:([[:alnum:].-]+)/([[:alnum:]/-]+)/([0-9a-f]{40})";
+  regexGit = "git[+]file:///([^/]+/)*([^/?]+)(\\?ref=[a-f0-9]{40})?$";
+
+  # Define coercion functions for GitHub and Git
+  coerceGithub = value: let
+    matches = builtins.match regexGithub value;
+    owner = builtins.elemAt matches 0;
+    repo = builtins.elemAt matches 1;
+    rev = builtins.elemAt matches 2;
+  in builtins.fetchGit {
+    url = "https://github.com/${owner}/${repo}";
+    inherit rev;
+  };
+
+  coerceGit = value: let 
+    matches = builtins.match regexGit value;
+    filepath = builtins.elemAt matches 0;  
+    rev = builtins.elemAt matches 1;       
+  in builtins.fetchGit {
+    url = filepath;
+    inherit rev;
+  };
+
+  # Mapper function that applies coercion based on the regex match
+  pluginMapper = plugin: 
+    if builtins.match regexGithub plugin != null then
+      coerceGithub plugin
+    else if builtins.match regexGit plugin != null then
+      coerceGit plugin
     else
-      recursiveUpdateAttrsList (
-        [
-          (attrsets.recursiveUpdate (builtins.elemAt list 0) (builtins.elemAt list 1))
-        ]
-        ++ (lists.drop 2 list)
-      );
+      plugin;  # Leave it as-is if it's already a package or path
+
+
+  recursiveUpdateAttrsList = list:
+    if (builtins.length list <= 1) then (builtins.elemAt list 0) else
+      recursiveUpdateAttrsList ([
+        (attrsets.recursiveUpdate (builtins.elemAt list 0) (builtins.elemAt list 1))
+      ] ++ (lists.drop 2 list));
 
   applyPostPatch =
     pkg:
@@ -240,30 +268,27 @@ in
         for both vencord and vesktop
       '';
     };
-    userPlugins =
-      let
-        regex = "github:([[:alnum:].-]+)/([[:alnum:]/-]+)/([0-9a-f]{40})";
-        coerce =
-          value:
-          let
-            matches = builtins.match regex value;
-            owner = builtins.elemAt matches 0;
-            repo = builtins.elemAt matches 1;
-            rev = builtins.elemAt matches 2;
-          in
-          builtins.fetchGit {
-            url = "https://github.com/${owner}/${repo}";
-            inherit rev;
-          };
-      in
-      mkOption {
-        type = with types; attrsOf (coercedTo (strMatching regex) coerce dop);
-        description = "User plugin to fetch and install. Note that any json required must be enabled in extraConfig";
-        default = { };
-        example = {
-          someCoolPlugin = "github:someUser/someCoolPlugin/someHashHere";
-        };
+    userPlugins = lib.mkOption {
+      description = "User plugin to fetch and install. Note that any JSON required must be enabled in extraConfig.";
+      
+      # Define the type of userPlugins with validation
+      type = types.attrsOf (types.oneOf [
+        (types.strMatching regexGithub)   # GitHub URL pattern
+        (types.strMatching regexGit)      # Git URL pattern
+        types.package                      # Nix packages
+        types.path                         # Nix paths
+      ]);
+
+      # Set default values by mapping the userPlugins with the pluginMapper
+      default = lib.mapAttrs (_: plugin: pluginMapper plugin) cfg.userPlugins;
+
+      # Example usage of the userPlugins option
+      example = {
+        someCoolPlugin = "github:someUser/someCoolPlugin/someHashHere";  # GitHub example
+        anotherCoolPlugin = "git+file:///path/to/repo?rev=abcdef1234567890abcdef1234567890abcdef12";  # File path example
       };
+    };
+
     parseRules = {
       upperNames = mkOption {
         type = with types; listOf str;
