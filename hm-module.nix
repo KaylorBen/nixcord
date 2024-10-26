@@ -36,12 +36,15 @@ let
 
   coerceGit = value: let 
     matches = builtins.match regexGit value;
-    filepath = builtins.elemAt matches 0;  
-    rev = builtins.elemAt matches 1;       
-  in builtins.fetchGit {
+    filepath = builtins.elemAt matches 0;   
+    rev = builtins.elemAt matches 1;
+  in lib.traceSeqN 2 {
+    inherit value matches;  # Outputs the value and the regex matches for debugging
+  } (builtins.fetchGit {
     url = filepath;
     inherit rev;
-  };
+  });
+
 
   # Mapper function that applies coercion based on the regex match
   pluginMapper = plugin: 
