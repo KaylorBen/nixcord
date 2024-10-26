@@ -36,15 +36,12 @@ let
 
   coerceGit = value: let 
     matches = builtins.match regexGit value;
-    filepath = builtins.elemAt matches 0;   
-    rev = builtins.elemAt matches 1;
-  in lib.traceSeqN 2 {
-    inherit value matches;  # Outputs the value and the regex matches for debugging
-  } (builtins.fetchGit {
+    filepath = builtins.elemAt matches 0;  
+    rev = builtins.elemAt matches 1;       
+  in builtins.fetchGit {
     url = filepath;
     inherit rev;
-  });
-
+  };
 
   # Mapper function that applies coercion based on the regex match
   pluginMapper = plugin: 
@@ -62,38 +59,7 @@ let
         (attrsets.recursiveUpdate (builtins.elemAt list 0) (builtins.elemAt list 1))
       ] ++ (lists.drop 2 list));
 
-  applyPostPatch =
-    pkg:
-    pkg.overrideAttrs {
-      postPatch = lib.concatLines (
-        lib.optional (cfg.userPlugins != { }) "mkdir -p src/userplugins"
-        ++ lib.mapAttrsToList (
-          name: path:
-          "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins"
-        ) cfg.userPlugins
-      );
-    };
-
-  defaultVencord = applyPostPatch (
-    pkgs.callPackage ./vencord.nix {
-      inherit (pkgs)
-        curl
-        esbuild
-        fetchFromGitHub
-        git
-        jq
-        lib
-        nix-update
-        nodejs
-        pnpm
-        stdenv
-        writeShellScript
-        ;
-      buildWebExtension = false;
-    }
-  );
-in
-{
+in {
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
     discord = {
@@ -114,27 +80,13 @@ in
       };
       configDir = mkOption {
         type = types.path;
-        default = "${
-          if pkgs.stdenvNoCC.isLinux then
-            config.xdg.configHome
-          else
-            "${config.home.homeDirectory}/Library/Application Support"
-        }/discord";
+        default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/discord";
         description = "Config path for Discord";
       };
-      vencord = {
-        enable = mkOption {
-          type = types.bool;
-          default = true;
-          description = "Enable Vencord (for non-vesktop)";
-        };
-        package = mkOption {
-          type = types.package;
-          default = defaultVencord;
-          description = ''
-            The Vencord package to use
-          '';
-        };
+      vencord.enable = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable Vencord (for non-vesktop)";
       };
       openASAR.enable = mkOption {
         type = types.bool;
@@ -143,8 +95,8 @@ in
       };
       settings = mkOption {
         type = types.attrs;
-        default = { };
-        description = ''
+        default = {};
+        description =  ''
           Settings to be placed in discordConfigDir/settings.json
         '';
       };
@@ -162,25 +114,20 @@ in
       };
       configDir = mkOption {
         type = types.path;
-        default = "${
-          if pkgs.stdenvNoCC.isLinux then
-            config.xdg.configHome
-          else
-            "${config.home.homeDirectory}/Library/Application Support"
-        }/vesktop";
+        default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/vesktop";
         description = "Config path for Vesktop";
       };
       settings = mkOption {
         type = types.attrs;
-        default = { };
-        description = ''
+        default = {};
+        description =  ''
           Settings to be placed in vesktop.configDir/settings.json
         '';
       };
       state = mkOption {
         type = types.attrs;
-        default = { };
-        description = ''
+        default = {};
+        description =  ''
           Settings to be placed in vesktop.configDir/state.json
         '';
       };
@@ -202,18 +149,18 @@ in
     };
     configDir = mkOption {
       type = types.path;
-      default = "${
-        if pkgs.stdenvNoCC.isLinux then
-          config.xdg.configHome
-        else
-          "${config.home.homeDirectory}/Library/Application Support"
-      }/Vencord";
+      default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/Vencord";
       description = "Vencord config directory";
     };
     vesktopConfigDir = mkOption {
       type = with types; nullOr path;
       default = null;
       description = "Config path for Vesktop";
+    };
+    vencord.enable = mkOption {
+      type = with types; nullOr bool;
+      default = null;
+      description = "Enable Vencord (for non-vesktop)";
     };
     openASAR.enable = mkOption {
       type = with types; nullOr bool;
@@ -249,7 +196,7 @@ in
     };
     vesktopConfig = mkOption {
       type = types.attrs;
-      default = { };
+      default = {};
       description = ''
         additional config to be added to programs.nixcord.config
         for vesktop only
@@ -257,7 +204,7 @@ in
     };
     vencordConfig = mkOption {
       type = types.attrs;
-      default = { };
+      default = {};
       description = ''
         additional config to be added to programs.nixcord.config
         for vencord only
@@ -265,7 +212,7 @@ in
     };
     extraConfig = mkOption {
       type = types.attrs;
-      default = { };
+      default = {};
       description = ''
         additional config to be added to programs.nixcord.config
         for both vencord and vesktop
@@ -296,124 +243,136 @@ in
       upperNames = mkOption {
         type = with types; listOf str;
         description = "option names to become UPPER_SNAKE_CASE";
-        default = [ ];
+        default = [];
       };
       lowerPluginTitles = mkOption {
         type = with types; listOf str;
         description = "plugins with lowercase names in json";
-        default = [ ];
+        default = [];
         example = [ "petpet" ];
       };
       fakeEnums = {
         zero = mkOption {
           type = with types; listOf str;
           description = "strings to evaluate to 0 in JSON";
-          default = [ ];
+          default = [];
         };
         one = mkOption {
           type = with types; listOf str;
           description = "strings to evaluate to 1 in JSON";
-          default = [ ];
+          default = [];
         };
         two = mkOption {
           type = with types; listOf str;
           description = "strings to evaluate to 2 in JSON";
-          default = [ ];
+          default = [];
         };
         three = mkOption {
           type = with types; listOf str;
           description = "strings to evaluate to 3 in JSON";
-          default = [ ];
+          default = [];
         };
         four = mkOption {
           type = with types; listOf str;
-          description = "strings to evaluate to 4 in JSON";
-          default = [ ];
+          description = "string to evalueate to 4 in JSON";
+          default = [];
         };
         # I've never seen a plugin with more than 5 options for 1 setting
       };
     };
   };
 
-  config =
-    let
-      parseRules = cfg.parseRules;
-      inherit (pkgs.callPackage ./lib.nix { inherit lib parseRules; })
-        mkVencordCfg
-        ;
+  config = let
+    parseRules = cfg.parseRules;
+    inherit (pkgs.callPackage ./lib.nix { inherit lib parseRules; })
+      mkVencordCfg;
 
-      vencord = applyPostPatch cfg.discord.vencord.package;
+    applyPostPatch = pkg: pkg.overrideAttrs {
+      postPatch = lib.concatLines(
+        lib.optional (cfg.userPlugins != {}) "mkdir -p src/userplugins"
+          ++ lib.mapAttrsToList (name: path: "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins") cfg.userPlugins
+      );
+    };
+    # nixpkgs is always really far behind
+    # so instead we maintain our own vencord package
+    vencord = applyPostPatch (
+      pkgs.callPackage ./vencord.nix {
+        inherit (pkgs)
+          curl
+          esbuild
+          fetchFromGitHub
+          git
+          jq
+          lib
+          nix-update
+          nodejs
+          pnpm
+          stdenv
+          writeShellScript
+          ;
+        buildWebExtension = false;
+      }
+    );
 
-      isQuickCssUsed =
-        appConfig:
-        (cfg.config.useQuickCss || appConfig ? "useQuickCss" && appConfig.useQuickCss)
-        && cfg.quickCss != "";
-    in
-    mkIf cfg.enable (mkMerge [
+    isQuickCssUsed = appConfig: (cfg.config.useQuickCss || appConfig ? "useQuickCss" && appConfig.useQuickCss) && cfg.quickCss != "";
+  in mkIf cfg.enable (mkMerge [
+    {
+      home.packages = [
+        (mkIf cfg.discord.enable (cfg.discord.package.override {
+          withVencord = cfg.discord.vencord.enable;
+          withOpenASAR = cfg.discord.openASAR.enable;
+          inherit vencord;
+        }))
+        (mkIf cfg.vesktop.enable (cfg.vesktop.package.override {
+          withSystemVencord = true;
+          inherit vencord;
+        }))
+      ];
+    }
+    (mkIf cfg.discord.enable (mkMerge [
+      # QuickCSS
+      (mkIf (isQuickCssUsed cfg.vencordConfig) {
+        home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
+      })
+      # Vencord Settings
       {
-        home.packages = [
-          (mkIf cfg.discord.enable (
-            cfg.discord.package.override {
-              withVencord = cfg.discord.vencord.enable;
-              withOpenASAR = cfg.discord.openASAR.enable;
-              inherit vencord;
-            }
-          ))
-          (mkIf cfg.vesktop.enable (
-            cfg.vesktop.package.override {
-              withSystemVencord = true;
-              inherit vencord;
-            }
-          ))
-        ];
+        home.file."${cfg.configDir}/settings/settings.json".text =
+          builtins.toJSON (mkVencordCfg (
+            recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vencordConfig ]
+          ));
       }
-      (mkIf cfg.discord.enable (mkMerge [
-        # QuickCSS
-        (mkIf (isQuickCssUsed cfg.vencordConfig) {
-          home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
-        })
-        # Vencord Settings
-        {
-          home.file."${cfg.configDir}/settings/settings.json".text = builtins.toJSON (
-            mkVencordCfg (recursiveUpdateAttrsList [
-              cfg.config
-              cfg.extraConfig
-              cfg.vencordConfig
-            ])
-          );
-        }
-        # Client Settings
-        (mkIf (cfg.discord.settings != { }) {
-          home.file."${cfg.discord.configDir}/settings.json".text = builtins.toJSON mkVencordCfg cfg.discord.settings;
-        })
-      ]))
-      (mkIf cfg.vesktop.enable (mkMerge [
-        # QuickCSS
-        (mkIf (isQuickCssUsed cfg.vesktopConfig) {
-          home.file."${cfg.vesktop.configDir}/settings/quickCss.css".text = cfg.quickCss;
-        })
-        # Vencord Settings
-        {
-          home.file."${cfg.vesktop.configDir}/settings/settings.json".text = builtins.toJSON (
-            mkVencordCfg (recursiveUpdateAttrsList [
-              cfg.config
-              cfg.extraConfig
-              cfg.vesktopConfig
-            ])
-          );
-        }
-        # Vesktop Client Settings
-        (mkIf (cfg.vesktop.settings != { }) {
-          home.file."${cfg.vesktop.configDir}/settings.json".text = builtins.toJSON mkVencordCfg cfg.vesktopSettings;
-        })
-        # Vesktop Client State
-        (mkIf (cfg.vesktop.state != { }) {
-          home.file."${cfg.vesktop.configDir}/state.json".text = builtins.toJSON mkVencordCfg cfg.vesktopState;
-        })
-      ]))
-      # Warnings
+      # Client Settings
+      (mkIf (cfg.discord.settings != {}) {
+        home.file."${cfg.discord.configDir}/settings.json".text =
+            builtins.toJSON mkVencordCfg cfg.discord.settings;
+      })
+    ]))
+    (mkIf cfg.vesktop.enable (mkMerge [
+      # QuickCSS
+      (mkIf (isQuickCssUsed cfg.vesktopConfig) {
+        home.file."${cfg.vesktop.configDir}/settings/quickCss.css".text = cfg.quickCss;
+      })
+      # Vencord Settings
       {
-        warnings = import ./warnings.nix { inherit cfg mkIf; };
+        home.file."${cfg.vesktop.configDir}/settings/settings.json".text =
+          builtins.toJSON (mkVencordCfg (
+            recursiveUpdateAttrsList [ cfg.config cfg.extraConfig cfg.vesktopConfig ]
+          ));
       }
-    ]);
+      # Vesktop Client Settings
+      (mkIf (cfg.vesktop.settings != {}) {
+        home.file."${cfg.vesktop.configDir}/settings.json".text =
+            builtins.toJSON mkVencordCfg cfg.vesktopSettings;
+      })
+      # Vesktop Client State
+      (mkIf (cfg.vesktop.state != {}) {
+        home.file."${cfg.vesktop.configDir}/state.json".text =
+            builtins.toJSON mkVencordCfg cfg.vesktopState;
+      })
+    ]))
+    # Warnings
+    {
+      warnings = import ./warnings.nix { inherit cfg mkIf; };
+    }
+  ]);
 }
