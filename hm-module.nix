@@ -36,12 +36,53 @@ let
 
   coerceGit = value: let 
     matches = builtins.match regexGit value;
-    filepath = builtins.elemAt matches 0;  
-    rev = builtins.elemAt matches 1;       
+        # Ensure matches are found
+    rev = if matches != null then 
+      let
+        rawRev = builtins.elemAt matches 2;
+        # Remove the ?ref= prefix if it exists
+        cleanedRev = builtins.substring 5 (builtins.stringLength rawRev) rawRev;
+        #if builtins.substring 0 5 rawRev == "?ref=" then
+         # builtins.substring 5 (builtins.stringLength rawRev) rawRev
+        #else
+         # null;
+      in cleanedRev
+    else 
+      null;
+    filepath = if matches != null then
+      # Get the whole match after `git+file://`
+      let      
+        # Define the length adjustments
+        startOffset = 4;  # Remove 5 characters from the beginning
+        endOffset = 45;   # Remove 25 characters from the end
+
+        # Calculate the adjusted filepath
+        fullLength = builtins.stringLength value;
+        adjustedPathLength = fullLength - startOffset - endOffset;
+
+        finalPath = builtins.substring startOffset adjustedPathLength value;
+#        pathStartIndex = builtins.stringLength "git+file://";
+#        fullPath = builtins.substring pathStartIndex (builtins.stringLength value) value;
+#        pathWithoutRev = builtins.substring 0 (builtins.stringLength fullPath - (builtins.stringLength rev)) fullPath;
+#        refSuffix = "?ref=";
+#        refSuffixLength = builtins.stringLength refSuffix;
+#        ending = builtins.substring (builtins.stringLength pathWithoutRev - refSuffixLength) refSuffixLength pathWithoutRev;
+#        finalPath = if ending == refSuffix then
+#          builtins.substring 0 (builtins.stringLength pathWithoutRev - refSuffixLength) pathWithoutRev#
+#        else
+#          pathWithoutRev;
+      in
+        finalPath
+    else
+      null; 
+     #cleanedRev = builtins.substring 5 (builtins.stringLength rev) rev;
   in builtins.fetchGit {
     url = filepath;
+    allRefs = true;
+    #ref = "main";
     inherit rev;
   };
+
 
   # Mapper function that applies coercion based on the regex match
   pluginMapper = plugin: 
@@ -58,6 +99,10 @@ let
       recursiveUpdateAttrsList ([
         (attrsets.recursiveUpdate (builtins.elemAt list 0) (builtins.elemAt list 1))
       ] ++ (lists.drop 2 list));
+
+  pluginDerivations = lib.mapAttrs (_: plugin: pluginMapper plugin) cfg.userPlugins;
+
+  userPluginsDirectory = pkgs.linkFarm "userPlugins" pluginDerivations;
 
 in {
   options.programs.nixcord = {
@@ -230,7 +275,7 @@ in {
       ]);
 
       # Set default values by mapping the userPlugins with the pluginMapper
-      default = lib.mapAttrs (_: plugin: pluginMapper plugin) cfg.userPlugins;
+      #default = lib.mapAttrs (_: plugin: pluginMapper plugin) cfg.userPlugins;
 
       # Example usage of the userPlugins option
       example = {
@@ -287,12 +332,13 @@ in {
     inherit (pkgs.callPackage ./lib.nix { inherit lib parseRules; })
       mkVencordCfg;
 
-    applyPostPatch = pkg: pkg.overrideAttrs {
-      postPatch = lib.concatLines(
-        lib.optional (cfg.userPlugins != {}) "mkdir -p src/userplugins"
-          ++ lib.mapAttrsToList (name: path: "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins") cfg.userPlugins
-      );
-    };
+    applyPostPatch = pkg: pkg.overrideAttrs (oldAttrs: {
+      postPatch = ''
+        ln -s ${lib.escapeShellArg userPluginsDirectory} src/userplugins
+      '';
+    });
+#     ${lib.trace "Current directory (PWD): ${builtins.getEnv "OLDPWD"}" ""}
+#        ls
     # nixpkgs is always really far behind
     # so instead we maintain our own vencord package
     vencord = applyPostPatch (
