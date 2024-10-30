@@ -141,7 +141,7 @@ let
 
 in   
 {
-
+  inherit patchedVencord;
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
     discord = {
