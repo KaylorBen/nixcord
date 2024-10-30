@@ -110,9 +110,13 @@ let
       coerceGithub plugin
     else if builtins.match regexGit plugin != null then
       coerceGit plugin
+    else if lib.attrsets.isDerivation plugin then
+      plugin
     else
-      plugin;  # Leave it as-is if it's already a package or path
-
+      builtins.path { 
+        name = "plugin";
+        path = builtins.toPath plugin;
+      };
 
   recursiveUpdateAttrsList = list:
     if (builtins.length list <= 1) then (builtins.elemAt list 0) else
