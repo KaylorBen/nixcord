@@ -17,7 +17,7 @@ let
     lists
     ;
     
-  vencordPkgs = pkgs.callPackage ./vencord.nix {
+  vencordPkgs = lib.traceValFn (d: d.outPath) (pkgs.callPackage ./vencord.nix {
     inherit (pkgs)
       curl
       esbuild
@@ -32,19 +32,19 @@ let
       writeShellScript
       ;
     buildWebExtension = false;
-  };
+  });
     
   applyPostPatch = pkg: 
     pkg.overrideAttrs (oldAttrs: {
-      passthru = {
-        userPlugins = userPluginsDirectory;
-      };
-
+      # passthru = {
+      #   userPlugins = userPluginsDirectory;
+      # };
+      outputs = [];
       postPatch = '' 
         ln -s ${userPluginsDirectory} src/userplugins
       '';
     });
-  patchedVencord = applyPostPatch vencordPkgs;
+  patchedVencord = lib.traceValFn (d: d.outPath) (applyPostPatch vencordPkgs);
 
   dop = with types; coercedTo package (a: a.outPath) pathInStore;
 
