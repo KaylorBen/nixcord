@@ -236,7 +236,7 @@ in {
         };
         four = mkOption {
           type = with types; listOf str;
-          description = "string to evalueate to 4 in JSON";
+          description = "strings to evaluate to 4 in JSON";
           default = [];
         };
         # I've never seen a plugin with more than 5 options for 1 setting
