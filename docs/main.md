@@ -125,7 +125,7 @@ programs.nixcord = {
 > uppercased like the following
 > "lowercaseWord" -> "UppercaseWord"
 More rules can be used with a few provided options:
-## pareRules
+## parseRules
 ```nix
 programs.nixcord.parseRules.upperNames
     # option names to become UPPER_SNAKE_CASE
