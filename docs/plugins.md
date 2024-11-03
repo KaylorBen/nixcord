@@ -1093,7 +1093,7 @@ programs.nixcord.config.plugins.noPendingCount.enable
 programs.nixcord.config.plugins.noPendingCount.hideFriendRequestsCount
     # Hide incoming friend requests count
     # default: true
-programs.nixcord.config.plugins.noPendingCount.hideMessageRequestsCount
+programs.nixcord.config.plugins.noPendingCount.hideMessageRequestCount
     # Hide message requests count
     # default: true
 programs.nixcord.config.plugins.noPendingCount.hidePremiumOffersCount
