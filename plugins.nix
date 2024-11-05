@@ -886,6 +886,11 @@ with lib;
       Removes the gap between codeblocks and text below it
     '';
   };
+  fixImagesQuality = {
+    enable = mkEnableOption ''
+      Prevents images from being loaded as webp, which can cause quality loss
+    '';
+  };
   fixSpotifyEmbeds = {
     enable = mkEnableOption ''
       Fixes spotify embeds being incredibly loud by letting you customise the volume
@@ -2131,7 +2136,7 @@ with lib;
       Lets you preview your message before sending it.
     '';
   };
-  # This is now a discord feature so somewhat redundent
+  # deprecated
   pronounDB = {
     enable = mkEnableOption ''
       Adds pronouns to user messages using pronoundb
@@ -2860,6 +2865,31 @@ with lib;
     enable = mkEnableOption ''
       Allows you to unsuppress embeds in messages
     '';
+  };
+  userMessagesPronouns = {
+    enable = mkEnableOption ''
+      Adds pronouns to user messages using pronoundb
+    '';
+    pronounsFormat = mkOption {
+      type = types.enum [
+        "LOWERCASE"
+        "CAPITALIZED"
+      ];
+      default = "LOWERCASE";
+      example = "CAPITALIZED";
+      description = ''
+        The format for pronouns to appear in chat
+        LOWERCASE - Lowercase
+        CAPITALIZED - Capitalized
+      '';
+    };
+    showSelf = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Enable or disable showing pronouns for the current user
+      '';
+    };
   };
   userVoiceShow = {
     enable = mkEnableOption ''

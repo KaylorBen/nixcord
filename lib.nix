@@ -47,7 +47,6 @@ let
     "normal"
     "highestRole"
     "mostRecent"
-    "preferPronounDB"
     "disabled"
     "compact"
     "plain"
