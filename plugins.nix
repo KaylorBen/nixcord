@@ -2136,8 +2136,8 @@ with lib;
       Lets you preview your message before sending it.
     '';
   };
-  # This is now a discord feature so somewhat redundent
-  userMessagesPronouns = {
+  # deprecated
+  pronounDB = {
     enable = mkEnableOption ''
       Adds pronouns to user messages using pronoundb
     '';
@@ -2154,11 +2154,35 @@ with lib;
         CAPITALIZED - Capitalized
       '';
     };
+    pronounSource = mkOption {
+      type = types.enum [
+        "preferPronounDB" # 0
+        "preferDiscord"   # 1
+      ];
+      default = "preferPronounDB";
+      description = ''
+        Where to source pronouns from
+      '';
+    };
     showSelf = mkOption {
       type = types.bool;
       default = true;
       description = ''
         Enable or disable showing pronouns for the current user
+      '';
+    };
+    showInMessages = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Show in messages
+      '';
+    };
+    showInProfile = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Show in profile
       '';
     };
   };
@@ -2841,6 +2865,31 @@ with lib;
     enable = mkEnableOption ''
       Allows you to unsuppress embeds in messages
     '';
+  };
+  userMessagesPronouns = {
+    enable = mkEnableOption ''
+      Adds pronouns to user messages using pronoundb
+    '';
+    pronounsFormat = mkOption {
+      type = types.enum [
+        "LOWERCASE"
+        "CAPITALIZED"
+      ];
+      default = "LOWERCASE";
+      example = "CAPITALIZED";
+      description = ''
+        The format for pronouns to appear in chat
+        LOWERCASE - Lowercase
+        CAPITALIZED - Capitalized
+      '';
+    };
+    showSelf = mkOption {
+      type = types.bool;
+      default = true;
+      description = ''
+        Enable or disable showing pronouns for the current user
+      '';
+    };
   };
   userVoiceShow = {
     enable = mkEnableOption ''
