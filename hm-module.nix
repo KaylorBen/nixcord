@@ -25,6 +25,36 @@ let
         (attrsets.recursiveUpdate (builtins.elemAt list 0) (builtins.elemAt list 1))
       ] ++ (lists.drop 2 list));
 
+  applyPostPatch =
+    pkg:
+    pkg.overrideAttrs {
+      postPatch = lib.concatLines (
+        lib.optional (cfg.userPlugins != { }) "mkdir -p src/userplugins"
+        ++ lib.mapAttrsToList (
+          name: path:
+          "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins"
+        ) cfg.userPlugins
+      );
+    };
+
+  defaultVencord = applyPostPatch (
+    pkgs.callPackage ./vencord.nix {
+      inherit (pkgs)
+        curl
+        esbuild
+        fetchFromGitHub
+        git
+        jq
+        lib
+        nix-update
+        nodejs
+        pnpm
+        stdenv
+        writeShellScript
+        ;
+      buildWebExtension = false;
+    }
+  );
 in {
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
@@ -49,10 +79,19 @@ in {
         default = "${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/discord";
         description = "Config path for Discord";
       };
-      vencord.enable = mkOption {
-        type = types.bool;
-        default = true;
-        description = "Enable Vencord (for non-vesktop)";
+      vencord = {
+        enable = mkOption {
+          type = types.bool;
+          default = true;
+          description = "Enable Vencord (for non-vesktop)";
+        };
+        package = mkOption {
+          type = types.package;
+          default = defaultVencord;
+          description = ''
+            The Vencord package to use
+          '';
+        };
       };
       openASAR.enable = mkOption {
         type = types.bool;
@@ -249,32 +288,7 @@ in {
     inherit (pkgs.callPackage ./lib.nix { inherit lib parseRules; })
       mkVencordCfg;
 
-    applyPostPatch = pkg: pkg.overrideAttrs {
-      postPatch = lib.concatLines(
-        lib.optional (cfg.userPlugins != {}) "mkdir -p src/userplugins"
-          ++ lib.mapAttrsToList (name: path: "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins") cfg.userPlugins
-      );
-    };
-    # nixpkgs is always really far behind
-    # so instead we maintain our own vencord package
-    vencord = applyPostPatch (
-      pkgs.callPackage ./vencord.nix {
-        inherit (pkgs)
-          curl
-          esbuild
-          fetchFromGitHub
-          git
-          jq
-          lib
-          nix-update
-          nodejs
-          pnpm
-          stdenv
-          writeShellScript
-          ;
-        buildWebExtension = false;
-      }
-    );
+    vencord = applyPostPatch cfg.discord.vencord.package;
 
     isQuickCssUsed = appConfig: (cfg.config.useQuickCss || appConfig ? "useQuickCss" && appConfig.useQuickCss) && cfg.quickCss != "";
   in mkIf cfg.enable (mkMerge [
