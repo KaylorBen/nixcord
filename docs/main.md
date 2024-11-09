@@ -23,6 +23,11 @@ programs.nixcord.discord.configDir
 programs.nixcord.discord.vencord.enable
     # whether to install vencord for discord
     # default: true
+programs.nixcord.discord.vencord.package
+    # note: applyPostPatch is always used for userPlugins support
+    # vencord package to use with discord
+    # type: package
+    # default: our bundled vencord package
 programs.nixcord.discord.openASAR.enable
     # whether to install OpenASAR with discord
     # default: true
