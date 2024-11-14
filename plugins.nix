@@ -1,4 +1,4 @@
-{lib, ...}:
+{ lib, ... }:
 with lib;
 {
   chatInputButtonAPI.enable = mkOption {
@@ -88,9 +88,9 @@ with lib;
     '';
     method = mkOption {
       type = types.enum [
-        "randomCharacters"  # 0
-        "consistent"        # 1
-        "timestamp"         # 2
+        "randomCharacters" # 0
+        "consistent" # 1
+        "timestamp" # 2
       ];
       default = "randomCharacters";
       description = ''
@@ -275,13 +275,13 @@ with lib;
       type = types.bool;
       default = false;
       description = ''
-        Keep showing guild icons in the primary guild bar folder when it
-      's open in the BetterFolders sidebar'';
+          Keep showing guild icons in the primary guild bar folder when it
+        's open in the BetterFolders sidebar'';
     };
     showFolderIcon = mkOption {
       type = types.enum [
-        "never"       # 0
-        "always"      # 1
+        "never" # 0
+        "always" # 1
         "moreThanOne" # 2
       ];
       default = "never";
@@ -579,10 +579,10 @@ with lib;
     };
     type = mkOption {
       type = types.enum [
-        "playing"   # 0
+        "playing" # 0
         "streaming" # 1
         "listening" # 2
-        "watching"  # 3
+        "watching" # 3
         "competing" # 4
       ];
       default = "playing";
@@ -599,10 +599,10 @@ with lib;
     };
     timestampMode = mkOption {
       type = types.enum [
-        "none"          # 0
+        "none" # 0
         "discordUptime" # 1
-        "currentTime"   # 2
-        "customTime"    # 3
+        "currentTime" # 2
+        "customTime" # 3
       ];
       default = "none";
       description = ''
@@ -714,9 +714,9 @@ with lib;
     '';
     replaceElements = mkOption {
       type = types.enum [
-        "everything"  # 0
-        "titles"      # 1
-        "thumbnails"  # 2
+        "everything" # 0
+        "titles" # 1
+        "thumbnails" # 2
       ];
       default = "everything";
       description = ''
@@ -1687,9 +1687,9 @@ with lib;
     messages = mkOption {
       type = types.enum [
         "serverDefault" # 0
-        "all"           # 1
+        "all" # 1
         "only@Mentions" # 2
-        "nothing"       # 3
+        "nothing" # 3
       ];
       default = "serverDefault";
       description = ''
@@ -1760,7 +1760,7 @@ with lib;
   };
   noMaskedUrlPaste = {
     enable = mkEnableOption ''
-     Pasting a link while having text selected will not paste as masked URL
+      Pasting a link while having text selected will not paste as masked URL
     '';
   };
   noMosaic = {
@@ -1980,7 +1980,7 @@ with lib;
     # I have no idea why this uses 1 based indexing, it is driving me crazy
     defaultLayout = mkOption {
       type = types.enum [
-        "list"    # 1
+        "list" # 1
         "gallery" # 2
       ];
       default = "list";
@@ -1990,8 +1990,8 @@ with lib;
     };
     defaultSortOrder = mkOption {
       type = types.enum [
-        "recentlyActive"  # 0
-        "datePosted"      # 1
+        "recentlyActive" # 0
+        "datePosted" # 1
       ];
       default = "recentlyActive";
       description = ''
@@ -2005,9 +2005,9 @@ with lib;
     '';
     superIntensePartyMode = mkOption {
       type = types.enum [
-        "normal"    # 0
-        "better"    # 1
-        "projectX"  # 2
+        "normal" # 0
+        "better" # 1
+        "projectX" # 2
       ];
       default = "normal";
       description = ''
@@ -2046,7 +2046,7 @@ with lib;
     permissionsSortOrder = mkOption {
       type = types.enum [
         "highestRole" # 0
-        "lowestRole"  # 1
+        "lowestRole" # 1
       ];
       default = "highestRole";
       description = ''
@@ -2081,8 +2081,8 @@ with lib;
     '';
     pinOrder = mkOption {
       type = types.enum [
-        "mostRecent"  # 0
-        "custom"      # 1
+        "mostRecent" # 0
+        "custom" # 1
       ];
       default = "mostRecent";
       description = ''
@@ -2157,7 +2157,7 @@ with lib;
     pronounSource = mkOption {
       type = types.enum [
         "preferPronounDB" # 0
-        "preferDiscord"   # 1
+        "preferDiscord" # 1
       ];
       default = "preferPronounDB";
       description = ''
@@ -2197,9 +2197,9 @@ with lib;
     '';
     shouldMention = mkOption {
       type = types.enum [
-        "followNoReplyMention"  # 0
-        "disabled"              # 1
-        "enabled"               # 2
+        "followNoReplyMention" # 0
+        "disabled" # 1
+        "enabled" # 2
       ];
       default = "followNoReplyMention";
       description = ''
@@ -2423,7 +2423,7 @@ with lib;
       type = types.enum [
         "onlyFriendCount" # 1
         "onlyServerCount" # 2
-        "both"            # 3
+        "both" # 3
       ];
       default = "onlyFriendCount";
       description = ''
@@ -2510,8 +2510,8 @@ with lib;
     iconSpacing = mkOption {
       type = types.enum [
         "compact" # 0
-        "cozy"    # 1
-        "roomy"   # 2
+        "cozy" # 1
+        "roomy" # 2
       ];
       default = "cozy";
       description = ''
@@ -2808,9 +2808,9 @@ with lib;
     '';
     indicatorMode = mkOption {
       type = types.enum [
-        "both"          # 1
-        "avatars"       # 2
-        "animatedDots"  # 3
+        "both" # 1
+        "avatars" # 2
+        "animatedDots" # 3
       ];
       default = "both";
       description = ''
@@ -3264,17 +3264,29 @@ with lib;
     '';
   };
   noTrack = {
-    enable = mkEnableOption ''
-      Disable Discord's tracking (analytics/'science'), metrics and Sentry crash reporting
-    '' // { default = true; }; # Required
-    disableAnalytics = mkEnableOption ''
-      Disable Discord's tracking (analytics/'science')
-    '' // { default = true; };
+    enable =
+      mkEnableOption ''
+        Disable Discord's tracking (analytics/'science'), metrics and Sentry crash reporting
+      ''
+      // {
+        default = true;
+      }; # Required
+    disableAnalytics =
+      mkEnableOption ''
+        Disable Discord's tracking (analytics/'science')
+      ''
+      // {
+        default = true;
+      };
   };
   settings = {
-    enable = mkEnableOption ''
-      Adds Settings UI and debug info
-    '' // { default = true; }; # Required
+    enable =
+      mkEnableOption ''
+        Adds Settings UI and debug info
+      ''
+      // {
+        default = true;
+      }; # Required
     settingsLocation = mkOption {
       type = types.enum [
         "top"
@@ -3298,15 +3310,24 @@ with lib;
     };
   };
   supportHelper = {
-    enable = mkEnableOption ''
-      Helps us provide support to you
-    '' // { default = true; }; # Required
+    enable =
+      mkEnableOption ''
+        Helps us provide support to you
+      ''
+      // {
+        default = true;
+      }; # Required
   };
   webContextMenus = {
-    enable = mkEnableOption ''
-      Re-adds context menus missing in the web version of Discord:
-      Links & Images (Copy/Open Link/Image), Text Area (Copy, Cut, Paste, SpellCheck)
-    '' // { default = true; }; # Required for Vesktop
-                               # Enabling doesn't cause problems for normal client
+    enable =
+      mkEnableOption ''
+        Re-adds context menus missing in the web version of Discord:
+        Links & Images (Copy/Open Link/Image), Text Area (Copy, Cut, Paste, SpellCheck)
+      ''
+      // {
+        default = true;
+      };
+    # Required for Vesktop
+    # Enabling doesn't cause problems for normal client
   };
 }
