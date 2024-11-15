@@ -1,5 +1,7 @@
 { lib, ... }:
-with lib;
+let
+  inherit (lib) types mkEnableOption mkOption;
+in
 {
   chatInputButtonAPI.enable = mkOption {
     type = types.bool;
