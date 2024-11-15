@@ -184,11 +184,6 @@ in
       default = null;
       description = "Config path for Vesktop";
     };
-    vencord.enable = mkOption {
-      type = with types; nullOr bool;
-      default = null;
-      description = "Enable Vencord (for non-vesktop)";
-    };
     openASAR.enable = mkOption {
       type = with types; nullOr bool;
       default = null;
