@@ -1,8 +1,10 @@
-{cfg, mkIf}:
+{ cfg, mkIf }:
 [
-  (mkIf (cfg.config.notifyAboutUpdates || cfg.config.autoUpdate || cfg.config.autoUpdateNotification) ''
-    Nixcord is now pinned to a specific Vencord version to ensure compatability. Config options relating to auto-update no longer function. To update Nixcord to the latest version, use nixos-rebuild
-  '')
+  (mkIf (cfg.config.notifyAboutUpdates || cfg.config.autoUpdate || cfg.config.autoUpdateNotification)
+    ''
+      Nixcord is now pinned to a specific Vencord version to ensure compatability. Config options relating to auto-update no longer function. To update Nixcord to the latest version, use nixos-rebuild
+    ''
+  )
   (mkIf (!builtins.isNull cfg.package) ''
     nixcord.package has been moved to nixcord.discord.package
   '')
