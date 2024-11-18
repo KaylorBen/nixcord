@@ -4,14 +4,23 @@
     flake-compat.url = "https://flakehub.com/f/edolstra/flake-compat/1.tar.gz";
     treefmt-nix.url = "github:numtide/treefmt-nix";
   };
-  outputs = { self, nixpkgs, systems, treefmt-nix, ... }:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      systems,
+      treefmt-nix,
+      ...
+    }:
     let
       eachSystem = f: nixpkgs.lib.genAttrs (import systems) (system: f nixpkgs.legacyPackages.${system});
 
       treefmtEval = eachSystem (pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix);
-    in {
-    homeManagerModules.nixcord = import ./hm-module.nix;
-  } // {
+    in
+    {
+      homeManagerModules.nixcord = import ./hm-module.nix;
+    }
+    // {
       # formatter & check
       formatter = eachSystem (pkgs: treefmtEval.${pkgs.system}.config.build.wrapper);
       checks = eachSystem (pkgs: {
