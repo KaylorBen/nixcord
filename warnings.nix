@@ -8,9 +8,6 @@
   (mkIf (!builtins.isNull cfg.package) ''
     nixcord.package has been moved to nixcord.discord.package
   '')
-  (mkIf (!builtins.isNull cfg.vencord.enable) ''
-    nixcord.vencord has been moved to nixcord.discord.vencord
-  '')
   (mkIf (!builtins.isNull cfg.openASAR.enable) ''
     nixcord.openASAR has been moved to nixcord.discord.openASAR
   '')
