@@ -128,7 +128,7 @@ in
         };
         package = mkOption {
           type = types.package;
-          default = defaultVencord;
+          default = vencordPkgs;
           description = ''
             The Vencord package to use
           '';
