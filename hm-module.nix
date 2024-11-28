@@ -6,7 +6,6 @@
 }:
 let
   cfg = config.programs.nixcord;
-
   inherit (lib)
     mkEnableOption
     mkOption
@@ -34,16 +33,12 @@ let
     buildWebExtension = false;
   });
     
-  applyPostPatch = pkg: 
-    pkg.overrideAttrs (oldAttrs: {
-      # passthru = {
-      #   userPlugins = userPluginsDirectory;
-      # };
-      outputs = [];
-      postPatch = '' 
+  applyPostPatch = pkg: pkg.overrideAttrs (oldAttrs: {
+      postPatch = ''
         ln -s ${userPluginsDirectory} src/userplugins
       '';
     });
+
   patchedVencord = lib.traceValFn (d: d.outPath) (applyPostPatch vencordPkgs);
 
   dop = with types; coercedTo package (a: a.outPath) pathInStore;
@@ -101,8 +96,6 @@ let
     )
   else
     throw "Failed to extract a valid filepath from the given value";
-#in coerceGit
-
 
   # Mapper function that applies coercion based on the regex match
   pluginMapper = plugin: 
@@ -122,17 +115,22 @@ let
     if (builtins.length list <= 1) then (builtins.elemAt list 0) else
       recursiveUpdateAttrsList ([
         (attrsets.recursiveUpdate (builtins.elemAt list 0) (builtins.elemAt list 1))
-      ] ++ (lists.drop 2 list));
+      ] ++ (lists.drop 2 list)); 
 
   pluginDerivations = lib.mapAttrs (_: plugin: pluginMapper plugin) cfg.userPlugins;
-
+  #apiPath = vencordPkgs.outDir;
+  apiPath = vencordPkgs.src;
   buildDirs = pluginDerivations: lib.mapAttrsToList (name: pluginDir:
     let
       fullPath = "${pluginDir}";
 
       # Check for a Nix expression and build if present
       buildIfExists = if builtins.pathExists "${fullPath}/default.nix" || builtins.pathExists "${fullPath}/shell.nix" then
-        import fullPath { inherit pkgs vencordPkgs patchedVencord; }
+        import fullPath { 
+        inherit pkgs
+        apiPath; 
+        }
+
       else
         pluginDir;
     in
@@ -144,6 +142,7 @@ let
 
 in   
 {
+  
   #inherit patchedVencord;
   options.programs.nixcord = {
     enable = mkEnableOption "Enables Discord with Vencord";
@@ -314,9 +313,6 @@ in
         types.path                         # Nix paths
       ]);
 
-      # Set default values by mapping the userPlugins with the pluginMapper
-      #default = lib.mapAttrs (_: plugin: pluginMapper plugin) cfg.userPlugins;
-
       # Example usage of the userPlugins option
       example = {
         someCoolPlugin = "github:someUser/someCoolPlugin/someHashHere";  # GitHub example
@@ -372,6 +368,7 @@ in
     inherit (pkgs.callPackage ./lib.nix { inherit lib parseRules; })
       mkVencordCfg;
     vencord = patchedVencord;
+
     isQuickCssUsed = appConfig: (cfg.config.useQuickCss || appConfig ? "useQuickCss" && appConfig.useQuickCss) && cfg.quickCss != "";
   in mkIf cfg.enable (mkMerge [
     {
