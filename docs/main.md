@@ -28,6 +28,9 @@ programs.nixcord.discord.vencord.package
     # vencord package to use with discord
     # type: package
     # default: our bundled vencord package
+programs.nixcord.discord.vencord.unstable
+    # whether to use the unstable vencord build from master branch
+    # default: false
 programs.nixcord.discord.openASAR.enable
     # whether to install OpenASAR with discord
     # default: true

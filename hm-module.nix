@@ -44,22 +44,28 @@ let
     };
 
   defaultVencord = applyPostPatch (
-    pkgs.callPackage ./vencord.nix {
-      inherit (pkgs)
-        curl
-        esbuild
-        fetchFromGitHub
-        git
-        jq
-        lib
-        nix-update
-        nodejs
-        pnpm
-        stdenv
-        writeShellScript
-        ;
-      buildWebExtension = false;
-    }
+    pkgs.callPackage (if cfg.discord.vencord.unstable then ./vencord-unstable.nix else ./vencord.nix) (
+      {
+        inherit (pkgs)
+          esbuild
+          fetchFromGitHub
+          git
+          lib
+          nodejs
+          pnpm
+          stdenv
+          ;
+        buildWebExtension = false;
+      }
+      // lib.optionalAttrs (!cfg.discord.vencord.unstable) {
+        inherit (pkgs)
+          writeShellScript
+          nix-update
+          jq
+          curl
+          ;
+      }
+    )
   );
 in
 {
@@ -103,6 +109,11 @@ in
           description = ''
             The Vencord package to use
           '';
+        };
+        unstable = mkOption {
+          type = types.bool;
+          default = false;
+          description = "Enable unstable Vencord build from repository's master branch";
         };
       };
       openASAR.enable = mkOption {
@@ -323,6 +334,12 @@ in
     in
     mkIf cfg.enable (mkMerge [
       {
+        assertions = [
+          {
+            assertion = !(cfg.discord.vencord.package != defaultVencord && cfg.discord.vencord.unstable);
+            message = "programs.nixcord.discord.vencord: Cannot set both 'package' and 'unstable = true'. Choose one or the other.";
+          }
+        ];
         home.packages = [
           (mkIf cfg.discord.enable (
             cfg.discord.package.override {
@@ -356,7 +373,8 @@ in
         }
         # Client Settings
         (mkIf (cfg.discord.settings != { }) {
-          home.file."${cfg.discord.configDir}/settings.json".text = builtins.toJSON mkVencordCfg cfg.discord.settings;
+          home.file."${cfg.discord.configDir}/settings.json".text =
+            builtins.toJSON mkVencordCfg cfg.discord.settings;
         })
       ]))
       (mkIf cfg.vesktop.enable (mkMerge [
@@ -376,11 +394,13 @@ in
         }
         # Vesktop Client Settings
         (mkIf (cfg.vesktop.settings != { }) {
-          home.file."${cfg.vesktop.configDir}/settings.json".text = builtins.toJSON mkVencordCfg cfg.vesktopSettings;
+          home.file."${cfg.vesktop.configDir}/settings.json".text =
+            builtins.toJSON mkVencordCfg cfg.vesktopSettings;
         })
         # Vesktop Client State
         (mkIf (cfg.vesktop.state != { }) {
-          home.file."${cfg.vesktop.configDir}/state.json".text = builtins.toJSON mkVencordCfg cfg.vesktopState;
+          home.file."${cfg.vesktop.configDir}/state.json".text =
+            builtins.toJSON mkVencordCfg cfg.vesktopState;
         })
       ]))
       # Warnings
