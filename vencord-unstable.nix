@@ -10,13 +10,13 @@
 }:
 stdenv.mkDerivation (finalAttrs: {
   pname = "vencord";
-  version = "1.10.8-unstable-2024-12-12";
+  version = "1.10.9-unstable-2024-12-14";
 
   src = fetchFromGitHub {
     owner = "Vendicated";
     repo = "Vencord";
-    rev = "40a8cf1a85510f2b4c302e84a52946f7d63fe86e";
-    hash = "sha256-x88NbtXJJlc2cBet4vqHktGyLB9XiaAD6tOn9DvzbHw=";
+    rev = "fc731bc6c8ed7784540edbe2c4ad7dfb28bbd188";
+    hash = "sha256-sU2eJUUw7crvzMGGBQP6rbxISkL+S5nmT3QspyYXlRQ=";
   };
 
   pnpmDeps = pnpm.fetchDeps {
