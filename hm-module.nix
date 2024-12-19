@@ -44,28 +44,7 @@ let
     };
 
   defaultVencord = applyPostPatch (
-    pkgs.callPackage (if cfg.discord.vencord.unstable then ./vencord-unstable.nix else ./vencord.nix) (
-      {
-        inherit (pkgs)
-          esbuild
-          fetchFromGitHub
-          git
-          lib
-          nodejs
-          pnpm
-          stdenv
-          ;
-        buildWebExtension = false;
-      }
-      // lib.optionalAttrs (!cfg.discord.vencord.unstable) {
-        inherit (pkgs)
-          writeShellScript
-          nix-update
-          jq
-          curl
-          ;
-      }
-    )
+    pkgs.callPackage ./vencord.nix { unstable = cfg.discord.vencord.unstable; }
   );
 in
 {
