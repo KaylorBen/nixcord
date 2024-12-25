@@ -373,13 +373,15 @@ in
         }
         # Vesktop Client Settings
         (mkIf (cfg.vesktop.settings != { }) {
-          home.file."${cfg.vesktop.configDir}/settings.json".text =
-            builtins.toJSON mkVencordCfg cfg.vesktopSettings;
+          home.file."${cfg.vesktop.configDir}/settings.json".text = builtins.toJSON (
+            mkVencordCfg cfg.vesktop.settings
+          );
         })
         # Vesktop Client State
         (mkIf (cfg.vesktop.state != { }) {
-          home.file."${cfg.vesktop.configDir}/state.json".text =
-            builtins.toJSON mkVencordCfg cfg.vesktopState;
+          home.file."${cfg.vesktop.configDir}/state.json".text = builtins.toJSON (
+            mkVencordCfg cfg.vesktop.state
+          );
         })
       ]))
       # Warnings
