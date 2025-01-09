@@ -18,9 +18,9 @@ let
   stableVersion = "1.10.9";
   stableHash = "sha256-sU2eJUUw7crvzMGGBQP6rbxISkL+S5nmT3QspyYXlRQ=";
 
-  unstableVersion = "1.10.9-unstable-2024-12-30";
-  unstableRev = "0fd76ab15a51a8426786b696d422f59bd1250099";
-  unstableHash = "sha256-S49O3ph0HMUAkqhAhoviaF2vpc1h1pVX/78mn/PafH4=";
+  unstableVersion = "1.10.9-unstable-2025-01-08";
+  unstableRev = "5a77149b262ee8b5cdb2f93539eb7f58fb8210ad";
+  unstableHash = "sha256-U63ggto/wZJqgWrPCiwVdkFz0Xb4oyLGntJrTD70u+4=";
 
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -36,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   pnpmDeps = pnpm.fetchDeps {
     inherit (finalAttrs) pname src;
-    hash = "sha256-vVzERis1W3QZB/i6SQR9dQR56yDWadKWvFr+nLTQY9Y=";
+    hash = "sha256-ZUwtNtOmxjhOBpYB7vuytunGBRSuVxdlQsceRmeyhhI=";
   };
 
   nativeBuildInputs = [
