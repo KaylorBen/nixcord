@@ -17,11 +17,12 @@
 let
   stableVersion = "1.10.9";
   stableHash = "sha256-sU2eJUUw7crvzMGGBQP6rbxISkL+S5nmT3QspyYXlRQ=";
+  stablePnpmDeps = "sha256-vVzERis1W3QZB/i6SQR9dQR56yDWadKWvFr+nLTQY9Y=";
 
-  unstableVersion = "1.10.9-unstable-2025-01-10";
-  unstableRev = "3243120baaa56f65866b532b731bc3426512c90e";
-  unstableHash = "sha256-ov1qLtBzLAO8k9pokOstEaeS/me+ElVvGzyFTSfaZM0=";
-
+  unstableVersion = "1.10.9-unstable-2025-01-09";
+  unstableRev = "4ab297c9e3e1898f2d72bd6055a3ee94f2f4f416";
+  unstableHash = "sha256-mDqHuWDGCCR9wF4g9PFBdQNgDFwmZAPuAnSczEL8mEA=";
+  unstablePnpmDeps = "sha256-ZUwtNtOmxjhOBpYB7vuytunGBRSuVxdlQsceRmeyhhI=";
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "vencord" + lib.optionalString unstable "-unstable";
@@ -36,7 +37,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   pnpmDeps = pnpm.fetchDeps {
     inherit (finalAttrs) pname src;
-    hash = "sha256-ZUwtNtOmxjhOBpYB7vuytunGBRSuVxdlQsceRmeyhhI=";
+    hash = if unstable then unstablePnpmDeps else stablePnpmDeps;
   };
 
   nativeBuildInputs = [
