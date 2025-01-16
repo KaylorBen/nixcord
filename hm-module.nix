@@ -352,8 +352,9 @@ in
         }
         # Client Settings
         (mkIf (cfg.discord.settings != { }) {
-          home.file."${cfg.discord.configDir}/settings.json".text =
-            builtins.toJSON mkVencordCfg cfg.discord.settings;
+          home.file."${cfg.discord.configDir}/settings.json".text = builtins.toJSON (
+            mkVencordCfg cfg.discord.settings
+          );
         })
       ]))
       (mkIf cfg.vesktop.enable (mkMerge [
