@@ -20,24 +20,6 @@ configure once and save it to a git repo.
 > The primary goal of this project is to reduce the need to configure
 > Vencord again on every new system you install.
 
->[!WARNING]
-> If you're using NixOS 24.05, please set
-> `programs.nixcord.discord.vencord.package` to `pkgs.vencord;`
-> because the `pnpmDeps.hash` differs between NixOS stable and
-> unstable and this repo uses the unstable hash for the
-> Vencord that it provides.
->
-> Example:
->
-> ```nix
-> { pkgs, lib, ... }: {
->   programs.nixcord = {
->     enable = true;
->     discord.vencord.package = pkgs.vencord;
->   };
-> }
-> ```
-
 ## How to use Nixcord
 Currently Nixcord only supports nix flakes as a [home-manager](https://github.com/nix-community/home-manager) module.
 
