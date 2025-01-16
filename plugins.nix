@@ -931,6 +931,11 @@ in
       Makes the message context menu in message search results have all options you'd expect
     '';
   };
+  fullUserInChatbox = {
+    enable = mkEnableOption ''
+      Makes the user mention in the chatbox have more functionalities, like left/right clicking
+    '';
+  };
   gameActivityToggle = {
     enable = mkEnableOption ''
       Adds a button next to the mic and deafen button to toggle game activity.
