@@ -28,6 +28,9 @@ programs.nixcord.discord.vencord.package
     # vencord package to use with discord
     # type: package
     # default: our bundled vencord package
+programs.nixcord.discord.vencord.unstable
+    # whether to use the unstable vencord build from master branch
+    # default: false
 programs.nixcord.discord.openASAR.enable
     # whether to install OpenASAR with discord
     # default: true
@@ -175,9 +178,8 @@ programs.nixcord.parseRules.fakeEnums.four
 ```
 ## settings.json and state.json control
 >[!WARNING]
-> Due to Vencord/Vesktop#220 this will not be possible without upstream changes.
-> Anyways the options are provided in case you figure something out or want to PR
-> Messing with these will likely cause issues since nix store is read only
+> Due to Vencord/Vesktop#220 this will not work unless you are using a version of nixpkgs later than 24.11
+> Otherwise, messing with these will likely cause issues since nix store is read only
 ```nix
 programs.nixcord.discord.settings
     # Settings to be placed in discord.configDir/settings.json

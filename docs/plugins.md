@@ -607,6 +607,11 @@ programs.nixcord.config.plugins.friendsSince.enable
 programs.nixcord.config.plugins.fullSearchContext.enable
     # Makes the message context menu in message search results have all options you'd expect
 ```
+## fullUserInChatbox
+```nix
+programs.nixcord.config.plugins.fullUserInChatbox.enable
+    # Makes the user mention in the chatbox have more functionalities, like left/right clicking
+```
 ## gameActivityToggle
 ```nix
 programs.nixcord.config.plugins.gameActivityToggle.enable
