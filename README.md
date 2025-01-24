@@ -29,7 +29,7 @@ First, you need to import the module:
 {
   # ...
   inputs.nixcord = {
-    url = "github:kaylorben/nixcord"
+    url = "github:kaylorben/nixcord";
   };
   # ...
 }
