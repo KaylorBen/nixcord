@@ -336,6 +336,11 @@ in
         ];
       }
       (mkIf cfg.discord.enable (mkMerge [
+        {
+          home.activation.disableDiscordUpdates = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            ${lib.getExe pkgs.discord.passthru.disableBreakingUpdates}
+          '';
+        }
         # QuickCSS
         (mkIf (isQuickCssUsed cfg.vencordConfig) {
           home.file."${cfg.configDir}/settings/quickCss.css".text = cfg.quickCss;
