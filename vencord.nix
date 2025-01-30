@@ -16,12 +16,12 @@
 
 let
   stableVersion = "1.11.3";
-  stableHash = "sha256-hx8YXkkpZoNq1aDsgdU5+Usmcp/mrlTo9sV2X4vqRuY=";
+  stableHash = "sha256-0RQW8sLfU0GY92JHxB/9iuEhWvhmnXohkAdATYmRRsc=";
   stablePnpmDeps = "sha256-ZUwtNtOmxjhOBpYB7vuytunGBRSuVxdlQsceRmeyhhI=";
 
-  unstableVersion = "1.11.3-unstable-2025-01-29";
-  unstableRev = "240195f9bfb59294c11294282b140bcd55523432";
-  unstableHash = "sha256-hx8YXkkpZoNq1aDsgdU5+Usmcp/mrlTo9sV2X4vqRuY=";
+  unstableVersion = "1.11.3-unstable-2025-01-30";
+  unstableRev = "8fccda4a249b843c094e944c2051e951a7a43235";
+  unstableHash = "sha256-0RQW8sLfU0GY92JHxB/9iuEhWvhmnXohkAdATYmRRsc=";
   unstablePnpmDeps = "sha256-ZUwtNtOmxjhOBpYB7vuytunGBRSuVxdlQsceRmeyhhI=";
 in
 stdenv.mkDerivation (finalAttrs: {
