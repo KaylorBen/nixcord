@@ -44,7 +44,4 @@
   (mkIf cfg.config.plugins.searchReply.enable ''
     nixcord.config.plugins.searchReply is deprecated. Plugin has been renamed fullSearchContext
   '')
-  (mkIf cfg.config.plugins.noScreensharePreview.enable ''
-    nixcord.config.plugins.noScreensharePreview is deprecated since it is a discord stock feature and redundant.
-  '')
 ]
