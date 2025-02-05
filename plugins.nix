@@ -1846,11 +1846,6 @@ in
       Invert Discord's shift replying behaviour (enable to make shift reply mention user)
     '';
   };
-  noScreensharePreview = {
-    enable = mkEnableOption ''
-      Disables screenshare previews from being sent.
-    '';
-  };
   noServerEmojis = {
     enable = mkEnableOption ''
       Do not show server emojis in the autocomplete menu.

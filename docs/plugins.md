@@ -1135,11 +1135,6 @@ programs.nixcord.config.plugins.noReplyMention.shouldPingListed
 programs.nixcord.config.plugins.noReplyMention.inverseShiftReply
     # Invert Discord's shift replying behaviour (enable to make shift reply mention user)
 ```
-## noScreensharePreview
-```nix
-programs.nixcord.config.plugins.noScreensharePreview.enable
-    # Disables screenshare previews from being sent.
-```
 ## noServerEmojis
 ```nix
 programs.nixcord.config.plugins.noServerEmojis.enable
