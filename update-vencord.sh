@@ -1,5 +1,5 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i bash -p jq curl gnused nix-update nixfmt-rfc-style
+#! nix-shell -i bash -p curl gnused jq nix-prefetch-github nixfmt-rfc-style
 # shellcheck shell=bash
 
 set -euo pipefail
@@ -35,6 +35,20 @@ cat >temp-wrapper.nix <<EOF
   ${REPO} = pkgs.callPackage ${ABS_NIX_FILE} { unstable = $([[ "$UPDATE_TYPE" == "unstable" ]] && echo "true" || echo "false"); };
 }
 EOF
+
+update_src_hash() {
+	local type="$1"
+	local new_hash="$2"
+	local prefix="${type}Hash"
+
+	sed -i "/^[[:space:]]*${prefix}[[:space:]]*=[[:space:]]*\"sha256-[A-Za-z0-9+/=]\{1,\}\"/c\  ${prefix} = \"sha256-${new_hash}\";" "$ABS_NIX_FILE"
+
+	if [ "$type" = "unstable" ]; then
+		local new_rev
+		new_rev=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/commits/main" | jq -r .sha)
+		sed -i "/^[[:space:]]*unstableRev[[:space:]]*=/c\  unstableRev = \"$new_rev\";" "$ABS_NIX_FILE"
+	fi
+}
 
 update_hash() {
 	local type="$1"
@@ -88,25 +102,38 @@ update_pnpm_deps() {
 }
 
 if [ "$UPDATE_TYPE" = "stable" ]; then
-	# For stable versions, we're getting latest tag and update
 	update_pnpm_deps "stable"
-	if ! nix-update --version-regex 'v(.*)' \
-		--url "https://github.com/$OWNER/$REPO" \
-		--format \
-		-f ./temp-wrapper.nix \
-		--override-filename "$ABS_NIX_FILE" \
-		"${REPO}"; then
-		echo "Failed to update stable version, updating pnpm deps..."
+
+	new_version=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/tags" |
+		jq -r '.[] | select(.name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' |
+		sort -Vr |
+		head -1)
+
+	if [[ ! "$new_version" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+		echo "Error: Invalid stable version format: $new_version"
+		exit 1
 	fi
+
+	clean_version="${new_version#v}"
+	sed -i "/^[[:space:]]*stableVersion[[:space:]]*=/c\  stableVersion = \"${clean_version}\";" "$ABS_NIX_FILE"
+
+	new_hash=$(nix-prefetch-github "$OWNER" "$REPO" --rev "$new_version" | jq -r .hash)
+	update_src_hash "stable" "${new_hash#sha256-}"
 else
-	# For unstable versions, we're just using branch update
 	update_pnpm_deps "unstable"
-	if ! nix-update --version=branch \
-		--url "https://github.com/$OWNER/$REPO" \
-		--format \
-		-f ./temp-wrapper.nix \
-		--override-filename "$ABS_NIX_FILE" \
-		"${REPO}"; then
-		echo "Failed to update unstable version, updating pnpm deps..."
-	fi
+
+	base_version=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/tags" |
+		jq -r '.[] | select(.name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' |
+		sort -Vr |
+		head -1 |
+		sed 's/^v//')
+
+	new_rev=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/commits/main" | jq -r .sha)
+	new_hash=$(nix-prefetch-github "$OWNER" "$REPO" --rev "$new_rev" | jq -r .hash)
+
+	commit_date=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/commits/$new_rev" | jq -r '.commit.committer.date | split("T")[0]')
+	new_version="${base_version}-unstable-${commit_date}"
+
+	sed -i "/^[[:space:]]*unstableVersion[[:space:]]*=/c\  unstableVersion = \"$new_version\";" "$ABS_NIX_FILE"
+	update_src_hash "unstable" "${new_hash#sha256-}"
 fi
