@@ -60,35 +60,23 @@ update_hash() {
 
 update_pnpm_deps() {
 	local type="$1"
-	echo "Checking ${type}pnpmDeps"
 
-	local is_unstable
-	is_unstable=$([[ "$type" == "unstable" ]] && echo "true" || echo "false")
-
-	if nix-build --pure \
-		--expr "with import (builtins.getFlake \"nixpkgs\") {}; (callPackage ${ABS_NIX_FILE} { unstable = ${is_unstable}; }).pnpmDeps" \
-		--no-link &>/dev/null; then
-		echo "${type}pnpmDeps hash is already correct"
-		return 0
-	fi
-
-	echo "Current hash invalid. Calculating new pnpmDeps hash for ${type}..."
+	# Placeholder hash so we can purposefully fail the build and extract the actual hash
+	update_hash "$type" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
 
 	local build_output
-	build_output=$(nix-build --pure \
-		--expr "with import (builtins.getFlake \"nixpkgs\") {}; (callPackage ${ABS_NIX_FILE} { unstable = ${is_unstable}; }).pnpmDeps" \
-		--no-link 2>&1 || true)
+	build_output=$(nix-build --pure temp-wrapper.nix -A ${REPO}.pnpmDeps --no-link --show-trace 2>&1 || true)
+	echo "Build output:"
+	echo "$build_output"
 
-	local new_hash
-	new_hash=$(echo "$build_output" | grep -oP 'got:\s+sha256-\K[A-Za-z0-9+/]*=' || true)
+	local actual_hash
+	actual_hash=$(echo "$build_output" | grep -Eo 'got:[[:space:]]+sha256-[A-Za-z0-9+/]+=*' | sed 's/got:[[:space:]]*sha256-//')
 
-	if [ -n "$new_hash" ]; then
-		update_hash "$type" "$new_hash"
-		echo "Updated ${type} pnpmDeps hash"
+	if [ -n "$actual_hash" ]; then
+		update_hash "$type" "$actual_hash"
+		echo "Updated ${type} pnpm dependencies hash to: sha256-${actual_hash}"
 
-		if nix-build --pure \
-			--expr "with import (builtins.getFlake \"nixpkgs\") {}; (callPackage ${ABS_NIX_FILE} { unstable = ${is_unstable}; }).pnpmDeps" \
-			--no-link &>/dev/null; then
+		if nix-build --pure temp-wrapper.nix -A ${REPO}.pnpmDeps --no-link &>/dev/null; then
 			echo "Verification successful - new hash works"
 			return 0
 		else
@@ -102,8 +90,6 @@ update_pnpm_deps() {
 }
 
 if [ "$UPDATE_TYPE" = "stable" ]; then
-	update_pnpm_deps "stable"
-
 	new_version=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/tags" |
 		jq -r '.[] | select(.name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' |
 		sort -Vr |
@@ -119,9 +105,8 @@ if [ "$UPDATE_TYPE" = "stable" ]; then
 
 	new_hash=$(nix-prefetch-github "$OWNER" "$REPO" --rev "$new_version" | jq -r .hash)
 	update_src_hash "stable" "${new_hash#sha256-}"
+	update_pnpm_deps "stable"
 else
-	update_pnpm_deps "unstable"
-
 	base_version=$(curl -s "https://api.github.com/repos/$OWNER/$REPO/tags" |
 		jq -r '.[] | select(.name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' |
 		sort -Vr |
@@ -136,4 +121,5 @@ else
 
 	sed -i "/^[[:space:]]*unstableVersion[[:space:]]*=/c\  unstableVersion = \"$new_version\";" "$ABS_NIX_FILE"
 	update_src_hash "unstable" "${new_hash#sha256-}"
+	update_pnpm_deps "unstable"
 fi

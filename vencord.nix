@@ -9,6 +9,7 @@
   lib,
   nodejs,
   pnpm_9,
+  pnpm,
   stdenv,
   buildWebExtension ? false,
   unstable ? false,
@@ -35,7 +36,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = if unstable then unstableHash else stableHash;
   };
 
-  pnpmDeps = pnpm_9.fetchDeps {
+  pnpmDeps = (if unstable then pnpm else pnpm_9).fetchDeps {
     inherit (finalAttrs) pname src;
     hash = if unstable then unstablePnpmDeps else stablePnpmDeps;
   };
@@ -43,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     git
     nodejs
-    pnpm_9.configHook
+    (if unstable then pnpm.configHook else pnpm_9.configHook)
   ];
 
   env = {
