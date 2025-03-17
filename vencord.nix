@@ -67,30 +67,26 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildPhase = ''
     runHook preBuild
-
     pnpm run ${if buildWebExtension then "buildWeb" else "build"} \
       -- --standalone --disable-updater
-
     runHook postBuild
   '';
 
   installPhase = ''
     runHook preInstall
-
-    cp -r dist/${lib.optionalString buildWebExtension "chromium-unpacked/"} $out
-
+    cp -r dist/${lib.optionalString buildWebExtension "chromium-unpacked/"} "$out"
     runHook postInstall
   '';
 
-  meta = with lib; {
+  meta = {
     description = "Vencord web extension" + lib.optionalString unstable " (Unstable)";
     homepage = "https://github.com/Vendicated/Vencord";
-    license = licenses.gpl3Only;
-    maintainers = with maintainers; [
+    license = lib.licenses.gpl3Only;
+    maintainers = with lib.maintainers; [
+      donteatoreo
       FlafyDev
       NotAShelf
       Scrumplex
-      donteatoreo
     ];
   };
 })
