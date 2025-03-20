@@ -3281,6 +3281,39 @@ in
         default = true;
       };
   };
+  ircColors = {
+    enable = mkEnableOption ''
+      Improves chat readability by assigning every user an unique nickname color,
+      making distinguishing between different users easier. Inspired by the
+      feature in many IRC clients, such as HexChat or WeeChat.
+    '';
+    applyColorOnlyInDms = mkOption {
+      description = ''
+        Apply colors only in direct messages; do not apply colors in servers.
+      '';
+      type = types.bool;
+      default = false;
+    };
+    applyColorOnlyToUsersWithoutColor = mkOption {
+      description = ''
+        Apply colors only to users who don't have a predefined color
+      '';
+      type = types.bool;
+      default = false;
+    };
+    lightness = mkOption {
+      description = ''
+        Lightness, in %. Change if the colors are too light or too dark
+      '';
+      type = types.number;
+      default = 70;
+    };
+    memberListColors = mkOption {
+      description = "Replace role colors in the member list";
+      default = true;
+      type = types.bool;
+    };
+  };
   settings = {
     enable =
       mkEnableOption ''
