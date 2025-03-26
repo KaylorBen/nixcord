@@ -34,6 +34,9 @@ programs.nixcord.discord.vencord.unstable
 programs.nixcord.discord.openASAR.enable
     # whether to install OpenASAR with discord
     # default: true
+programs.nixcord.discord.autoscroll.enable
+    # enable middle-click autoscrolling
+    # default: false
 ```
 ## vesktop
 ```nix

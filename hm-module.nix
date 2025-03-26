@@ -100,6 +100,11 @@ in
         default = true;
         description = "Enable OpenASAR (for non-vesktop)";
       };
+      autoscroll.enable = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Enable middle-click autoscrolling";
+      };
       settings = mkOption {
         type = types.attrs;
         default = { };
@@ -324,6 +329,7 @@ in
             cfg.discord.package.override {
               withVencord = cfg.discord.vencord.enable;
               withOpenASAR = cfg.discord.openASAR.enable;
+              enableAutoscroll = cfg.discord.autoscroll.enable;
               inherit vencord;
             }
           ))
