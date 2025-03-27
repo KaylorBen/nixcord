@@ -12,6 +12,7 @@
   buildWebExtension ? false,
   unstable ? false,
   pnpm,
+  fetchurl,
 }:
 
 let
@@ -23,6 +24,17 @@ let
   unstableRev = "b3bff83dd5040950c55e09bed9e47a60490f81d8";
   unstableHash = "sha256-WzmRz0wf/Ss90FmXXp6gaylC0k/k/QkFaFddlnLo+Xk=";
   unstablePnpmDeps = "sha256-g9BSVUKpn74D9eIDj/lS1Y6w/+AnhCw++st4s4REn+A=";
+
+  # Due to pnpm package 10.5.2 there is a issue when building.
+  # Substituting pnpm with version 10.4.1 fixes this issue.
+  # This should be fixed in a newer version of pnpm.
+  pnpm_10-4 = pnpm.overrideAttrs (oldAttrs: {
+    version = "10.4.1";
+    src = fetchurl {
+      url = "https://registry.npmjs.org/pnpm/-/pnpm-10.4.1.tgz";
+      sha256 = "sha256-S3Aoh5hplZM9QwCDawTW0CpDvHK1Lk9+k6TKYIuVkZc=";
+    };
+  });
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "vencord" + lib.optionalString unstable "-unstable";
@@ -35,7 +47,7 @@ stdenv.mkDerivation (finalAttrs: {
     hash = if unstable then unstableHash else stableHash;
   };
 
-  pnpmDeps = pnpm.fetchDeps {
+  pnpmDeps = pnpm_10-4.fetchDeps {
     inherit (finalAttrs) pname src;
     hash = if unstable then unstablePnpmDeps else stablePnpmDeps;
   };
@@ -43,7 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     git
     nodejs
-    pnpm.configHook
+    pnpm_10-4.configHook
   ];
 
   env = {
