@@ -334,8 +334,10 @@ in
             cfg.discord.package.override {
               withVencord = cfg.discord.vencord.enable;
               withOpenASAR = cfg.discord.openASAR.enable;
-              enableAutoscroll = cfg.discord.autoscroll.enable;
               inherit vencord;
+            }
+            // mkIf pkgs.stdenvNoCC.hostPlatform.isLinux {
+              enableAutoscroll = cfg.discord.autoscroll.enable;
             }
           ))
           (mkIf cfg.vesktop.enable (
