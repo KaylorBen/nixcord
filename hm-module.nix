@@ -148,6 +148,11 @@ in
           Settings to be placed in vesktop.configDir/state.json
         '';
       };
+      autoscroll.enable = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Enable middle-click autoscrolling";
+      };
     };
     package = mkOption {
       type = with types; nullOr package;
@@ -336,6 +341,7 @@ in
           (mkIf cfg.vesktop.enable (
             cfg.vesktop.package.override {
               withSystemVencord = true;
+              withMiddleClickScroll = cfg.vesktop.autoscroll.enable;
               inherit vencord;
             }
           ))

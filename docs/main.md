@@ -49,6 +49,9 @@ programs.nixcord.vesktop.configDir
     # path to vesktop config
     # type: path
     # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/vesktop
+programs.nixcord.vesktop.autoscroll.enable
+    # enable middle-click autoscrolling
+    # default: false
 ```
 ## configDir
 ```nix
