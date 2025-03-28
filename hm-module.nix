@@ -336,7 +336,7 @@ in
               withOpenASAR = cfg.discord.openASAR.enable;
               inherit vencord;
             }
-            // mkIf pkgs.stdenvNoCC.hostPlatform.isLinux {
+            // lib.optionalAttrs pkgs.stdenvNoCC.hostPlatform.isLinux {
               enableAutoscroll = cfg.discord.autoscroll.enable;
             }
           ))
