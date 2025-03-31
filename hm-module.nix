@@ -331,14 +331,16 @@ in
         ];
         home.packages = [
           (mkIf cfg.discord.enable (
-            cfg.discord.package.override {
-              withVencord = cfg.discord.vencord.enable;
-              withOpenASAR = cfg.discord.openASAR.enable;
-              inherit vencord;
-            }
-            // lib.optionalAttrs pkgs.stdenvNoCC.hostPlatform.isLinux {
-              enableAutoscroll = cfg.discord.autoscroll.enable;
-            }
+            cfg.discord.package.override (
+              {
+                withVencord = cfg.discord.vencord.enable;
+                withOpenASAR = cfg.discord.openASAR.enable;
+                inherit vencord;
+              }
+              // lib.optionalAttrs pkgs.stdenvNoCC.hostPlatform.isLinux {
+                enableAutoscroll = cfg.discord.autoscroll.enable;
+              }
+            )
           ))
           (mkIf cfg.vesktop.enable (
             cfg.vesktop.package.override {
