@@ -62,14 +62,23 @@ stdenv.mkDerivation (finalAttrs: {
     ESBUILD_BINARY_PATH = lib.getExe (
       esbuild.overrideAttrs (
         final: _: {
-          version = "0.25.0";
+          # Remove conditonal check once 1.11.8 or higher comes out
+          version = if unstable then "0.25.1" else "0.25.0";
           src = fetchFromGitHub {
             owner = "evanw";
             repo = "esbuild";
             rev = "v${final.version}";
-            hash = "sha256-L9jm94Epb22hYsU3hoq1lZXb5aFVD4FC4x2qNt0DljA=";
+            hash =
+              if unstable then
+                "sha256-vrhtdrvrcC3dQoJM6hWq6wrGJLSiVww/CNPlL1N5kQ8="
+              else
+                "sha256-L9jm94Epb22hYsU3hoq1lZXb5aFVD4FC4x2qNt0DljA=";
           };
-          vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
+          vendorHash =
+            if unstable then
+              "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ="
+            else
+              "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
         }
       )
     );
