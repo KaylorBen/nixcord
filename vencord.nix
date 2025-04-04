@@ -16,9 +16,9 @@
 }:
 
 let
-  stableVersion = "1.11.7";
-  stableHash = "sha256-WzmRz0wf/Ss90FmXXp6gaylC0k/k/QkFaFddlnLo+Xk=";
-  stablePnpmDeps = "sha256-g9BSVUKpn74D9eIDj/lS1Y6w/+AnhCw++st4s4REn+A=";
+  stableVersion = "1.11.8";
+  stableHash = "sha256-Ej04ONaeNt55mbQ5RTKM4MySYsw3UJky9ZK9h1gMEzo=";
+  stablePnpmDeps = "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
 
   unstableVersion = "1.11.8-unstable-2025-04-04";
   unstableRev = "22b50f03ca3fb9b1044bc6b8593e9e4c96028f31";
@@ -62,23 +62,14 @@ stdenv.mkDerivation (finalAttrs: {
     ESBUILD_BINARY_PATH = lib.getExe (
       esbuild.overrideAttrs (
         final: _: {
-          # Remove conditonal check once 1.11.8 or higher comes out
-          version = if unstable then "0.25.1" else "0.25.0";
+          version = "0.25.1";
           src = fetchFromGitHub {
             owner = "evanw";
             repo = "esbuild";
             rev = "v${final.version}";
-            hash =
-              if unstable then
-                "sha256-vrhtdrvrcC3dQoJM6hWq6wrGJLSiVww/CNPlL1N5kQ8="
-              else
-                "sha256-L9jm94Epb22hYsU3hoq1lZXb5aFVD4FC4x2qNt0DljA=";
+            hash = "sha256-vrhtdrvrcC3dQoJM6hWq6wrGJLSiVww/CNPlL1N5kQ8=";
           };
-          vendorHash =
-            if unstable then
-              "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ="
-            else
-              "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
+          vendorHash = "sha256-+BfxCyg0KkDQpHt/wycy/8CTG6YBA/VJvJFhhzUnSiQ=";
         }
       )
     );
