@@ -124,6 +124,11 @@ in
           The Vesktop package to use
         '';
       };
+      useSystemVencord = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Use system Vencord package";
+      };
       configDir = mkOption {
         type = types.path;
         default = "${
@@ -344,7 +349,7 @@ in
           ))
           (mkIf cfg.vesktop.enable (
             cfg.vesktop.package.override {
-              withSystemVencord = true;
+              withSystemVencord = cfg.vesktop.useSystemVencord;
               withMiddleClickScroll = cfg.vesktop.autoscroll.enable;
               inherit vencord;
             }
