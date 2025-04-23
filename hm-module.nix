@@ -362,6 +362,12 @@ in
           ))
         ];
       }
+      (lib.mkIf (lib.hasAttrByPath [ "xdg" "autostart" "entries" ] config && pkgs.stdenvNoCC.isLinux) {
+        xdg.autostart.entries = lib.flatten [
+          (lib.optional cfg.discord.enable "${cfg.discord.package}/share/applications/discord.desktop")
+          (lib.optional cfg.vesktop.enable "${cfg.vesktop.package}/share/applications/vesktop.desktop")
+        ];
+      })
       (mkIf cfg.discord.enable (mkMerge [
         {
           home.activation.disableDiscordUpdates = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
