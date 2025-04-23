@@ -31,11 +31,9 @@ jobs:
         id: old-version
         shell: bash
         run: |
-          if ! OLD_VERSION=$(nix-shell -p gnused --run "sed -n '/^[[:space:]]*unstableRev[[:space:]]*=/s/.*= \"\([^\"]*\)\".*/\1/p' vencord.nix"); then
-            echo "Failed to extract old version"
-            exit 1
-          fi
-          echo "version=${OLD_VERSION:0:7}" >> $GITHUB_OUTPUT
+          OLD_VERSION=$(nix eval --impure --raw --expr \
+            "with import <nixpkgs> {}; (callPackage ./vencord.nix { unstable = true; }).src.rev" | cut -c1-7)
+          echo "version=$OLD_VERSION" >> $GITHUB_OUTPUT
 
       - name: Update Vencord
         id: update
@@ -51,11 +49,9 @@ jobs:
         id: new-version
         shell: bash
         run: |
-          if ! NEW_VERSION=$(nix-shell -p gnused --run "sed -n '/^[[:space:]]*unstableRev[[:space:]]*=/s/.*= \"\([^\"]*\)\".*/\1/p' vencord.nix"); then
-            echo "Failed to extract new version"
-            exit 1
-          fi
-          echo "version=${NEW_VERSION:0:7}" >> $GITHUB_OUTPUT
+          NEW_VERSION=$(nix eval --impure --raw --expr \
+            "with import <nixpkgs> {}; (callPackage ./vencord.nix { unstable = true; }).src.rev" | cut -c1-7)
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Test Build
         env:
@@ -97,6 +93,7 @@ jobs:
     permissions:
       contents: write
       actions: write
+
     steps:
       - uses: actions/checkout@v4.2.2
         with:
@@ -110,10 +107,8 @@ jobs:
         id: old-version
         shell: bash
         run: |
-          if ! OLD_VERSION=$(nix-shell -p gnused --run "sed -n '/^[[:space:]]*stableVersion[[:space:]]*=/s/.*= \"\([^\"]*\)\".*/\1/p' vencord.nix"); then
-            echo "Failed to extract old version"
-            exit 1
-          fi
+          OLD_VERSION=$(nix eval --impure --raw --expr \
+            "with import <nixpkgs> {}; (callPackage ./vencord.nix { unstable = false; }).version")
           echo "version=$OLD_VERSION" >> $GITHUB_OUTPUT
 
       - name: Update Vencord
@@ -130,17 +125,15 @@ jobs:
         id: new-version
         shell: bash
         run: |
-          if ! NEW_VERSION=$(nix-shell -p gnused --run "sed -n '/^[[:space:]]*stableVersion[[:space:]]*=/s/.*= \"\([^\"]*\)\".*/\1/p' vencord.nix"); then
-            echo "Failed to extract new version"
-            exit 1
-          fi
+          NEW_VERSION=$(nix eval --impure --raw --expr \
+            "with import <nixpkgs> {}; (callPackage ./vencord.nix { unstable = false; }).version")
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Test Build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! nix-build -E 'with import <nixpkgs> {}; callPackage ./vencord.nix { unstable = false;}'; then
+          if ! nix-build -E 'with import <nixpkgs> {}; callPackage ./vencord.nix { unstable = false; }'; then
             echo "Build failed"
             exit 1
           fi
@@ -157,7 +150,6 @@ jobs:
           if [[ -n "$(git status --porcelain)" ]]; then
             git add .
             git commit -m "vencord: ${{ steps.old-version.outputs.version }} -> ${{ steps.new-version.outputs.version }}"
-            git fetch origin
             for i in {1..3}; do
               git fetch origin
               git pull --rebase origin ${{ github.ref_name }}
