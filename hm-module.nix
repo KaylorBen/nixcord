@@ -44,9 +44,9 @@ let
 
       postInstall =
         (o.postInstall or "")
-          + ''
-            cp package.json $out
-          '';
+        + ''
+          cp package.json $out
+        '';
     });
 
   defaultVencord = applyPostPatch (
