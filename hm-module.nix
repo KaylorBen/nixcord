@@ -33,7 +33,7 @@ let
 
   applyPostPatch =
     pkg:
-    pkg.overrideAttrs {
+    pkg.overrideAttrs (o: {
       postPatch = lib.concatLines (
         lib.optional (cfg.userPlugins != { }) "mkdir -p src/userplugins"
         ++ lib.mapAttrsToList (
@@ -41,7 +41,13 @@ let
           "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins"
         ) cfg.userPlugins
       );
-    };
+
+      postInstall =
+        (o.postInstall or "")
+          + ''
+            cp package.json $out
+          '';
+    });
 
   defaultVencord = applyPostPatch (
     pkgs.callPackage ./vencord.nix { unstable = cfg.discord.vencord.unstable; }
