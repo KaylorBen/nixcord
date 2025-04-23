@@ -54,7 +54,7 @@ Here is a simple example of home-manager installed as a nixos module:
             home-manager.users.jdoe = import ./home.nix;
 
             home-manager.sharedModules = [
-              inputs.nixcord.homeManagerModules.nixcord
+              inputs.nixcord.homeModules.nixcord
             ];
           }
         ];
@@ -70,7 +70,7 @@ or to install to a specific home
 {
   # ...
   imports = [
-    inputs.nixcord.homeManagerModules.nixcord
+    inputs.nixcord.homeModules.nixcord
   ];
   # ...
 }
