@@ -15,6 +15,9 @@ programs.nixcord.discord.enable
 programs.nixcord.discord.package
     # package of discord to install
     # default: pkgs.discord
+programs.nixcord.discord.branch
+    # the discord branch to use
+    # default: "stable"
 programs.nixcord.discord.configDir
     # path to discord config
     # this is only useful for changing discord/settings.json

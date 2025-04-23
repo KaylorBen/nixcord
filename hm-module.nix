@@ -67,10 +67,20 @@ in
       };
       package = mkOption {
         type = types.package;
-        default = pkgs.discord;
+        default = pkgs.callPackage ./discord.nix { };
         description = ''
           The Discord package to use
         '';
+      };
+      branch = mkOption {
+        type = types.enum [
+          "stable"
+          "ptb"
+          "canary"
+          "development"
+        ];
+        default = "stable";
+        description = "The Discord branch to use";
       };
       configDir = mkOption {
         type = types.path;
@@ -342,16 +352,13 @@ in
         ];
         home.packages = [
           (mkIf cfg.discord.enable (
-            cfg.discord.package.override (
-              {
-                withVencord = cfg.discord.vencord.enable;
-                withOpenASAR = cfg.discord.openASAR.enable;
-                inherit vencord;
-              }
-              // lib.optionalAttrs pkgs.stdenvNoCC.hostPlatform.isLinux {
-                enableAutoscroll = cfg.discord.autoscroll.enable;
-              }
-            )
+            cfg.discord.package.override ({
+              withVencord = cfg.discord.vencord.enable;
+              withOpenASAR = cfg.discord.openASAR.enable;
+              enableAutoscroll = cfg.discord.autoscroll.enable;
+              branch = cfg.discord.branch;
+              inherit vencord;
+            })
           ))
           (mkIf cfg.vesktop.enable (
             cfg.vesktop.package.override {

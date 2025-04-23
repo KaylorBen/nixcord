@@ -1,0 +1,108 @@
+name: Update Discord
+
+on:
+  schedule:
+    - cron: "0 */6 * * *" # Every 6 hours
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update-discord:
+    name: Update Discord
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      actions: write
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 1
+
+      - uses: DeterminateSystems/nix-installer-action@v16
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get old versions
+        id: old-versions
+        shell: bash
+        run: |
+          eval "$(
+            perl -ne '
+              if (/^\s*linux\s*=\s*\{/) { $platform="linux" }
+              if (/^\s*darwin\s*=\s*\{/) { $platform="darwin" }
+              if (/^\s*(stable|ptb|canary|development)\s*=\s*"([^"]+)";/) {
+                print "echo $platform.$1=$2 >> $GITHUB_ENV\n"
+                print "echo ::set-output name=${platform}_$1::$2\n"
+              }
+            ' discord.nix
+          )"
+
+      - name: Update Discord
+        id: update
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! nix build --impure --expr 'let pkgs = import <nixpkgs> {}; in (pkgs.callPackage ./discord.nix {}).passthru.updateScript' && \
+               ./result/bin/discord-update; then
+            echo "Failed to update Discord"
+            exit 1
+          fi
+
+      - name: Get new versions
+        id: new-versions
+        shell: bash
+        run: |
+          eval "$(
+            perl -ne '
+              if (/^\s*linux\s*=\s*\{/) { $platform="linux" }
+              if (/^\s*darwin\s*=\s*\{/) { $platform="darwin" }
+              if (/^\s*(stable|ptb|canary|development)\s*=\s*"([^"]+)";/) {
+                print "echo $platform.$1=$2 >> $GITHUB_ENV\n"
+                print "echo ::set-output name=${platform}_$1::$2\n"
+              }
+            ' discord.nix
+          )"
+
+      - name: Test Build
+        run: |
+          set -e
+          for branch in stable ptb canary development; do
+            echo "Testing build for $branch (Linux)..."
+            nix-build -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./discord.nix { branch = \"$branch\"; }"
+            unlink result
+          done
+
+      - name: Commit changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: |
+          success() &&
+          (env.linux_stable != env.linux_stable || env.linux_ptb != env.linux_ptb || env.linux_canary != env.linux_canary || env.linux_development != env.linux_development ||
+           env.darwin_stable != env.darwin_stable || env.darwin_ptb != env.darwin_ptb || env.darwin_canary != env.darwin_canary || env.darwin_development != env.darwin_development)
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add .
+            git commit -m "discord: update
+            
+            -  linux: $linux_stable → $linux_stable, $linux_ptb → $linux_ptb, $linux_canary → $linux_canary, $linux_development → $linux_development
+            -  darwin: $darwin_stable → $darwin_stable, $darwin_ptb → $darwin_ptb, $darwin_canary → $darwin_canary, $darwin_development → $darwin_development
+            "
+            for i in {1..3}; do
+              git fetch origin
+              git pull --rebase origin ${{ github.ref_name }}
+              if git push; then
+                break
+              fi
+              sleep 5
+            done
+          else
+            echo "No changes to commit"
+          fi
