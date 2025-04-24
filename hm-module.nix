@@ -67,7 +67,11 @@ in
       };
       package = mkOption {
         type = types.package;
-        default = pkgs.callPackage ./discord.nix { };
+        default =
+          pkgs.callPackage ./discord.nix { }
+          // lib.optionalAttrs (builtins.fromJSON (lib.versions.major lib.version) < 25) {
+            libgbm = pkgs.mesa;
+          };
         description = ''
           The Discord package to use
         '';
