@@ -69,9 +69,9 @@ in
         type = types.package;
         default =
           pkgs.callPackage ./discord.nix { }
-          // lib.optionalAttrs (builtins.fromJSON (lib.versions.major lib.version) < 25) {
-            libgbm = pkgs.mesa;
-          };
+          // lib.optionalAttrs (
+            pkgs.stdenvNoCC.isLinux && builtins.fromJSON (lib.versions.major lib.version) < 25
+          ) { libgbm = pkgs.mesa; };
         description = ''
           The Discord package to use
         '';
