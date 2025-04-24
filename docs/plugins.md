@@ -1696,6 +1696,30 @@ programs.nixcord.config.plugins.superReactionTweaks.superReactionPlayingLimit
 programs.nixcord.config.plugins.textReplace.enable
     # Replace text in your messages. You can find pre-made rules in the
     # #textreplace-rules channel in Vencord's Server
+programs.nixcord.config.plugins.textReplace.stringRules
+    # List of string replacement rules.
+    # type: list of { find, replace, onlyIfIncludes }
+    # Example:
+    # [
+    #   { find = "foo"; replace = "bar"; onlyIfIncludes = ""; }
+    # ]
+
+programs.nixcord.config.plugins.textReplace.regexRules
+    # List of regex replacement rules.
+    # type: list of { find, replace, onlyIfIncludes }
+    # Example:
+    # [
+    #   {
+    #     find = "/https:\\/\\/x\\.com\\/([^\\/]+\\/status\\/[0-9]+)/";
+    #     replace = "https://vxtwitter.com/$1";
+    #     onlyIfIncludes = "";
+    #   }
+    #   {
+    #     find = "/https:\\/\\/twitter\\.com\\/([^\\/]+\\/status\\/[0-9]+)/";
+    #     replace = "https://vxtwitter.com/$1";
+    #     onlyIfIncludes = "";
+    #   }
+    # ]
 ```
 ## themeAttributes
 ```nix

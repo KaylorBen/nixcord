@@ -2743,11 +2743,57 @@ in
     };
   };
   textReplace = {
-    enable = mkEnableOption ''
-      Replace text in your messages. You can find pre-made rules in the
-      #textreplace-rules channel in Vencord's Server
-    '';
-    # The rules are not configured in settings.json
+    enable = mkEnableOption "Replace text in your messages";
+    stringRules = mkOption {
+      type = types.listOf (
+        types.submodule {
+          options = {
+            find = mkOption {
+              type = types.str;
+              default = "";
+              description = "String to find";
+            };
+            replace = mkOption {
+              type = types.str;
+              default = "";
+              description = "String to replace with";
+            };
+            onlyIfIncludes = mkOption {
+              type = types.str;
+              default = "";
+              description = "Only apply if message includes this string";
+            };
+          };
+        }
+      );
+      default = [ ];
+      description = "List of string replacement rules";
+    };
+    regexRules = mkOption {
+      type = types.listOf (
+        types.submodule {
+          options = {
+            find = mkOption {
+              type = types.str;
+              default = "";
+              description = "Regex pattern to find (as string, e.g. /pattern/)";
+            };
+            replace = mkOption {
+              type = types.str;
+              default = "";
+              description = "Replacement string (can use $1, $2, ...)";
+            };
+            onlyIfIncludes = mkOption {
+              type = types.str;
+              default = "";
+              description = "Only apply if message includes this string";
+            };
+          };
+        }
+      );
+      default = [ ];
+      description = "List of regex replacement rules";
+    };
   };
   themeAttributes = {
     enable = mkEnableOption ''
