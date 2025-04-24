@@ -20,9 +20,9 @@ let
   stableHash = "sha256-/CJt4CZ9R1xB72Zwc76te51Fb3q4KHuzDxP3jWGzW8E=";
   stablePnpmDeps = "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
 
-  unstableVersion = "1.11.9-unstable-2025-04-16";
-  unstableRev = "e99e89e964da257adefc795e03a7bce0ca794654";
-  unstableHash = "sha256-E7O7xGFo5U2MVW7Xdo7GttzrURKIs/NLVmPu6HC6Z1Y=";
+  unstableVersion = "1.11.9-unstable-2025-04-23";
+  unstableRev = "cf78ddcfe27e48d3c49e6a12a4bf1834ae6ea29c";
+  unstableHash = "sha256-vqC4oWXGtAcvadWVrR/7qFt8K9A9B8EqjN0xa7D5Sxo=";
   unstablePnpmDeps = "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
 
   # Due to pnpm package 10.5.2 there is a issue when building.
