@@ -68,10 +68,11 @@ in
       package = mkOption {
         type = types.package;
         default =
-          pkgs.callPackage ./discord.nix { }
-          // lib.optionalAttrs (
-            pkgs.stdenvNoCC.isLinux && builtins.fromJSON (lib.versions.major lib.version) < 25
-          ) { libgbm = pkgs.mesa; };
+          pkgs.callPackage ./discord.nix (
+            lib.optionalAttrs (
+              pkgs.stdenvNoCC.isLinux && builtins.fromJSON (lib.versions.major lib.version) < 25
+            ) { libgbm = pkgs.mesa; }
+          );
         description = ''
           The Discord package to use
         '';
