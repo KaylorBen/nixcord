@@ -7,7 +7,7 @@
   fetchFromGitHub,
   git,
   lib,
-  nodejs,
+  nodejs_22,
   stdenv,
   buildWebExtension ? false,
   unstable ? false,
@@ -54,7 +54,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [
     git
-    nodejs
+    nodejs_22
     pnpm_10-4.configHook
   ];
 
