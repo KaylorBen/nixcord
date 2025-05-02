@@ -5,7 +5,7 @@
 {
   esbuild,
   fetchFromGitHub,
-  git,
+  gitMinimal,
   lib,
   nodejs_22,
   stdenv,
@@ -53,7 +53,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   nativeBuildInputs = [
-    git
+    gitMinimal
     nodejs_22
     pnpm_10-4.configHook
   ];
