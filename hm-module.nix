@@ -392,10 +392,9 @@ in
             for branch in discord discord-ptb discord-canary discord-development; do
               config_dir="$config_base/$branch"
               [ ! -d "$config_dir" ] && continue
-
-              cd "$config_dir"
+              cd "$config_dir" || continue
               # Find versioned directories (e.g., 0.0.89, 0.0.90)
-              versions=($(ls -1d [0-9]*.[0-9]*.[0-9]* 2>/dev/null | sort -V))
+              versions=($(ls -1d [0-9]*.[0-9]*.[0-9]* 2>/dev/null | sort -V || true))
               n=''${#versions[@]}
               if [ "$n" -ge 2 ]; then
                 prev="''${versions[$((n-2))]}"
