@@ -44,4 +44,7 @@
   (mkIf cfg.config.plugins.searchReply.enable ''
     nixcord.config.plugins.searchReply is deprecated. Plugin has been renamed fullSearchContext
   '')
+  (mkIf cfg.config.plugins.nsfwGateBypass.enable ''
+    nixcord.config.nsfwGateBypass has been removed, as it was dropped upstream.
+  '')
 ]

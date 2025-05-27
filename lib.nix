@@ -135,9 +135,6 @@ let
               "enabled"
             else if name == "tagSettings" then
               "tagSettings"
-            # the only name that = attrset not in upperNames
-            else if name == "nsfwGateBypass" then
-              "NSFWGateBypass"
             # acronym needs special rule
             else if name == "banger" then
               "BANger"

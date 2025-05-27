@@ -1177,11 +1177,6 @@ programs.nixcord.config.plugins.notificationVolume.notificationVolume
     # type: float
     # default: 100.0
 ```
-## nsfwGateBypass
-```nix
-programs.nixcord.config.plugins.nsfwGateBypass.enable
-    # Allows you to access NSFW channels without setting/verifying your age
-```
 ## onePingPerDM
 ```nix
 programs.nixcord.config.plugins.onePingPerDM.enable
