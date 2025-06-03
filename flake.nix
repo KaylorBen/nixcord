@@ -18,6 +18,11 @@
       perSystem =
         { pkgs, system, ... }:
         {
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+
           packages.discord = pkgs.callPackage ./discord.nix { };
           packages.vencord = pkgs.callPackage ./vencord.nix { };
         };
