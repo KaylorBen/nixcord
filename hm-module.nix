@@ -180,6 +180,213 @@ in
         description = "Enable middle-click autoscrolling";
       };
     };
+    dorion = {
+      enable = mkEnableOption ''
+        Whether to enable Dorion
+      '';
+      package = mkOption {
+        type = types.package;
+        default = pkgs.callPackage ./dorion.nix { };
+        description = ''
+          The Dorion package to use
+        '';
+      };
+      configDir = mkOption {
+        type = types.path;
+        default = "${
+          if pkgs.stdenvNoCC.isLinux then
+            config.xdg.configHome
+          else
+            "${config.home.homeDirectory}/Library/Application Support"
+        }/dorion";
+        description = "Config path for Dorion";
+      };
+      theme = mkOption {
+        type = types.str;
+        default = "none";
+        description = "Theme to use in Dorion";
+      };
+      themes = mkOption {
+        type = types.listOf types.str;
+        default = [ "none" ];
+        description = "List of available themes";
+      };
+      zoom = mkOption {
+        type = types.str;
+        default = "1.0";
+        description = "Zoom level for the client";
+      };
+      blur = mkOption {
+        type = types.enum [
+          "none"
+          "blur"
+          "acrylic"
+        ];
+        default = "none";
+        description = "Window blur effect type";
+      };
+      blurCss = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable CSS blur effects";
+      };
+      useNativeTitlebar = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Use native window titlebar";
+      };
+      startMaximized = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Start Dorion maximized";
+      };
+      disableHardwareAccel = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Disable hardware acceleration";
+      };
+      sysTray = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Enable system tray integration";
+      };
+      trayIconEnabled = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable tray icon";
+      };
+      openOnStartup = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Open Dorion on system startup";
+      };
+      startupMinimized = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Start minimized to tray";
+      };
+      multiInstance = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Allow multiple Dorion instances";
+      };
+      pushToTalk = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Enable push-to-talk";
+      };
+      pushToTalkKeys = mkOption {
+        type = types.listOf types.str;
+        default = [ "RControl" ];
+        description = "Keys for push-to-talk activation";
+      };
+      updateNotify = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Show update notifications";
+      };
+      desktopNotifications = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Enable desktop notifications";
+      };
+      unreadBadge = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Show unread message badge";
+      };
+      win7StyleNotifications = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Use Windows 7 style notifications";
+      };
+      cacheCss = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Cache CSS for faster loading";
+      };
+      autoClearCache = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Automatically clear cache on startup";
+      };
+      clientType = mkOption {
+        type = types.str;
+        default = "default";
+        description = "Discord client type to emulate";
+      };
+      clientMods = mkOption {
+        type = types.listOf types.str;
+        default = [
+          "Shelter"
+          "Vencord"
+        ];
+        description = "Client modifications to enable";
+      };
+      clientPlugins = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable client plugins";
+      };
+      profile = mkOption {
+        type = types.str;
+        default = "default";
+        description = "Profile name to use";
+      };
+      streamerModeDetection = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Enable streamer mode detection";
+      };
+      rpcServer = mkOption {
+        type = types.bool;
+        default = false;
+        description = "Enable RPC server";
+      };
+      rpcProcessScanner = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable RPC process scanner";
+      };
+      rpcIpcConnector = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable RPC IPC connector";
+      };
+      rpcWebsocketConnector = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable RPC WebSocket connector";
+      };
+      rpcSecondaryEvents = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable RPC secondary events";
+      };
+      proxyUri = mkOption {
+        type = types.str;
+        default = "";
+        description = "Proxy URI to use for connections";
+      };
+      keybinds = mkOption {
+        type = types.attrs;
+        default = { };
+        description = "Custom keybind mappings";
+      };
+      keybindsEnabled = mkOption {
+        type = types.bool;
+        default = true;
+        description = "Enable custom keybinds";
+      };
+      extraSettings = mkOption {
+        type = types.attrs;
+        default = { };
+        description = ''
+          Additional settings to merge into config.json.
+          These will override any conflicting auto-generated settings.
+        '';
+      };
+    };
     package = mkOption {
       type = with types; nullOr package;
       default = null;
@@ -372,6 +579,7 @@ in
               inherit vencord;
             }
           ))
+          (mkIf cfg.dorion.enable cfg.dorion.package)
         ];
       }
       (mkIf cfg.discord.enable (mkMerge [
@@ -461,6 +669,72 @@ in
             mkVencordCfg cfg.vesktop.state
           );
         })
+      ]))
+      # Dorion Client Settings
+      (mkIf cfg.dorion.enable (mkMerge [
+        {
+          home.file."${cfg.dorion.configDir}/config.json".text =
+            let
+              toSnakeCase =
+                str:
+                lib.pipe str [
+                  (builtins.split "([A-Z])")
+                  (builtins.foldl' (
+                    acc: part:
+                    if builtins.isList part then acc + "_" + (lib.toLower (builtins.elemAt part 0)) else acc + part
+                  ) "")
+                  (builtins.replaceStrings [ "__" ] [ "_" ])
+                ];
+              dorionConfig =
+                {
+                  autoupdate = false;
+                }
+                // (lib.mapAttrs' (name: value: {
+                  name = toSnakeCase name;
+                  inherit value;
+                }) (builtins.removeAttrs cfg.dorion [ "extraSettings" ]));
+            in
+            builtins.toJSON (dorionConfig // cfg.dorion.extraSettings);
+        }
+        {
+          home.activation.setupDorionVencordSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            set -e
+
+            webkit_base_dir="${
+              if pkgs.stdenvNoCC.isDarwin then
+                "${config.home.homeDirectory}/Library/WebKit/com.spikehd.dorion/WebsiteData/Default"
+              else
+                "${config.home.homeDirectory}/.local/share/dorion/profiles/default/webdata/localstorage"
+            }"
+
+            encode_utf16le() {
+              local input="$1"
+              echo -n "$input" | ${lib.getExe' pkgs.iconv "iconv"} -f UTF-8 -t UTF-16LE | ${lib.getExe pkgs.xxd} -p | tr -d '\n' | tr '[:lower:]' '[:upper:]'
+            }
+
+            vencord_settings='${
+              builtins.toJSON (
+                mkVencordCfg (recursiveUpdateAttrsList [
+                  cfg.config
+                  cfg.extraConfig
+                ])
+              )
+            }'
+
+            sqlite_paths=()
+            for sqlite_file in $(find "$webkit_base_dir" \( -name "*.sqlite3" -o -name "*.localstorage" \) -type f 2>/dev/null); do
+              if ${lib.getExe pkgs.sqlite} "$sqlite_file" "SELECT COUNT(*) FROM ItemTable WHERE key = 'VencordSettings';" 2>/dev/null | grep -q "1"; then
+                sqlite_paths+=("$sqlite_file")
+              fi
+            done
+
+            encoded_settings=$(encode_utf16le "$vencord_settings")
+
+            for sqlite_path in "''${sqlite_paths[@]}"; do
+              ${lib.getExe pkgs.sqlite} "$sqlite_path" "INSERT OR REPLACE INTO ItemTable (key, value) VALUES ('VencordSettings', X'$encoded_settings');"
+            done
+          '';
+        }
       ]))
       # Warnings
       {

@@ -56,6 +56,152 @@ programs.nixcord.vesktop.autoscroll.enable
     # enable middle-click autoscrolling
     # default: false
 ```
+## Dorion Setup Requirements
+
+**Important**: Before enabling Dorion with nixcord, you must first launch Dorion
+once to create the necessary LocalStorage databases for Vencord settings
+
+1. Run Dorion temporarily to set up the initial environment:
+```bash
+# Using nix run
+nix run github:KaylorBen/nixcord#dorion
+
+# Or using legacy nix-build
+nix-build https://github.com/KaylorBen/nixcord/archive/main.tar.gz -A dorion
+```
+
+2. In Dorion:
+- Log into your Discord account
+- Close Dorion completely
+
+3. Now enable Dorion in your Home Manager configuration and rebuildger switch
+
+This step is required because nixcord automatically configures Vencord settings in Dorion's LocalStorage database, but these databases only exist after the first launch and login
+## dorion
+```nix
+programs.nixcord.dorion.enable
+    # enable the dorion package
+    # note: dorion is a lightweight, tauri-based discord client with built-in vencord support
+programs.nixcord.dorion.package
+    # package of dorion to install
+    # default: pkgs.dorion
+programs.nixcord.dorion.configDir
+    # path to dorion config
+    # type: path
+    # default: ${if pkgs.stdenvNoCC.isLinux then config.xdg.configHome else "${config.home.homeDirectory}/Library/Application Support"}/dorion
+programs.nixcord.dorion.theme
+    # theme to use in dorion
+    # default: "none"
+programs.nixcord.dorion.themes
+    # list of available themes
+    # type: listOf str
+    # default: ["none"]
+programs.nixcord.dorion.zoom
+    # zoom level for the client
+    # default: "1.0"
+programs.nixcord.dorion.blur
+    # window blur effect type
+    # options: "none", "blur", "acrylic"
+    # default: "none"
+programs.nixcord.dorion.blurCss
+    # enable CSS blur effects
+    # default: true
+programs.nixcord.dorion.useNativeTitlebar
+    # use native window titlebar
+    # default: false
+programs.nixcord.dorion.startMaximized
+    # start dorion maximized
+    # default: false
+programs.nixcord.dorion.disableHardwareAccel
+    # disable hardware acceleration
+    # default: false
+programs.nixcord.dorion.sysTray
+    # enable system tray integration
+    # default: false
+programs.nixcord.dorion.trayIconEnabled
+    # enable tray icon
+    # default: true
+programs.nixcord.dorion.openOnStartup
+    # open dorion on system startup
+    # default: false
+programs.nixcord.dorion.startupMinimized
+    # start minimized to tray
+    # default: false
+programs.nixcord.dorion.multiInstance
+    # allow multiple dorion instances
+    # default: false
+programs.nixcord.dorion.pushToTalk
+    # enable push-to-talk
+    # default: false
+programs.nixcord.dorion.pushToTalkKeys
+    # keys for push-to-talk activation
+    # type: listOf str
+    # default: ["RControl"]
+programs.nixcord.dorion.updateNotify
+    # show update notifications
+    # default: true
+programs.nixcord.dorion.desktopNotifications
+    # enable desktop notifications
+    # default: false
+programs.nixcord.dorion.unreadBadge
+    # show unread message badge
+    # default: true
+programs.nixcord.dorion.win7StyleNotifications
+    # use windows 7 style notifications
+    # default: false
+programs.nixcord.dorion.cacheCss
+    # cache CSS for faster loading
+    # default: false
+programs.nixcord.dorion.autoClearCache
+    # automatically clear cache on startup
+    # default: false
+programs.nixcord.dorion.clientType
+    # discord client type to emulate
+    # default: "default"
+programs.nixcord.dorion.clientMods
+    # client modifications to enable
+    # type: listOf str
+    # default: ["Shelter", "Vencord"]
+programs.nixcord.dorion.clientPlugins
+    # enable client plugins
+    # default: true
+programs.nixcord.dorion.profile
+    # profile name to use
+    # default: "default"
+programs.nixcord.dorion.streamerModeDetection
+    # enable streamer mode detection
+    # default: false
+programs.nixcord.dorion.rpcServer
+    # enable RPC server
+    # default: false
+programs.nixcord.dorion.rpcProcessScanner
+    # enable RPC process scanner
+    # default: true
+programs.nixcord.dorion.rpcIpcConnector
+    # enable RPC IPC connector
+    # default: true
+programs.nixcord.dorion.rpcWebsocketConnector
+    # enable RPC WebSocket connector
+    # default: true
+programs.nixcord.dorion.rpcSecondaryEvents
+    # enable RPC secondary events
+    # default: true
+programs.nixcord.dorion.proxyUri
+    # proxy URI to use for connections
+    # default: ""
+programs.nixcord.dorion.keybinds
+    # custom keybind mappings
+    # type: attrs
+    # default: {}
+programs.nixcord.dorion.keybindsEnabled
+    # enable custom keybinds
+    # default: true
+programs.nixcord.dorion.extraSettings
+    # additional settings to merge into config.json
+    # these will override any conflicting auto-generated settings
+    # type: attrs
+    # default: {}
+```
 ## configDir
 ```nix
 programs.nixcord.configDir
@@ -199,4 +345,8 @@ programs.nixcord.vesktop.settings
 programs.nixcord.vesktop.state
     # Settings to be placed in vesktop.configDir/state.json
     # type: attrs
+programs.nixcord.dorion.*
+    # All dorion settings are type-safe options (see above)
+    # Settings are automatically compiled into dorion.configDir/config.json
+    # note: dorion uses config.json instead of settings.json
 ```
