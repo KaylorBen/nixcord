@@ -15,8 +15,8 @@
 }:
 
 let
-  stableVersion = "1.12.2";
-  stableHash = "sha256-a4lbeuXEHDMDko8wte7jUdJ0yUcjfq3UPQAuSiz1UQU=";
+  stableVersion = "1.12.3";
+  stableHash = "sha256-fOZXgyA61G+D7otNNO8d89ghR/GiYPJ7vSZtj9TeGuU=";
   stablePnpmDeps = "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
 
   unstableVersion = "1.12.3-unstable-2025-06-06";
