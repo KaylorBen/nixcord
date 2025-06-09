@@ -174,8 +174,6 @@ let
           binaryName = value.binaryName;
           desktopName = value.desktopName;
 
-          disableBreakingUpdates = discord.passthru.disableBreakingUpdates;
-
           libPath = lib.makeLibraryPath (
             [
               libcxx
@@ -368,8 +366,7 @@ let
                       ''} \
                       ${lib.strings.optionalString enableAutoscroll "--add-flags \"--enable-blink-features=MiddleClickAutoscroll\""} \
                       --prefix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}/" \
-                      --prefix LD_LIBRARY_PATH : ${libPath}:$out/opt/${binaryName} \
-                      --run "${lib.getExe disableBreakingUpdates}"
+                      --prefix LD_LIBRARY_PATH : ${libPath}:$out/opt/${binaryName}
 
                   ln -s "$out/opt/${binaryName}/${binaryName}" "$out/bin"
                   # Without || true the install would fail on case-insensitive filesystems
@@ -391,8 +388,7 @@ let
 
                   # wrap executable to $out/bin
                   mkdir -p "$out/bin"
-                  makeWrapper "$out/Applications/${desktopName}.app/Contents/MacOS/${binaryName}" "$out/bin/${binaryName}" \
-                    --run "${disableBreakingUpdates}/bin/disable-breaking-updates.py"
+                  makeWrapper "$out/Applications/${desktopName}.app/Contents/MacOS/${binaryName}" "$out/bin/${binaryName}"
 
                   runHook postInstall
                 '';
@@ -424,10 +420,7 @@ let
                 + lib.optionalString (withOpenASAR && openasar != null) " (with OpenASAR)"
                 + lib.optionalString (withVencord && vencord != null) " (with Vencord)";
             };
-            passthru = {
-              inherit disableBreakingUpdates;
-              updateScript = updateScriptDrv;
-            };
+            passthru.updateScript = updateScriptDrv;
           }
           // lib.optionalAttrs stdenv.hostPlatform.isLinux { inherit desktopItem; }
           // lib.optionalAttrs stdenv.hostPlatform.isLinux {

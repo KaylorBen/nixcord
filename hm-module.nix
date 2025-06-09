@@ -585,7 +585,13 @@ in
       (mkIf cfg.discord.enable (mkMerge [
         {
           home.activation.disableDiscordUpdates = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-            ${lib.getExe pkgs.discord.passthru.disableBreakingUpdates}
+            set -euo pipefail
+            config_dir="${cfg.discord.configDir}"
+            if [ -f "$config_dir/settings.json" ]; then
+              jq '. + {"SKIP_HOST_UPDATE": true}' "$config_dir/settings.json" > "$config_dir/settings.json.tmp" && mv "$config_dir/settings.json.tmp" "$config_dir/settings.json"
+            else
+              echo '{"SKIP_HOST_UPDATE": true}' > "$config_dir/settings.json"
+            fi
           '';
           home.activation.fixDiscordModules = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
             set -e
