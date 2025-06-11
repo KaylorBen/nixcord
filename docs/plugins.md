@@ -439,7 +439,7 @@ programs.nixcord.config.plugins.customRPC.buttonTwoURL
 ## customIdle
 ```nix
 programs.nixcord.config.plugins.customIdle.enable
-    # Allows you to set teh time before Discord goes idle (or diable auto-idle)
+    # Allows you to set teh time before Discord goes idle (or disable auto-idle)
 programs.nixcord.config.plugins.customIdle.idleTimeout
     # Minutes before Discord goes idle (0 to disable auto-idle)
     # type: float
@@ -1607,7 +1607,7 @@ programs.nixcord.config.plugins.silentMessageToggle.enable
     # Adds a button to the chat bar to toggle sending a silent message.
 programs.nixcord.config.plugins.silentMessageToggle.persistentState
     # Whether to persist the state of the silent message toggle when changing channels
-programs.nixcord.config.plugins.silentMessageToggle.autoDiable
+programs.nixcord.config.plugins.silentMessageToggle.autoDisable
     # Automatically disable the silent message toggle again after sending one
     # default: true
 ```
