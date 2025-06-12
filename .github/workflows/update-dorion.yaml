@@ -2,7 +2,7 @@ name: Update Dorion
 
 on:
   schedule:
-    - cron: "0 */6 * * *" # Every 6 hours
+    - cron: "0 */8 * * *" # Every 8 hours
   workflow_dispatch:
 
 concurrency:
