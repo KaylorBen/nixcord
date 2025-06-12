@@ -13,7 +13,7 @@ jobs:
   update-unstable:
     name: Update Vencord Unstable
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 4
     permissions:
       contents: write
       actions: write
@@ -89,7 +89,7 @@ jobs:
   update-stable:
     name: Update Vencord Stable
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 4
     permissions:
       contents: write
       actions: write
