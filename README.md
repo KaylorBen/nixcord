@@ -167,6 +167,15 @@ It is highly recommend configuring Nixcord with an open Vencord client to
 look through available plugins and options. A list of all available options is
 available [here](docs/INDEX.md).
 
+## Documentation
+
+Nixcord now includes comprehensive auto-generated documentation! You can:
+- Build the HTML documentation: `nix build .#docs-html`
+- View the documentation: `nix run .#docs`
+- Export options as JSON: `nix build .#docs-json`
+
+The documentation includes all configuration options with types, defaults, and descriptions automatically extracted from the source code.
+
 ## Special Thanks
 
 Special Thanks to [Vencord](https://github.com/Vendicated/Vencord),

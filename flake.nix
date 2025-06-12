@@ -23,9 +23,36 @@
             config.allowUnfree = true;
           };
 
-          packages.discord = pkgs.callPackage ./pkgs/discord.nix { };
-          packages.dorion = pkgs.callPackage ./pkgs/dorion.nix { };
-          packages.vencord = pkgs.callPackage ./pkgs/vencord.nix { };
+          packages = {
+            discord = pkgs.callPackage ./pkgs/discord.nix { };
+            dorion = pkgs.callPackage ./pkgs/dorion.nix { };
+            vencord = pkgs.callPackage ./pkgs/vencord.nix { };
+            docs-html =
+              (import ./docs {
+                inherit pkgs;
+                lib = pkgs.lib;
+              }).html;
+            docs-json =
+              (import ./docs {
+                inherit pkgs;
+                lib = pkgs.lib;
+              }).json;
+          };
+
+          apps.docs = {
+            type = "app";
+            program = "${pkgs.writeShellScript "open-docs" ''
+              if command -v xdg-open >/dev/null 2>&1; then
+                xdg-open "${inputs.self.packages.${system}.docs-html}/share/doc/nixcord/index.xhtml"
+              elif command -v open >/dev/null 2>&1; then
+                open "${inputs.self.packages.${system}.docs-html}/share/doc/nixcord/index.xhtml"
+              else
+                echo "Documentation available at: ${
+                  inputs.self.packages.${system}.docs-html
+                }/share/doc/nixcord/index.xhtml"
+              fi
+            ''}";
+          };
         };
       flake = {
         homeModules = {
