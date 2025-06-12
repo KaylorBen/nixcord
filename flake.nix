@@ -30,7 +30,7 @@
       flake = {
         homeModules = {
           default = inputs.self.homeModules.nixcord;
-          nixcord = import ./hm-module.nix;
+          nixcord = import ./modules/hm-module.nix;
         };
       };
     };
