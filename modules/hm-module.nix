@@ -593,7 +593,7 @@ in
             fi
           '';
           home.activation.fixDiscordModules = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-            set -e
+            set -euo pipefail
 
             config_base="${
               if pkgs.stdenvNoCC.isDarwin then
@@ -703,7 +703,7 @@ in
         }
         {
           home.activation.setupDorionVencordSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-            set -e
+            set -euo pipefail
 
             webkit_base_dir="${
               if pkgs.stdenvNoCC.isDarwin then
