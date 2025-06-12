@@ -24,6 +24,7 @@
           };
 
           packages.discord = pkgs.callPackage ./discord.nix { };
+          packages.dorion = pkgs.callPackage ./dorion.nix { };
           packages.vencord = pkgs.callPackage ./vencord.nix { };
         };
       flake = {

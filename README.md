@@ -94,23 +94,40 @@ This is an example home-manager configuration using Nixcord
 {
   # ...
   programs.nixcord = {
-    enable = true;  # enable Nixcord. Also installs discord package
+    enable = true;          # Enable Nixcord (It also installs Discord)
+    vesktop.enable = true;  # Vesktop
+    dorion.enable = true;   # Dorion
     quickCss = "some CSS";  # quickCSS file
     config = {
       useQuickCss = true;   # use out quickCSS
       themeLinks = [        # or use an online theme
         "https://raw.githubusercontent.com/link/to/some/theme.css"
       ];
-      frameless = true; # set some Vencord options
+      frameless = true;                   # Set some Vencord options
       plugins = {
         hideAttachments.enable = true;    # Enable a Vencord plugin
-        ignoreActivities = {    # Enable a plugin and set some options
+        ignoreActivities = {              # Enable a plugin and set some options
           enable = true;
           ignorePlaying = true;
           ignoreWatching = true;
           ignoredActivities = [ "someActivity" ];
         };
       };
+    };
+    dorion = {
+      theme = "dark";
+      zoom = "1.1";
+      blur = "acrylic";       # "none", "blur", or "acrylic"
+      sysTray = true;
+      openOnStartup = true;
+      autoClearCache = true;
+      disableHardwareAccel = false;
+      rpcServer = true;
+      rpcProcessScanner = true;
+      pushToTalk = true;
+      pushToTalkKeys = ["RControl"];
+      desktopNotifications = true;
+      unreadBadge = true;
     };
     extraConfig = {
       # Some extra JSON config here
@@ -120,6 +137,31 @@ This is an example home-manager configuration using Nixcord
   # ...
 }
 ```
+
+### Dorion Setup Requirements
+
+> [!IMPORTANT]
+> Before enabling Dorion with nixcord, you must first launch Dorion once to
+> create the necessary LocalStorage databases for Vencord settings
+
+1. **Initial setup**: Run Dorion temporarily to set up the initial environment:
+```bash
+# Using nix run
+nix run github:KaylorBen/nixcord#dorion
+
+# Or using legacy nix-build
+nix-build https://github.com/KaylorBen/nixcord/archive/main.tar.gz -A dorion
+```
+
+2. **Login**: In Dorion, log into your Discord account, then close Dorion
+completely.
+
+3. **Configure and rebuild**: Now enable Dorion in your Home Manager
+configuration and rebuild
+
+This step is required because nixcord automatically configures Vencord settings
+in Dorion's LocalStorage database, but these databases only exist after the
+first launch and login
 
 It is highly recommend configuring Nixcord with an open Vencord client to
 look through available plugins and options. A list of all available options is

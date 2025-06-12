@@ -1,0 +1,87 @@
+name: Update Dorion
+
+on:
+  schedule:
+    - cron: "0 */6 * * *" # Every 6 hours
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update-dorion:
+    name: Update Dorion
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 1
+
+      - uses: DeterminateSystems/nix-installer-action@v16
+
+      - name: Get old version
+        id: old-version
+        shell: bash
+        run: |
+          OLD_VERSION=$(perl -ne 'print $1 if /^\s*version\s*=\s*"([^"]+)";/' dorion.nix)
+          echo "version=$OLD_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update Dorion
+        id: update
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! ./update-dorion.sh dorion.nix; then
+            echo "Failed to update Dorion"
+            exit 1
+          fi
+
+      - name: Get new version
+        id: new-version
+        shell: bash
+        run: |
+          NEW_VERSION=$(perl -ne 'print $1 if /^\s*version\s*=\s*"([^"]+)";/' dorion.nix)
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Test Build
+        env:
+          NIXPKGS_ALLOW_UNFREE: 1
+        run: |
+          if ! nix-build --arg config '{ allowUnfree = true; }' -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./dorion.nix {}"; then
+            echo "Build failed"
+            exit 1
+          fi
+          unlink result
+
+      - name: Commit changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: success() && steps.old-version.outputs.version != steps.new-version.outputs.version
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          if [[ -n "$(git status --porcelain dorion.nix)" ]]; then
+            git add dorion.nix
+            git commit -m "dorion: ${{ steps.old-version.outputs.version }} -> ${{ steps.new-version.outputs.version }}"
+
+            echo "Pushing changes..."
+            for i in {1..3}; do
+              git fetch origin
+              git pull --rebase origin ${{ github.ref_name }}
+              if git push origin HEAD:${{ github.ref_name }}; then
+                break
+              fi
+              if [[ $i == 3 ]]; then
+                 exit 1
+              fi
+              sleep 5
+            done
+          else
+            echo "`git status` shows no changes to `dorion.nix`. Skipping commit"
+          fi
