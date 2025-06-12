@@ -28,7 +28,7 @@ jobs:
         id: old-version
         shell: bash
         run: |
-          OLD_VERSION=$(perl -ne 'print $1 if /^\s*version\s*=\s*"([^"]+)";/' dorion.nix)
+          OLD_VERSION=$(perl -ne 'print $1 if /^\s*version\s*=\s*"([^"]+)";/' pkgs/dorion.nix)
           echo "version=$OLD_VERSION" >> $GITHUB_OUTPUT
 
       - name: Update Dorion
@@ -36,7 +36,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! ./update-dorion.sh dorion.nix; then
+          if ! ./update-dorion.sh pkgs/dorion.nix; then
             echo "Failed to update Dorion"
             exit 1
           fi
@@ -45,14 +45,14 @@ jobs:
         id: new-version
         shell: bash
         run: |
-          NEW_VERSION=$(perl -ne 'print $1 if /^\s*version\s*=\s*"([^"]+)";/' dorion.nix)
+          NEW_VERSION=$(perl -ne 'print $1 if /^\s*version\s*=\s*"([^"]+)";/' pkgs/dorion.nix)
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Test Build
         env:
           NIXPKGS_ALLOW_UNFREE: 1
         run: |
-          if ! nix-build --arg config '{ allowUnfree = true; }' -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./dorion.nix {}"; then
+          if ! nix-build --arg config '{ allowUnfree = true; }' -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./pkgs/dorion.nix {}"; then
             echo "Build failed"
             exit 1
           fi
@@ -66,8 +66,8 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-          if [[ -n "$(git status --porcelain dorion.nix)" ]]; then
-            git add dorion.nix
+          if [[ -n "$(git status --porcelain pkgs/dorion.nix)" ]]; then
+            git add pkgs/dorion.nix
             git commit -m "dorion: ${{ steps.old-version.outputs.version }} -> ${{ steps.new-version.outputs.version }}"
 
             echo "Pushing changes..."
@@ -83,5 +83,5 @@ jobs:
               sleep 5
             done
           else
-            echo "`git status` shows no changes to `dorion.nix`. Skipping commit"
+            echo "`git status` shows no changes to `pkgs/dorion.nix`. Skipping commit"
           fi

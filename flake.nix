@@ -23,9 +23,9 @@
             config.allowUnfree = true;
           };
 
-          packages.discord = pkgs.callPackage ./discord.nix { };
-          packages.dorion = pkgs.callPackage ./dorion.nix { };
-          packages.vencord = pkgs.callPackage ./vencord.nix { };
+          packages.discord = pkgs.callPackage ./pkgs/discord.nix { };
+          packages.dorion = pkgs.callPackage ./pkgs/dorion.nix { };
+          packages.vencord = pkgs.callPackage ./pkgs/vencord.nix { };
         };
       flake = {
         homeModules = {

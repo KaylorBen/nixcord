@@ -50,7 +50,7 @@ let
     });
 
   defaultVencord = applyPostPatch (
-    pkgs.callPackage ./vencord.nix { unstable = cfg.discord.vencord.unstable; }
+    pkgs.callPackage ./pkgs/vencord.nix { unstable = cfg.discord.vencord.unstable; }
   );
 in
 {
@@ -67,12 +67,11 @@ in
       };
       package = mkOption {
         type = types.package;
-        default =
-          pkgs.callPackage ./discord.nix (
-            lib.optionalAttrs (
-              pkgs.stdenvNoCC.isLinux && builtins.fromJSON (lib.versions.major lib.version) < 25
-            ) { libgbm = pkgs.mesa; }
-          );
+        default = pkgs.callPackage ./pkgs/discord.nix (
+          lib.optionalAttrs (
+            pkgs.stdenvNoCC.isLinux && builtins.fromJSON (lib.versions.major lib.version) < 25
+          ) { libgbm = pkgs.mesa; }
+        );
         description = ''
           The Discord package to use
         '';
@@ -186,7 +185,7 @@ in
       '';
       package = mkOption {
         type = types.package;
-        default = pkgs.callPackage ./dorion.nix { };
+        default = pkgs.callPackage ./pkgs/dorion.nix { };
         description = ''
           The Dorion package to use
         '';
