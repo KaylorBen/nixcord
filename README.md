@@ -46,7 +46,7 @@ example of home-manager installed as a nixos module:
 # flake.nix
 {
   # ...
-  outputs = inputs@{ nipkgs, home-manager, ... }: {
+  outputs = inputs@{ nixpkgs, home-manager, ... }: {
     nixosConfigurations = {
       hostname = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
