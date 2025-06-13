@@ -62,7 +62,7 @@ let
       perl
     ];
     text = ''
-      DEFAULT_NIX_FILE="./dorion.nix"
+      DEFAULT_NIX_FILE="./pkgs/dorion.nix"
       if [ ! -f "$DEFAULT_NIX_FILE" ]; then
           echo "Error: Could not find Nix expression at '$DEFAULT_NIX_FILE'" >&2
           exit 1

@@ -248,7 +248,7 @@ let
               ];
               text = ''
                 BRANCHES=("stable" "ptb" "canary" "development")
-                DEFAULT_NIX_FILE="./discord.nix"
+                DEFAULT_NIX_FILE="./pkgs/discord.nix"
                 if [ ! -f "$DEFAULT_NIX_FILE" ]; then
                     echo "Error: Could not find Nix expression at '$DEFAULT_NIX_FILE'" >&2
                     exit 1
