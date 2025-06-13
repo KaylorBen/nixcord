@@ -40,7 +40,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! ./update-vencord.sh unstable pkgs/vencord.nix; then
+          if ! ./pkgs/update-vencord.sh unstable pkgs/vencord.nix; then
             echo "Failed to update Vencord"
             exit 1
           fi
@@ -116,7 +116,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! ./update-vencord.sh stable pkgs/vencord.nix; then
+          if ! ./pkgs/update-vencord.sh stable pkgs/vencord.nix; then
             echo "Failed to update Vencord"
             exit 1
           fi

@@ -36,7 +36,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! ./update-dorion.sh pkgs/dorion.nix; then
+          if ! ./pkgs/update-dorion.sh pkgs/dorion.nix; then
             echo "Failed to update Dorion"
             exit 1
           fi
