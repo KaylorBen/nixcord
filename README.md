@@ -165,7 +165,7 @@ first launch and login
 
 It is highly recommend configuring Nixcord with an open Vencord client to
 look through available plugins and options. A list of all available options is
-available [here](docs/INDEX.md).
+available in the online documentation [here](https://kaylorben.github.io/nixcord/).
 
 ## Documentation
 
