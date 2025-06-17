@@ -18,6 +18,7 @@
   jq,
   nix,
   perl,
+  sd,
   writeShellApplication,
 }:
 
@@ -60,6 +61,7 @@ let
       jq
       nix
       perl
+      sd
     ];
     text = ''
       DEFAULT_NIX_FILE="./pkgs/dorion.nix"
@@ -93,7 +95,7 @@ let
 
       echo "Updating from $CURRENT_VERSION to $CLEAN_VERSION"
 
-      sed -i "/^\s*version\s*=\s*\"[^\"]*\";/s/\(version\s*=\s*\"\)[^\"]*\(\";.*\)/\1$CLEAN_VERSION\2/" "$DEFAULT_NIX_FILE"
+      sd "version\s*=\s*\"[^\"]+\";" "version = \"$CLEAN_VERSION\";" "$DEFAULT_NIX_FILE"
 
       declare -A platforms=(
         ["x86_64-darwin"]="Dorion_''${CLEAN_VERSION}_x64.dmg"

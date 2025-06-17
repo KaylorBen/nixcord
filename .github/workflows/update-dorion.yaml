@@ -36,10 +36,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if ! ./pkgs/update-dorion.sh pkgs/dorion.nix; then
-            echo "Failed to update Dorion"
+          if ! nix build --impure --expr 'let pkgs = import <nixpkgs> { config.allowUnfree = true; }; in (pkgs.callPackage ./pkgs/dorion.nix {}).passthru.updateScript'; then
+            echo "Failed to build the update script."
             exit 1
           fi
+          if ! ./result/bin/dorion-update; then
+            echo "Update script failed to execute successfully"
+            exit 1
+          fi
+          echo "Dorion update script finished."
+          rm ./result
 
       - name: Get new version
         id: new-version
@@ -52,7 +58,7 @@ jobs:
         env:
           NIXPKGS_ALLOW_UNFREE: 1
         run: |
-          if ! nix-build --arg config '{ allowUnfree = true; }' -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./pkgs/dorion.nix {}"; then
+          if ! nix-build -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./pkgs/dorion.nix {}"; then
             echo "Build failed"
             exit 1
           fi
