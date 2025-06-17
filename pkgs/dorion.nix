@@ -24,7 +24,7 @@
 
 let
   pname = "dorion";
-  version = "6.7.1";
+  version = "6.8.0";
 
   sources = {
     "x86_64-darwin" = {
