@@ -14,6 +14,7 @@
   rpm,
   cpio,
   cacert,
+  coreutils,
   curl,
   jq,
   nix,
@@ -57,6 +58,7 @@ let
     name = "dorion-update";
     runtimeInputs = [
       cacert
+      coreutils
       curl
       jq
       nix
@@ -109,20 +111,44 @@ let
         url="https://github.com/$OWNER/$REPO/releases/download/v''${CLEAN_VERSION}/''${filename}"
         
         echo "Updating hash for $platform ($filename)..."
+        echo "URL: $url"
         
-        if ! new_hash=$(nix-prefetch fetchurl --url "$url" 2>/dev/null) || [[ -z "$new_hash" ]]; then
+        if ! prefetch_output=$(timeout 120 nix-prefetch-url "$url" 2>&1) || [[ -z "$prefetch_output" ]]; then
           echo "Warning: Failed to fetch hash for $platform, skipping..."
+          echo "Error output: $prefetch_output"
           continue
         fi
         
-        sri_hash="sha256-$(nix hash to-sri --type sha256 "$new_hash" 2>/dev/null | cut -d- -f2-)"
+        new_hash=$(echo "$prefetch_output" | grep -E '^[a-z0-9]{52}$' | tail -1)
+        if [[ -z "$new_hash" ]]; then
+          echo "Warning: Could not extract hash from nix-prefetch-url output for $platform"
+          echo "Full output: $prefetch_output"
+          continue
+        fi
         
+        echo "Successfully fetched hash: $new_hash"
+        
+        if ! sri_hash_output=$(nix hash to-sri "sha256:$new_hash" 2>&1); then
+          echo "Warning: Failed to convert hash to SRI format for $platform"
+          echo "Hash conversion error: $sri_hash_output"
+          continue
+        fi
+        
+        sri_hash=$(echo "$sri_hash_output" | grep -E '^sha256-[A-Za-z0-9+/=]+$' | tail -1)
+        if [[ -z "$sri_hash" ]]; then
+          echo "Warning: Could not extract SRI hash from conversion output for $platform"
+          echo "Full conversion output: $sri_hash_output"
+          continue
+        fi
+        echo "Generated SRI hash: $sri_hash"
+        
+        echo "Updating file with new hash..."
         perl -i -pe "
           BEGIN { \$in_platform = 0; }
           if (/^\s*\"$platform\"\s*=\s*\{/) { \$in_platform = 1; next; }
           if (\$in_platform && /^\s*\}/) { \$in_platform = 0; next; }
           if (\$in_platform && /^\s*hash\s*=\s*\"sha256-[A-Za-z0-9+\/=]*\"\s*;/) {
-            s/(^\s*hash\s*=\s*\").*(\"\s*;)/\1$sri_hash\2/;
+            s|(^\s*hash\s*=\s*\").*(\"\s*;)|\$1$sri_hash\$2|;
             \$in_platform = 0;
           }
         " "$DEFAULT_NIX_FILE"
