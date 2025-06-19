@@ -64,6 +64,12 @@ stdenv.mkDerivation (finalAttrs: {
     VENCORD_REMOTE = "${finalAttrs.src.owner}/${finalAttrs.src.repo}";
     VENCORD_HASH = "${finalAttrs.version}";
   };
+  
+  patchPhase = ''
+    substituteInPlace package.json \
+      --replace '"build": "esbuild' \
+                '"build": "esbuild --external:@webpack --external:@webpack/common --external:@api/Settings --external:@api/Styles --external:@components/ErrorBoundary --external:@utils/constants --external:@utils/types'
+  '';
 
   buildPhase = ''
     runHook preBuild
