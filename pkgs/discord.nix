@@ -86,13 +86,13 @@ let
       stable = "0.0.98";
       ptb = "0.0.148";
       canary = "0.0.702";
-      development = "0.0.79";
+      development = "0.0.81";
     };
     darwin = {
       stable = "0.0.350";
       ptb = "0.0.179";
       canary = "0.0.808";
-      development = "0.0.93";
+      development = "0.0.94";
     };
   };
 
@@ -112,7 +112,7 @@ let
       };
       development = fetchurl {
         url = "https://development.dl2.discordapp.net/apps/linux/${versions.linux.development}/discord-development-${versions.linux.development}.tar.gz";
-        hash = "sha256-Qq2N0KscWA8gC8oAclP0mWVGvE8osooW6yYB/DCZaGk=";
+        hash = "sha256-njkuWtk+359feEYtWJSDukvbD5duXuRIr1m5cJVhNvs=";
       };
     };
     x86_64-darwin = {
@@ -130,7 +130,7 @@ let
       };
       development = fetchurl {
         url = "https://development.dl2.discordapp.net/apps/osx/${versions.darwin.development}/DiscordDevelopment.dmg";
-        hash = "sha256-zARk5fFyzWTAszzvFPGtEvG4+SCsCxK82onoDK7hfiA=";
+        hash = "sha256-+bmzdkOSMpKnLGEoeXmAJSv2UHzirOLe1HDHAdHG2U8=";
       };
     };
     aarch64-darwin = srcs.x86_64-darwin;
