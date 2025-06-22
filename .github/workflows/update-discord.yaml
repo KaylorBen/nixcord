@@ -161,7 +161,7 @@ jobs:
 
           # Remove trailing newline from body if present
           commit_body=$(echo -e "$commit_body" | sed '/^$/d' | sed '$ s/\\n$//')
-          COMMIT_MSG="discord: update versions\n\n$commit_body"
+          COMMIT_MSG="github: update discord versions\n\n$commit_body"
 
           if [[ -n "$(git status --porcelain pkgs/discord.nix)" ]]; then
             git add pkgs/discord.nix

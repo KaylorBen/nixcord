@@ -74,7 +74,7 @@ jobs:
 
           if [[ -n "$(git status --porcelain pkgs/dorion.nix)" ]]; then
             git add pkgs/dorion.nix
-            git commit -m "dorion: ${{ steps.old-version.outputs.version }} -> ${{ steps.new-version.outputs.version }}"
+            git commit -m "github: update dorion ${{ steps.old-version.outputs.version }} -> ${{ steps.new-version.outputs.version }}"
 
             echo "Pushing changes..."
             for i in {1..3}; do
