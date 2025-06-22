@@ -93,15 +93,29 @@ stdenv.mkDerivation (finalAttrs: {
       UPDATE_TYPE="$1"
       NIX_FILE="./pkgs/vencord.nix"
 
-      if [ ! -f "$NIX_FILE" ]; then
+      # Validation
+      if [[ ! -f "$NIX_FILE" ]]; then
         echo "Error: File $NIX_FILE does not exist"
         exit 1
       fi
 
+      # Create backup
+      backup_file="$NIX_FILE.backup.$(date +%s)"
+      cp "$NIX_FILE" "$backup_file"
+      echo "Created backup: $backup_file"
+
+      # Cleanup function
       cleanup() {
-        if [ -f "temp-wrapper.nix" ]; then
+        local exit_code=$?
+        if [[ -f "temp-wrapper.nix" ]]; then
           rm -f "temp-wrapper.nix"
         fi
+        if [[ $exit_code -ne 0 && -f "$backup_file" ]]; then
+          echo "Restoring backup due to error..." >&2
+          cp "$backup_file" "$NIX_FILE"
+        fi
+        rm -f "$backup_file"
+        exit $exit_code
       }
       trap cleanup EXIT
 
@@ -152,11 +166,13 @@ stdenv.mkDerivation (finalAttrs: {
 
         # Get and update pnpm deps hash
         echo "Fetching pnpm dependencies hash..."
-        pnpm_store_path=$(nix-build --pure temp-wrapper.nix -A vencord.pnpmDeps --no-link 2>/dev/null)
-        if [ -n "$pnpm_store_path" ]; then
-          new_pnpm_hash=$(nix hash path --sri "$pnpm_store_path")
-          echo "New pnpm deps hash: $new_pnpm_hash"
-          update_value_perl "stablePnpmDeps" "$new_pnpm_hash"
+        if pnpm_store_path=$(nix-build --pure temp-wrapper.nix -A vencord.pnpmDeps --no-link 2>/dev/null); then
+          if new_pnpm_hash=$(nix hash path --sri "$pnpm_store_path" 2>/dev/null); then
+            echo "New pnpm deps hash: $new_pnpm_hash"
+            update_value_perl "stablePnpmDeps" "$new_pnpm_hash"
+          else
+            echo "Warning: Failed to convert pnpm deps hash to SRI format"
+          fi
         else
           echo "Warning: Could not determine pnpm deps hash automatically"
           echo "The build may fail until the hash is manually updated"
@@ -192,11 +208,13 @@ stdenv.mkDerivation (finalAttrs: {
 
         # Get and update pnpm deps hash
         echo "Fetching pnpm dependencies hash..."
-        pnpm_store_path=$(nix-build --pure temp-wrapper.nix -A vencord.pnpmDeps --no-link 2>/dev/null)
-        if [ -n "$pnpm_store_path" ]; then
-          new_pnpm_hash=$(nix hash path --sri "$pnpm_store_path")
-          echo "New pnpm deps hash: $new_pnpm_hash"
-          update_value_perl "unstablePnpmDeps" "$new_pnpm_hash"
+        if pnpm_store_path=$(nix-build --pure temp-wrapper.nix -A vencord.pnpmDeps --no-link 2>/dev/null); then
+          if new_pnpm_hash=$(nix hash path --sri "$pnpm_store_path" 2>/dev/null); then
+            echo "New pnpm deps hash: $new_pnpm_hash"
+            update_value_perl "unstablePnpmDeps" "$new_pnpm_hash"
+          else
+            echo "Warning: Failed to convert pnpm deps hash to SRI format"
+          fi
         else
           echo "Warning: Could not determine pnpm deps hash automatically"
           echo "The build may fail until the hash is manually updated"
