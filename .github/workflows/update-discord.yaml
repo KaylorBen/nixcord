@@ -35,7 +35,7 @@ jobs:
             if ($platform && /^\s*(stable|ptb|canary|development)\s*=\s*"([^"]+)";/) {
               print "OUTPUT_VAR:${platform}_$1=$2\n";
             }
-          ' discord.nix)
+          ' pkgs/discord.nix)
 
           while IFS= read -r line; do
             line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
