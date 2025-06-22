@@ -150,7 +150,7 @@ This is an example home-manager configuration using Nixcord
 nix run github:KaylorBen/nixcord#dorion
 
 # Or using legacy nix-build
-nix-build https://github.com/KaylorBen/nixcord/archive/main.tar.gz -A dorion
+nix-build https://github.com/KaylorBen/nixcord/archive/main.tar.gz -A packages.$(nix-instantiate --eval -E 'builtins.currentSystem' | tr -d '"').dorion
 ```
 
 2. **Login**: In Dorion, log into your Discord account, then close Dorion
