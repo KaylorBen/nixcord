@@ -178,7 +178,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       # Fetch with retries
       for attempt in {1..3}; do
-        if LATEST_VERSION=$(timeout 30 curl -s "https://api.github.com/repos/${finalAttrs.src.owner}/${finalAttrs.src.repo}/releases/latest" 2>/dev/null | jq -r .tag_name 2>/dev/null); then
+        if LATEST_VERSION=$(timeout 30 curl -s "https://api.github.com/repos/SpikeHD/Dorion/releases/latest" 2>/dev/null | jq -r .tag_name 2>/dev/null); then
           break
         fi
         if [[ $attempt == 3 ]]; then
@@ -243,7 +243,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
       for platform in "''${!platforms[@]}"; do
         filename="''${platforms[$platform]}"
-        url="https://github.com/${finalAttrs.src.owner}/${finalAttrs.src.repo}/releases/download/v''${CLEAN_VERSION}/''${filename}"
+        url="https://github.com/SpikeHD/Dorion/releases/download/v''${CLEAN_VERSION}/''${filename}"
         
         echo "Processing $platform ($filename)..."
         echo "  URL: $url"
