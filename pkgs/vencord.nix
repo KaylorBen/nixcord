@@ -3,7 +3,6 @@
 # quicker updates that don't wait on hydra
 
 {
-  esbuild,
   fetchFromGitHub,
   gitMinimal,
   lib,
