@@ -30,9 +30,9 @@ let
     else
       "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
 
-  unstableVersion = "1.12.5-unstable-2025-07-01";
-  unstableRev = "93f28fe9840b36acb81dbcf72383512557614c4e";
-  unstableHash = "sha256-RAYU6ZMnbLBtWI11JqLI+/8+PM2UqRxadpne2s9nmSA=";
+  unstableVersion = "1.12.5-unstable-2025-07-04";
+  unstableRev = "643122e323fd9b36b456b42ef13e159f5b10015e";
+  unstableHash = "sha256-ojy4cRT4Nef8HF+uwxwjbrE210Dkq5yjqmk4tygiNKE=";
   unstablePnpmDeps =
     if stdenv.isDarwin then
       "sha256-m35rYE01T5i8uOKRGHvtK1CgNrLBZVwL9rN1d0tmwmI="
