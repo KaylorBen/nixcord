@@ -26,7 +26,7 @@ let
   stableHash = "sha256-RAYU6ZMnbLBtWI11JqLI+/8+PM2UqRxadpne2s9nmSA=";
   stablePnpmDeps =
     if stdenv.isDarwin then
-      "sha256-m35rYE01T5i8uOKRGHvtK1CgNrLBZVwL9rN1d0tmwmI="
+      "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw="
     else
       "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
 
@@ -35,7 +35,7 @@ let
   unstableHash = "sha256-ojy4cRT4Nef8HF+uwxwjbrE210Dkq5yjqmk4tygiNKE=";
   unstablePnpmDeps =
     if stdenv.isDarwin then
-      "sha256-m35rYE01T5i8uOKRGHvtK1CgNrLBZVwL9rN1d0tmwmI="
+      "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw="
     else
       "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
 in
