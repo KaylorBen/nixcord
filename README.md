@@ -186,4 +186,4 @@ this project would not be possible.
 ## Disclaimer
 
 Using Vencord violates Discord's terms of service.
-Read more about it at [theirgithub](https://github.com/Vendicated/Vencord)
+Read more about it at [their github](https://github.com/Vendicated/Vencord)
