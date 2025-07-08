@@ -169,12 +169,12 @@ available in the online documentation [here](https://kaylorben.github.io/nixcord
 
 ## Documentation
 
-Nixcord now includes comprehensive auto-generated documentation! You can:
-- Build the HTML documentation: `nix build .#docs-html`
-- View the documentation: `nix run .#docs`
-- Export options as JSON: `nix build .#docs-json`
+You can find the rendered docs at: https://kaylorben.github.io/nixcord/
 
-The documentation includes all configuration options with types, defaults, and descriptions automatically extracted from the source code.
+Alternatively, you can build them locally with `nix build .#docs-html` and view
+them with `nix run .#docs`
+
+You can also export all options to JSON using `nix build .#docs-json`
 
 ## Special Thanks
 
