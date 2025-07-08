@@ -76,6 +76,7 @@
   withVencord ? false,
   vencord,
   enableAutoscroll ? false,
+  commandLineArgs ? "",
 
   # Linux specific options
   withTTS ? true,
@@ -503,6 +504,7 @@ let
                       ${lib.strings.optionalString enableAutoscroll "--add-flags \"--enable-blink-features=MiddleClickAutoscroll\""} \
                       --prefix XDG_DATA_DIRS : "${gtk3}/share/gsettings-schemas/${gtk3.name}/" \
                       --prefix LD_LIBRARY_PATH : ${libPath}:$out/opt/${binaryName}
+                      --add-flags ${lib.escapeShellArg commandLineArgs}
 
                   ln -s "$out/opt/${binaryName}/${binaryName}" "$out/bin"
                   # Without || true the install would fail on case-insensitive filesystems
