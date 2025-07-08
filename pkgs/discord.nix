@@ -47,7 +47,6 @@
   libglvnd,
   libnotify,
   libpulseaudio,
-  libunity,
   libuuid,
   libX11,
   libxcb,
@@ -200,7 +199,6 @@ let
               libnotify
               libX11
               libXcomposite
-              libunity
               libuuid
               libXcursor
               libXdamage
