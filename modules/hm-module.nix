@@ -27,31 +27,109 @@ let
       recursiveUpdateAttrsList (
         [
           (attrsets.recursiveUpdate (builtins.elemAt list 0) (builtins.elemAt list 1))
-        ]
-        ++ (lists.drop 2 list)
+        ] ++ (lists.drop 2 list)
       );
 
-  applyPostPatch =
-    pkg:
+  applyPostPatch = pkg: let
+    dirs = buildDirs pluginDerivations;
+  in
     pkg.overrideAttrs (o: {
-      postPatch = lib.concatLines (
-        lib.optional (cfg.userPlugins != { }) "mkdir -p src/userplugins"
-        ++ lib.mapAttrsToList (
-          name: path:
-          "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins"
-        ) cfg.userPlugins
-      );
+      postPatch = ''
+        mkdir -p src/userplugins
+      '' + lib.concatMapStringsSep "\n" (
+        p: "ln -s ${p.path} src/userplugins/${p.name}"
+      ) dirs;
 
-      postInstall =
-        (o.postInstall or "")
-        + ''
-          cp package.json $out
-        '';
+      postInstall = (o.postInstall or "") + ''
+        cp package.json $out
+      '';
     });
 
   defaultVencord = applyPostPatch (
     pkgs.callPackage ../pkgs/vencord.nix { unstable = cfg.discord.vencord.unstable; }
   );
+
+  # Define regular expressions for GitHub and Git URLs
+  regexGithub = "github:([[:alnum:].-]+)/([[:alnum:]/-]+)/([0-9a-f]{40})";
+  regexGit = "git[+]file:///([^/]+/)*([^/?]+)(\\?ref=[a-f0-9]{40})?$";
+
+  # Define coercion functions for GitHub and Git
+  coerceGithub = value: let
+    matches = builtins.match regexGithub value;
+    owner = builtins.elemAt matches 0;
+    repo = builtins.elemAt matches 1;
+    rev = builtins.elemAt matches 2;
+  in builtins.fetchGit {
+    url = "https://github.com/${owner}/${repo}";
+    inherit rev;
+  };
+
+  coerceGit = value: let
+    matches = builtins.match regexGit value;
+    rev = if matches != null then
+      let
+        rawRev = builtins.elemAt matches 2;
+      in
+        if rawRev != null && builtins.substring 0 5 rawRev == "?ref="
+        then builtins.substring 5 (builtins.stringLength rawRev) rawRev
+        else null
+    else null;
+
+    filepath = if matches != null then
+      let
+        startOffset = 4;
+        endOffset = 45;
+        fullLength = builtins.stringLength value;
+        adjustedPathLength = fullLength - startOffset - endOffset;
+      in
+        builtins.substring startOffset adjustedPathLength value
+    else null;
+
+  in if filepath != null then
+    builtins.fetchGit (
+      let
+        revCondition = if rev != null && rev != "" then { rev = rev; } else {};
+      in {
+        url = filepath;
+        ref = "main";
+      } // revCondition
+    )
+  else
+    throw "Failed to extract a valid filepath from the given value";
+
+  # Mapper function that applies coercion based on the regex match
+  pluginMapper = plugin:
+    if builtins.match regexGithub plugin != null then
+      coerceGithub plugin
+    else if builtins.match regexGit plugin != null then
+      coerceGit plugin
+    else if lib.attrsets.isDerivation plugin then
+      plugin
+    else
+      builtins.path {
+        name = "plugin";
+        path = builtins.toPath plugin;
+      };
+
+  pluginDerivations = lib.mapAttrs (_: plugin: pluginMapper plugin) cfg.userPlugins;
+  apiPath = defaultVencord.src;
+
+  buildDirs = pluginDerivations: lib.mapAttrsToList (name: pluginDir:
+    let
+      fullPath = "${pluginDir}";
+
+      buildIfExists = if builtins.pathExists "${fullPath}/default.nix" || builtins.pathExists "${fullPath}/shell.nix" then
+        import fullPath {
+          inherit pkgs apiPath;
+        }
+      else
+        pluginDir;
+    in
+      { name = name; path = buildIfExists; }
+  ) pluginDerivations;
+
+  userPluginsDirectory = pkgs.linkFarm "userPlugins" (buildDirs pluginDerivations);
+
 in
 {
   options.programs.nixcord = {
@@ -472,30 +550,19 @@ in
         for both vencord and vesktop
       '';
     };
-    userPlugins =
-      let
-        regex = "github:([[:alnum:].-]+)/([[:alnum:]/-]+)/([0-9a-f]{40})";
-        coerce =
-          value:
-          let
-            matches = builtins.match regex value;
-            owner = builtins.elemAt matches 0;
-            repo = builtins.elemAt matches 1;
-            rev = builtins.elemAt matches 2;
-          in
-          builtins.fetchGit {
-            url = "https://github.com/${owner}/${repo}";
-            inherit rev;
-          };
-      in
-      mkOption {
-        type = with types; attrsOf (coercedTo (strMatching regex) coerce dop);
-        description = "User plugin to fetch and install. Note that any json required must be enabled in extraConfig";
-        default = { };
-        example = {
-          someCoolPlugin = "github:someUser/someCoolPlugin/someHashHere";
-        };
+    userPlugins = mkOption {
+      description = "User plugin to fetch and install. Note that any JSON required must be enabled in extraConfig.";
+      type = types.attrsOf (types.oneOf [
+        (types.strMatching regexGithub)
+        (types.strMatching regexGit)
+        types.package
+        types.path
+      ]);
+      example = {
+        someCoolPlugin = "github:someUser/someCoolPlugin/someHashHere";
+        anotherCoolPlugin = "git+file:///path/to/repo?rev=abcdef1234567890abcdef1234567890abcdef12";
       };
+    };
     parseRules = {
       upperNames = mkOption {
         type = with types; listOf str;
