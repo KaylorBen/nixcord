@@ -24,20 +24,12 @@
 let
   stableVersion = "1.12.5";
   stableHash = "sha256-RAYU6ZMnbLBtWI11JqLI+/8+PM2UqRxadpne2s9nmSA=";
-  stablePnpmDeps =
-    if stdenv.isDarwin then
-      "sha256-m35rYE01T5i8uOKRGHvtK1CgNrLBZVwL9rN1d0tmwmI="
-    else
-      "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
+  stablePnpmDeps = "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
 
-  unstableVersion = "1.12.5-unstable-2025-07-04";
-  unstableRev = "643122e323fd9b36b456b42ef13e159f5b10015e";
-  unstableHash = "sha256-ojy4cRT4Nef8HF+uwxwjbrE210Dkq5yjqmk4tygiNKE=";
-  unstablePnpmDeps =
-    if stdenv.isDarwin then
-      "sha256-m35rYE01T5i8uOKRGHvtK1CgNrLBZVwL9rN1d0tmwmI="
-    else
-      "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
+  unstableVersion = "1.12.5-unstable-2025-07-10";
+  unstableRev = "6787e98003e963e9bccfa8f5386fb8c09d230a3a";
+  unstableHash = "sha256-Cl8R41dM+j1lrHz9Dq6tfvfWcPQQ5S0lLr/vQDqQLPQ=";
+  unstablePnpmDeps = "sha256-QiD4qTRtz5vz0EEc6Q08ej6dbVGMlPLU2v0GVKNBQyc=";
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "vencord" + lib.optionalString unstable "-unstable";
