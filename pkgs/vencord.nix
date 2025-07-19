@@ -1,7 +1,6 @@
 # Made from nixpkgs pkg and updated with nix-update
 # identical to nixpkgs source, but maintained here for
 # quicker updates that don't wait on hydra
-
 {
   fetchFromGitHub,
   gitMinimal,
@@ -20,7 +19,6 @@
   nix-prefetch-github,
   perl,
 }:
-
 let
   stableVersion = "1.12.5";
   stableHash = "sha256-RAYU6ZMnbLBtWI11JqLI+/8+PM2UqRxadpne2s9nmSA=";
@@ -29,7 +27,7 @@ let
   unstableVersion = "1.12.5-unstable-2025-07-15";
   unstableRev = "a33e81d1cbd7ab50c0b1e1446c925bf259e671fc";
   unstableHash = "sha256-7JT8BMKUhIwYMkIwr2mD8IQLDpldcDtAKh6R1tbAKMw=";
-  unstablePnpmDeps = "sha256-QiD4qTRtz5vz0EEc6Q08ej6dbVGMlPLU2v0GVKNBQyc=";
+  unstablePnpmDeps = "sha256-XK3YCM7jzd7OvodC4lvHF/jDULNLFC0sMct97oBCEjc=";
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "vencord" + lib.optionalString unstable "-unstable";
@@ -141,7 +139,7 @@ stdenv.mkDerivation (finalAttrs: {
 
       if [ "$UPDATE_TYPE" = "stable" ]; then
         echo "Updating stable version..."
-        
+
         new_version=$(curl -s "https://api.github.com/repos/${finalAttrs.src.owner}/${finalAttrs.src.repo}/tags" |
           jq -r '.[] | select(.name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' |
           sort -Vr |
@@ -154,7 +152,7 @@ stdenv.mkDerivation (finalAttrs: {
 
         clean_version="''${new_version#v}"
         echo "New stable version: $clean_version"
-        
+
         # Update version
         update_value_perl "stableVersion" "$clean_version"
 
@@ -180,7 +178,7 @@ stdenv.mkDerivation (finalAttrs: {
 
       else
         echo "Updating unstable version..."
-        
+
         # Get base version for unstable naming
         base_version=$(curl -s "https://api.github.com/repos/${finalAttrs.src.owner}/${finalAttrs.src.repo}/tags" |
           jq -r '.[] | select(.name | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$")) | .name' |
@@ -192,7 +190,7 @@ stdenv.mkDerivation (finalAttrs: {
         new_rev=$(curl -s "https://api.github.com/repos/${finalAttrs.src.owner}/${finalAttrs.src.repo}/commits/main" | jq -r .sha)
         commit_date=$(curl -s "https://api.github.com/repos/${finalAttrs.src.owner}/${finalAttrs.src.repo}/commits/$new_rev" | jq -r '.commit.committer.date | split("T")[0]')
         new_version="''${base_version}-unstable-''${commit_date}"
-        
+
         echo "New unstable version: $new_version"
         echo "New revision: $new_rev"
 
