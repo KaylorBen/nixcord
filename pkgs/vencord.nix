@@ -26,10 +26,10 @@ let
   stableHash = "sha256-RAYU6ZMnbLBtWI11JqLI+/8+PM2UqRxadpne2s9nmSA=";
   stablePnpmDeps = "sha256-hO6QKRr4jTfesRDAEGcpFeJmGTGLGMw6EgIvD23DNzw=";
 
-  unstableVersion = "1.12.5-unstable-2025-07-15";
-  unstableRev = "a33e81d1cbd7ab50c0b1e1446c925bf259e671fc";
-  unstableHash = "sha256-7JT8BMKUhIwYMkIwr2mD8IQLDpldcDtAKh6R1tbAKMw=";
-  unstablePnpmDeps = "sha256-QiD4qTRtz5vz0EEc6Q08ej6dbVGMlPLU2v0GVKNBQyc=";
+  unstableVersion = "1.12.6-unstable-2025-07-21";
+  unstableRev = "50e2ad776baec3144dabd9ac6fd91e9890f52abd";
+  unstableHash = "sha256-ATCQprDHqfUL9fyOTzDeV3ESldsenltNf0jzkIUguuE=";
+  unstablePnpmDeps = "sha256-XK3YCM7jzd7OvodC4lvHF/jDULNLFC0sMct97oBCEjc=";
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "vencord" + lib.optionalString unstable "-unstable";
