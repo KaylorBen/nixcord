@@ -22,14 +22,14 @@
 }:
 
 let
-  stableVersion = "1.12.7";
-  stableHash = "sha256-MS88KCH8ZdLyKoR0K45CSJutZSKUhz4FAE2VtrSx0ic=";
-  stablePnpmDeps = "sha256-XK3YCM7jzd7OvodC4lvHF/jDULNLFC0sMct97oBCEjc=";
+  stableVersion = "1.12.6";
+  stableHash = "sha256-7JT8BMKUhIwYMkIwr2mD8IQLDpldcDtAKh6R1tbAKMw=";
+  stablePnpmDeps = "sha256-QiD4qTRtz5vz0EEc6Q08ej6dbVGMlPLU2v0GVKNBQyc=";
 
   unstableVersion = "1.12.6-unstable-2025-07-21";
   unstableRev = "50e2ad776baec3144dabd9ac6fd91e9890f52abd";
   unstableHash = "sha256-ATCQprDHqfUL9fyOTzDeV3ESldsenltNf0jzkIUguuE=";
-  unstablePnpmDeps = "sha256-XK3YCM7jzd7OvodC4lvHF/jDULNLFC0sMct97oBCEjc=";
+  unstablePnpmDeps = "sha256-QiD4qTRtz5vz0EEc6Q08ej6dbVGMlPLU2v0GVKNBQyc=";
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "vencord" + lib.optionalString unstable "-unstable";
