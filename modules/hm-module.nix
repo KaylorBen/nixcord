@@ -585,11 +585,11 @@ in
         {
           home.activation.disableDiscordUpdates = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
             set -euo pipefail
+            mkdir -p "${cfg.discord.configDir}"
             config_dir="${cfg.discord.configDir}"
             if [ -f "$config_dir/settings.json" ]; then
               jq '. + {"SKIP_HOST_UPDATE": true}' "$config_dir/settings.json" > "$config_dir/settings.json.tmp" && mv "$config_dir/settings.json.tmp" "$config_dir/settings.json"
             else
-              mkdir -p $config_dir
               echo '{"SKIP_HOST_UPDATE": true}' > "$config_dir/settings.json"
             fi
           '';
