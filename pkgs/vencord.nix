@@ -26,9 +26,9 @@ let
   stableHash = "sha256-dvQM4xHRcHLRxEh3+V2LKBPv+Es6T1CTbD9/oY912Ys=";
   stablePnpmDeps = "sha256-JP9HOaP3DG+2F89tC77JZFD0ls35u/MzxNmvMCbBo9Y=";
 
-  unstableVersion = "1.12.9-unstable-2025-08-07";
-  unstableRev = "c7e799e9352637bad2086f64553e08b7ff6f460c";
-  unstableHash = "sha256-ZDHZSa4/oLsNV+e+Hv7evxYkN9zs9V7hNrVXJdED44M=";
+  unstableVersion = "1.12.9-unstable-2025-08-12";
+  unstableRev = "72329f901cae0e45feb24d9ff38eb2eb8d3756d0";
+  unstableHash = "sha256-P2YPSx8UZk4ezNC1jG35WZP5OyCS5m3BZ9ymUR6IE1I=";
   unstablePnpmDeps = "sha256-JP9HOaP3DG+2F89tC77JZFD0ls35u/MzxNmvMCbBo9Y=";
 in
 stdenv.mkDerivation (finalAttrs: {
