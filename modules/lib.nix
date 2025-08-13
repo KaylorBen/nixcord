@@ -28,13 +28,15 @@ let
     "windowBounds"
     "openOnStartup"
     "minimizeToTray"
-  ] ++ parseRules.upperNames;
+  ]
+  ++ parseRules.upperNames;
 
   lowerPluginTitles = [
     # these are the only plugins with lowercase names in json
     "iLoveSpam"
     "petpet"
-  ] ++ parseRules.lowerPluginTitles;
+  ]
+  ++ parseRules.lowerPluginTitles;
 
   # this is since many json options in Vencord are just int values with no description
   # ALL OF THESE HAVE TO BE UNIQUE!!!
@@ -54,7 +56,8 @@ let
     "compact"
     "plain"
     "whitelist"
-  ] ++ parseRules.fakeEnums.zero;
+  ]
+  ++ parseRules.fakeEnums.zero;
   oneOptions = [
     # options which evaluate to int 1
     "consistent"
@@ -75,7 +78,8 @@ let
     "muted"
     "animatedDots"
     "blacklist"
-  ] ++ parseRules.fakeEnums.one;
+  ]
+  ++ parseRules.fakeEnums.one;
   twoOptions = [
     # options which evaluate to int 2
     "timestamp"
@@ -90,17 +94,20 @@ let
     "onlyFriendCount"
     "roomy"
     "avatars"
-  ] ++ parseRules.fakeEnums.two;
+  ]
+  ++ parseRules.fakeEnums.two;
   threeOptions = [
     # options which evaluate to int 3
     "watching"
     "customTime"
     "serverDefault"
     "both" # This references 2 options that both = 3 in JSON
-  ] ++ parseRules.fakeEnums.three;
+  ]
+  ++ parseRules.fakeEnums.three;
   fourOptions = [
     "competing"
-  ] ++ parseRules.fakeEnums.four;
+  ]
+  ++ parseRules.fakeEnums.four;
 
   isLowerCase = s: strings.toLower s == s;
 

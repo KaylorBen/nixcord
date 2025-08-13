@@ -42,11 +42,9 @@ let
         ) cfg.userPlugins
       );
 
-      postInstall =
-        (o.postInstall or "")
-        + ''
-          cp package.json $out
-        '';
+      postInstall = (o.postInstall or "") + ''
+        cp package.json $out
+      '';
     });
 
   defaultVencord = applyPostPatch (
@@ -691,14 +689,13 @@ in
                   ) "")
                   (builtins.replaceStrings [ "__" ] [ "_" ])
                 ];
-              dorionConfig =
-                {
-                  autoupdate = false;
-                }
-                // (lib.mapAttrs' (name: value: {
-                  name = toSnakeCase name;
-                  inherit value;
-                }) (builtins.removeAttrs cfg.dorion [ "extraSettings" ]));
+              dorionConfig = {
+                autoupdate = false;
+              }
+              // (lib.mapAttrs' (name: value: {
+                name = toSnakeCase name;
+                inherit value;
+              }) (builtins.removeAttrs cfg.dorion [ "extraSettings" ]));
             in
             builtins.toJSON (dorionConfig // cfg.dorion.extraSettings);
         }

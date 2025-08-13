@@ -448,25 +448,26 @@ let
             inherit version src;
             pname = value.pname;
 
-            nativeBuildInputs =
-              [ makeWrapper ]
-              ++ lib.optionals stdenv.hostPlatform.isLinux [
-                autoPatchelfHook
-                cups
-                libdrm
-                libuuid
-                libXdamage
-                libX11
-                libXScrnSaver
-                libXtst
-                libxcb
-                libxshmfence
-                libgbm
-                nss
-                wrapGAppsHook3
-                makeShellWrapper
-              ]
-              ++ lib.optionals stdenv.hostPlatform.isDarwin [ undmg ];
+            nativeBuildInputs = [
+              makeWrapper
+            ]
+            ++ lib.optionals stdenv.hostPlatform.isLinux [
+              autoPatchelfHook
+              cups
+              libdrm
+              libuuid
+              libXdamage
+              libX11
+              libXScrnSaver
+              libXtst
+              libxcb
+              libxshmfence
+              libgbm
+              nss
+              wrapGAppsHook3
+              makeShellWrapper
+            ]
+            ++ lib.optionals stdenv.hostPlatform.isDarwin [ undmg ];
 
             buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
               alsa-lib
