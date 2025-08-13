@@ -86,12 +86,24 @@ in
       };
       configDir = mkOption {
         type = types.path;
-        default = "${
-          if pkgs.stdenvNoCC.isLinux then
-            config.xdg.configHome
-          else
-            "${config.home.homeDirectory}/Library/Application Support"
-        }/discord";
+        default =
+          let
+            branch = config.programs.nixcord.discord.branch;
+            baseConfigPath =
+              if pkgs.stdenvNoCC.isLinux then
+                config.xdg.configHome
+              else
+                "${config.home.homeDirectory}/Library/Application Support";
+            branchDirName =
+              {
+                stable = "discord";
+                ptb = "discordptb";
+                canary = "discordcanary";
+                development = "discorddevelopment";
+              }
+              .${branch};
+          in
+          "${baseConfigPath}/${branchDirName}";
         description = "Config path for Discord";
       };
       vencord = {
