@@ -144,6 +144,12 @@ This is an example home-manager configuration using Nixcord
 > Before enabling Dorion with nixcord, you must first launch Dorion once to
 > create the necessary LocalStorage databases for Vencord settings
 
+> [!IMPORTANT]
+> When using Dorion with nixcord, you may encounter an "Unsupported Browser"
+error when attempting to join voice channels or unmute. This is due to
+incomplete WebRTC support within WebkitGTK, which Dorion currently relies on.
+Unfortunately, there is no known workaround for this limitation from our side.
+
 1. Run Dorion temporarily to set up the initial environment:
 
 ```bash
