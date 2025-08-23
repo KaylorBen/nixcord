@@ -497,6 +497,11 @@ in
       Adds a 'Copy User URL' option to the user context menu.
     '';
   };
+  copyStickerLinks = {
+    enable = mkEnableOption ''
+      Adds "Copy Link" and "Open Link" options to the context menu of stickers
+    '';
+  };
   crashHandler = {
     enable = mkOption {
       type = types.bool;
