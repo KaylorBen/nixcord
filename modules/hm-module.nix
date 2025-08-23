@@ -195,7 +195,7 @@ in
       '';
       package = mkOption {
         type = types.package;
-        default = pkgs.callPackage ../pkgs/dorion.nix { };
+        default = pkgs.callPackage pkgs.dorion { };
         description = ''
           The Dorion package to use
         '';

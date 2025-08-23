@@ -25,7 +25,6 @@
 
           packages = {
             discord = pkgs.callPackage ./pkgs/discord.nix { };
-            dorion = pkgs.callPackage ./pkgs/dorion.nix { };
             vencord = pkgs.callPackage ./pkgs/vencord.nix { };
             docs-html =
               (import ./docs {
