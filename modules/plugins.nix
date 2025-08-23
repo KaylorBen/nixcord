@@ -1026,6 +1026,18 @@ in
       Ignore all competing activities (These are normally special game activities)
     '';
   };
+  imageFilename = {
+    enable = mkEnableOption ''
+      Display the file name of images & GIFs as a tooltip when hovering over them
+    '';
+    showFullUrl = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Show the full URL of the image instead of just the file name. Always enabled for GIFs because they usually have no meaningful file name
+      '';
+    };
+  };
   imageLink = {
     enable = mkEnableOption ''
       Never hide image links in messages, even if it's the only content
