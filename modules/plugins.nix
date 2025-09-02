@@ -736,7 +736,7 @@ in
       Always rounds relative timestamps down, so 7.6y becomes 7y instead of 8y
     '';
   };
-  emoteCloner = {
+  expressionCloner = {
     enable = mkEnableOption ''
       Allows you to clone Emotes & Stickers to your own server (right click them)
     '';
