@@ -955,7 +955,7 @@ in
       '';
     };
   };
-  hideAttachments = {
+  hideMedia = {
     enable = mkEnableOption ''
       Hide attachments and Embeds for individual messages via hover button
     '';
