@@ -208,6 +208,11 @@ in
       '';
     };
   };
+  arRPC = {
+    enable = mkEnableOption ''
+      Client plugin for arRPC to enable RPC on Discord Web (experimental)
+    '';
+  };
   betterFolders = {
     enable = mkEnableOption ''
       Shows server folders on dedicated sidebar and adds folder related improvements
