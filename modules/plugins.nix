@@ -208,25 +208,6 @@ in
       '';
     };
   };
-  # deprecated
-  # TODO remove after some time
-  automodContext = {
-    enable = mkEnableOption ''
-      Allows you to jump to the messages surrounding an automod hit
-    '';
-  };
-  banger = {
-    enable = mkEnableOption ''
-      Replaces the GIF in the ban dialogue with a custom one.
-    '';
-    source = mkOption {
-      type = types.str;
-      default = "https://i.imgur.com/wp5q52C.mp4";
-      description = ''
-        Source to replace ban GIF with (Video or Gif)
-      '';
-    };
-  };
   betterFolders = {
     enable = mkEnableOption ''
       Shows server folders on dedicated sidebar and adds folder related improvements
@@ -451,10 +432,6 @@ in
         Disables Discords loggers
       '';
     };
-    # deprecated
-    disableNoisyLoggers = mkEnableOption ''
-      Disable noisy loggers like the MessageActionCreators
-    '';
     disableSpotifyLogger = mkOption {
       type = types.bool;
       default = true;
@@ -1248,13 +1225,6 @@ in
       '';
     };
   };
-  # deprecated
-  # TODO remove after some time
-  maskedLinkPaste = {
-    enable = mkEnableOption ''
-      Pasting a link while having text selected will paste a hyperlink
-    '';
-  };
   memberCount = {
     enable = mkEnableOption ''
       Shows the amount of online & total members in the server member list and tooltip
@@ -1764,13 +1734,6 @@ in
       Completely ignores (recent) incoming messages from blocked users (locally).
     '';
   };
-  # deprecated
-  # TODO remove after some time
-  noDefaultHangStatus = {
-    enable = mkEnableOption ''
-      Disable the default hang status when joining voice channels
-    '';
-  };
   noDevtoolsWarning = {
     enable = mkEnableOption ''
       Disables the 'HOLD UP' banner in the console. As a side effect,
@@ -2155,56 +2118,6 @@ in
       Lets you preview your message before sending it.
     '';
   };
-  # deprecated
-  pronounDB = {
-    enable = mkEnableOption ''
-      Adds pronouns to user messages using pronoundb
-    '';
-    pronounsFormat = mkOption {
-      type = types.enum [
-        "LOWERCASE"
-        "CAPITALIZED"
-      ];
-      default = "LOWERCASE";
-      example = "CAPITALIZED";
-      description = ''
-        The format for pronouns to appear in chat
-        LOWERCASE - Lowercase
-        CAPITALIZED - Capitalized
-      '';
-    };
-    pronounSource = mkOption {
-      type = types.enum [
-        "preferPronounDB" # 0
-        "preferDiscord" # 1
-      ];
-      default = "preferPronounDB";
-      description = ''
-        Where to source pronouns from
-      '';
-    };
-    showSelf = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Enable or disable showing pronouns for the current user
-      '';
-    };
-    showInMessages = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Show in messages
-      '';
-    };
-    showInProfile = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Show in profile
-      '';
-    };
-  };
   quickMention = {
     enable = mkEnableOption ''
       Adds a quick mention button to the message actions bar
@@ -2389,13 +2302,6 @@ in
       '';
     };
   };
-  # deprecated
-  # TODO remove after some time
-  searchReply = {
-    enable = mkEnableOption ''
-      Adds a reply button to search results
-    '';
-  };
   secretRingToneEnabler = {
     enable = mkEnableOption ''
       Always play the secret version of the discord ringtone
@@ -2506,13 +2412,6 @@ in
   showAllMessageButtons = {
     enable = mkEnableOption ''
       Always show all message buttons no matter if you are holding the shift key or not.
-    '';
-  };
-  # deprecated
-  # TODO remove after some time
-  showAllRoles = {
-    enable = mkEnableOption ''
-      Show all roles in new profiles.
     '';
   };
   showConnections = {
@@ -2816,27 +2715,6 @@ in
     enable = mkEnableOption ''
       Adds data attributes to various elements for theming purposes
     '';
-  };
-  # deprecated
-  # TODO remove after some time
-  timeBarAllActivities = {
-    enable = mkEnableOption ''
-      Adds the Spotify time bar to all activities if they have start and end timestamps
-    '';
-    hideActivityDetailText = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Hide the large title text next to the activity
-      '';
-    };
-    hideActivityTimerBadges = mkOption {
-      type = types.bool;
-      default = true;
-      description = ''
-        Hide the timer badges next to the activity
-      '';
-    };
   };
   translate = {
     enable = mkEnableOption ''
@@ -3194,13 +3072,6 @@ in
         Volume Multiplier
       '';
     };
-  };
-  # deprecated
-  # TODO remove after some time
-  watchTogetherAdblock = {
-    enable = mkEnableOption ''
-      Block ads in the YouTube WatchTogether activity via AdGuard
-    '';
   };
   webKeybinds = {
     enable = mkEnableOption ''

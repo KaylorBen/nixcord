@@ -143,8 +143,6 @@ let
             else if name == "tagSettings" then
               "tagSettings"
             # acronym needs special rule
-            else if name == "banger" then
-              "BANger"
             else if name == "useQuickCss" then
               "useQuickCSS"
             else if name == "webRichPresence" then
