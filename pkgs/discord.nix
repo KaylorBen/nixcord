@@ -92,7 +92,7 @@ let
     darwin = {
       stable = "0.0.359";
       ptb = "0.0.190";
-      canary = "0.0.856";
+      canary = "0.0.857";
       development = "0.0.97";
     };
   };
@@ -127,7 +127,7 @@ let
       };
       canary = fetchurl {
         url = "https://canary.dl2.discordapp.net/apps/osx/${versions.darwin.canary}/DiscordCanary.dmg";
-        hash = "sha256-YzjF5Ka2qInZkIwGGohL7XHZlPOrFIykTgjUJ17L95s=";
+        hash = "sha256-omk2vau5LKRhxgcG3k4dYqyc3YH7mZ72Nz4lQyaoO0c=";
       };
       development = fetchurl {
         url = "https://development.dl2.discordapp.net/apps/osx/${versions.darwin.development}/DiscordDevelopment.dmg";
