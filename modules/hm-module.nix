@@ -547,6 +547,26 @@ in
         # I've never seen a plugin with more than 5 options for 1 setting
       };
     };
+
+    finalPackage = {
+      discord = mkOption {
+        type = with types; package;
+        description = "The final discord package that is created";
+        default = null;
+      };
+
+      vesktop = mkOption {
+        type = with types; package;
+        description = "The final vesktop package that is created";
+        default = null;
+      };
+      
+      dorion = mkOption {
+        type = with types; package;
+        description = "The final dorion package that is created";
+        default = null;
+      };
+    };
   };
 
   config =
@@ -571,24 +591,29 @@ in
             message = "programs.nixcord.discord.vencord: Cannot set both 'package' and 'unstable = true'. Choose one or the other.";
           }
         ];
+        
+        cfg.finalPackage.discord = 
+          cfg.discord.package.override ({
+            withVencord = cfg.discord.vencord.enable;
+            withOpenASAR = cfg.discord.openASAR.enable;
+            enableAutoscroll = cfg.discord.autoscroll.enable;
+            branch = cfg.discord.branch;
+            inherit vencord;
+          });
+
+        cfg.finalPackage.vesktop = 
+          cfg.vesktop.package.override {
+            withSystemVencord = cfg.vesktop.useSystemVencord;
+            withMiddleClickScroll = cfg.vesktop.autoscroll.enable;
+            inherit vencord;
+          };
+
+        cfg.finalPackage.dorion = cfg.dorion.package;
+
         home.packages = [
-          (mkIf cfg.discord.enable (
-            cfg.discord.package.override ({
-              withVencord = cfg.discord.vencord.enable;
-              withOpenASAR = cfg.discord.openASAR.enable;
-              enableAutoscroll = cfg.discord.autoscroll.enable;
-              branch = cfg.discord.branch;
-              inherit vencord;
-            })
-          ))
-          (mkIf cfg.vesktop.enable (
-            cfg.vesktop.package.override {
-              withSystemVencord = cfg.vesktop.useSystemVencord;
-              withMiddleClickScroll = cfg.vesktop.autoscroll.enable;
-              inherit vencord;
-            }
-          ))
-          (mkIf cfg.dorion.enable cfg.dorion.package)
+          (mkIf cfg.discord.enable cfg.finalPackage.discord)
+          (mkIf cfg.vesktop.enable cfg.finalPackage.vesktop)
+          (mkIf cfg.dorion.enable cfg.finalPackage.dorion)
         ];
       }
       (mkIf cfg.discord.enable (mkMerge [
