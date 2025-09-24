@@ -551,20 +551,20 @@ in
     finalPackage = {
       discord = mkOption {
         type = with types; package;
+        readOnly = true;
         description = "The final discord package that is created";
-        default = null;
       };
 
       vesktop = mkOption {
         type = with types; package;
+        readOnly = true;
         description = "The final vesktop package that is created";
-        default = null;
       };
       
       dorion = mkOption {
         type = with types; package;
+        readOnly = true;
         description = "The final dorion package that is created";
-        default = null;
       };
     };
   };
@@ -592,7 +592,7 @@ in
           }
         ];
         
-        cfg.finalPackage.discord = 
+        programs.nixcord.finalPackage.discord = 
           cfg.discord.package.override ({
             withVencord = cfg.discord.vencord.enable;
             withOpenASAR = cfg.discord.openASAR.enable;
@@ -601,14 +601,14 @@ in
             inherit vencord;
           });
 
-        cfg.finalPackage.vesktop = 
+        programs.nixcord.finalPackage.vesktop = 
           cfg.vesktop.package.override {
             withSystemVencord = cfg.vesktop.useSystemVencord;
             withMiddleClickScroll = cfg.vesktop.autoscroll.enable;
             inherit vencord;
           };
 
-        cfg.finalPackage.dorion = cfg.dorion.package;
+        programs.nixcord.finalPackage.dorion = cfg.dorion.package;
 
         home.packages = [
           (mkIf cfg.discord.enable cfg.finalPackage.discord)
