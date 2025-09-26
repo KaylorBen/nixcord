@@ -67,7 +67,7 @@
   pango,
   pipewire,
   speechd-minimal,
-  systemd,
+  systemdLibs,
   wayland,
 
   # Options
@@ -179,7 +179,7 @@ let
           libPath = lib.makeLibraryPath (
             [
               libcxx
-              systemd
+              systemdLibs
               libpulseaudio
               libdrm
               libgbm
@@ -474,7 +474,7 @@ let
             buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
               alsa-lib
               gtk3
-              systemd
+              systemdLibs
               pipewire
               wayland
             ];
