@@ -41,6 +41,7 @@
   gtk3,
   libappindicator-gtk3,
   libcxx,
+  libva,
   libdbusmenu,
   libdrm,
   libgbm,
@@ -196,6 +197,7 @@ let
               gdk-pixbuf
               glib
               gtk3
+              libva
               libglvnd
               libnotify
               libX11
