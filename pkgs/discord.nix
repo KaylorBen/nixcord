@@ -62,6 +62,7 @@
   libXScrnSaver,
   libxshmfence,
   libXtst,
+  libunity,
   nspr,
   nss,
   pango,
@@ -203,6 +204,7 @@ let
               libX11
               libXcomposite
               libuuid
+              libunity
               libXcursor
               libXdamage
               libXext
