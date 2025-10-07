@@ -88,14 +88,14 @@ let
     linux = {
       stable = "0.0.111";
       ptb = "0.0.161";
-      canary = "0.0.774";
-      development = "0.0.90";
+      canary = "0.0.776";
+      development = "0.0.91";
     };
     darwin = {
-      stable = "0.0.362";
+      stable = "0.0.363";
       ptb = "0.0.193";
-      canary = "0.0.880";
-      development = "0.0.101";
+      canary = "0.0.882";
+      development = "0.0.102";
     };
   };
 
@@ -111,17 +111,17 @@ let
       };
       canary = fetchurl {
         url = "https://canary.dl2.discordapp.net/apps/linux/${versions.linux.canary}/discord-canary-${versions.linux.canary}.tar.gz";
-        hash = "sha256-VbjxsWhadgpX60c6ya6hZSRk5k4MeH3y5/+IPSRBb+4=";
+        hash = "sha256-RCf1tDnsu42bOhcrZe1YrsFg4zgcp5Tjz3aB4ryyGZk=";
       };
       development = fetchurl {
         url = "https://development.dl2.discordapp.net/apps/linux/${versions.linux.development}/discord-development-${versions.linux.development}.tar.gz";
-        hash = "sha256-AIuVh9QvtQ8J1q8zDxl9QNRVRz3y42SfazvKJW+oVGY=";
+        hash = "sha256-q5uLU6/G+Hg3sBhNRE7R1t0xrygeHlks2dwIgygcs1c=";
       };
     };
     x86_64-darwin = {
       stable = fetchurl {
         url = "https://stable.dl2.discordapp.net/apps/osx/${versions.darwin.stable}/Discord.dmg";
-        hash = "sha256-DHe0WwJOB3mm1HbQwEOJ9NWqxzhOBQynhjJXYSNvA/k=";
+        hash = "sha256-0C/88CO2lh5GrTretPgd5tnU++psFe1Anzuz25U7MVQ=";
       };
       ptb = fetchurl {
         url = "https://ptb.dl2.discordapp.net/apps/osx/${versions.darwin.ptb}/DiscordPTB.dmg";
@@ -129,11 +129,11 @@ let
       };
       canary = fetchurl {
         url = "https://canary.dl2.discordapp.net/apps/osx/${versions.darwin.canary}/DiscordCanary.dmg";
-        hash = "sha256-QRDB1zsZ8YXHbMYBzU0MjRUkydwE+Ts7S1HxXKgO2ZY=";
+        hash = "sha256-OGYo/P+st9VlVH7uz+QZuYrHIvzntt6uPwXNQ0Z3GKE=";
       };
       development = fetchurl {
         url = "https://development.dl2.discordapp.net/apps/osx/${versions.darwin.development}/DiscordDevelopment.dmg";
-        hash = "sha256-/taQSo5nGmDfJUDtf5DC3O6NoHTt0HFVXn0cC+2ivL4=";
+        hash = "sha256-xSHkRNXtoHpKYeNBwf1CUXGu0BimZu4zSXUP0bBCH6U=";
       };
     };
     aarch64-darwin = srcs.x86_64-darwin;
