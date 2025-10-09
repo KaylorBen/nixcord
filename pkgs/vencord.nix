@@ -22,14 +22,14 @@
 }:
 
 let
-  stableVersion = "1.13.1";
-  stableHash = "sha256-FqRRpsS1NPpxJr6iaDvQJ3fuX07oo08lZ6f+oEQb3MM=";
-  stablePnpmDeps = "sha256-JP9HOaP3DG+2F89tC77JZFD0ls35u/MzxNmvMCbBo9Y=";
+  stableVersion = "1.13.2";
+  stableHash = "sha256-fz6u4x7s074QU4oN6u6I0gALFKIzceZe8LSoDDRV2ao=";
+  stablePnpmDeps = "sha256-5MjxEs+jbowJJbJ9+Z+vppFImpB+PZzEhntwRAgv+xM=";
 
-  unstableVersion = "1.13.1-unstable-2025-10-02";
-  unstableRev = "467da909d60a11c9e3b896e5943a10c6e2ff408f";
-  unstableHash = "sha256-FqRRpsS1NPpxJr6iaDvQJ3fuX07oo08lZ6f+oEQb3MM=";
-  unstablePnpmDeps = "sha256-JP9HOaP3DG+2F89tC77JZFD0ls35u/MzxNmvMCbBo9Y=";
+  unstableVersion = "1.13.2-unstable-2025-10-07";
+  unstableRev = "db077f307b20434299f62ccca3b518815f596d0d";
+  unstableHash = "sha256-fz6u4x7s074QU4oN6u6I0gALFKIzceZe8LSoDDRV2ao=";
+  unstablePnpmDeps = "sha256-5MjxEs+jbowJJbJ9+Z+vppFImpB+PZzEhntwRAgv+xM=";
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "vencord" + lib.optionalString unstable "-unstable";
@@ -42,11 +42,20 @@ stdenv.mkDerivation (finalAttrs: {
     hash = if unstable then unstableHash else stableHash;
   };
 
-  pnpmDeps = pnpm_10.fetchDeps {
-    inherit (finalAttrs) pname src;
-    hash = if unstable then unstablePnpmDeps else stablePnpmDeps;
-    fetcherVersion = 2;
-  };
+  patches = [ ./vencord-deps.patch ];
+
+  postPatch = ''
+    substituteInPlace packages/vencord-types/package.json \
+      --replace-fail '"@types/react": "18.3.1"' '"@types/react": "19.0.12"'
+  '';
+
+  pnpmDeps =
+    (pnpm_10.fetchDeps {
+      inherit (finalAttrs) pname src;
+      hash = if unstable then unstablePnpmDeps else stablePnpmDeps;
+      fetcherVersion = 2;
+    }).overrideAttrs
+      { inherit (finalAttrs) patches postPatch; };
 
   nativeBuildInputs = [
     gitMinimal
@@ -112,6 +121,7 @@ stdenv.mkDerivation (finalAttrs: {
       update_value_perl() {
         local var_name="$1"
         local new_value="$2"
+        new_value=$(echo "$new_value" | sed 's/^[ \t]*//;s/[ \t]*$//')
         VAR_NAME="$var_name" NEW_VALUE="$new_value" \
         perl -i -pe '
           my $var_name = $ENV{"VAR_NAME"};

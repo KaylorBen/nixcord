@@ -34,13 +34,15 @@ let
   applyPostPatch =
     pkg:
     pkg.overrideAttrs (o: {
-      postPatch = lib.concatLines (
-        lib.optional (cfg.userPlugins != { }) "mkdir -p src/userplugins"
-        ++ lib.mapAttrsToList (
-          name: path:
-          "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins"
-        ) cfg.userPlugins
-      );
+      postPatch =
+        (o.postPatch or "")
+        + lib.concatLines (
+          lib.optional (cfg.userPlugins != { }) "mkdir -p src/userplugins"
+          ++ lib.mapAttrsToList (
+            name: path:
+            "ln -s ${lib.escapeShellArg path} src/userplugins/${lib.escapeShellArg name} && ls src/userplugins"
+          ) cfg.userPlugins
+        );
 
       postInstall = (o.postInstall or "") + ''
         cp package.json $out
@@ -560,7 +562,7 @@ in
         readOnly = true;
         description = "The final vesktop package that is created";
       };
-      
+
       dorion = mkOption {
         type = with types; package;
         readOnly = true;
@@ -591,22 +593,20 @@ in
             message = "programs.nixcord.discord.vencord: Cannot set both 'package' and 'unstable = true'. Choose one or the other.";
           }
         ];
-        
-        programs.nixcord.finalPackage.discord = 
-          cfg.discord.package.override ({
-            withVencord = cfg.discord.vencord.enable;
-            withOpenASAR = cfg.discord.openASAR.enable;
-            enableAutoscroll = cfg.discord.autoscroll.enable;
-            branch = cfg.discord.branch;
-            inherit vencord;
-          });
 
-        programs.nixcord.finalPackage.vesktop = 
-          cfg.vesktop.package.override {
-            withSystemVencord = cfg.vesktop.useSystemVencord;
-            withMiddleClickScroll = cfg.vesktop.autoscroll.enable;
-            inherit vencord;
-          };
+        programs.nixcord.finalPackage.discord = cfg.discord.package.override ({
+          withVencord = cfg.discord.vencord.enable;
+          withOpenASAR = cfg.discord.openASAR.enable;
+          enableAutoscroll = cfg.discord.autoscroll.enable;
+          branch = cfg.discord.branch;
+          inherit vencord;
+        });
+
+        programs.nixcord.finalPackage.vesktop = cfg.vesktop.package.override {
+          withSystemVencord = cfg.vesktop.useSystemVencord;
+          withMiddleClickScroll = cfg.vesktop.autoscroll.enable;
+          inherit vencord;
+        };
 
         programs.nixcord.finalPackage.dorion = cfg.dorion.package;
 
