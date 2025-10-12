@@ -25,6 +25,9 @@
 
           packages = {
             discord = pkgs.callPackage ./pkgs/discord.nix { };
+            discord-ptb = pkgs.callPackage ./pkgs/discord.nix { branch = "ptb"; };
+            discord-canary = pkgs.callPackage ./pkgs/discord.nix { branch = "canary"; };
+            discord-development = pkgs.callPackage ./pkgs/discord.nix { branch = "development"; };
             dorion = pkgs.callPackage ./pkgs/dorion.nix { };
             vencord = pkgs.callPackage ./pkgs/vencord.nix { };
             docs-html =
