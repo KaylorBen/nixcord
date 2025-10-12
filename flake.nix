@@ -30,6 +30,7 @@
             discord-development = pkgs.callPackage ./pkgs/discord.nix { branch = "development"; };
             dorion = pkgs.callPackage ./pkgs/dorion.nix { };
             vencord = pkgs.callPackage ./pkgs/vencord.nix { };
+            vencord-unstable = pkgs.callPackage ./pkgs/vencord.nix { unstable = true; };
             docs-html =
               (import ./docs {
                 inherit pkgs;
