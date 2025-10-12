@@ -1,5 +1,6 @@
 {
   lib,
+  stdenvNoCC,
   stdenv,
   fetchurl,
   discord,
@@ -140,8 +141,8 @@ let
     aarch64-linux = throw "Discord does not provide official aarch64-linux builds.";
   };
 
-  currentPlatform = if stdenv.hostPlatform.isLinux then "linux" else "darwin";
-  currentSystem = stdenv.hostPlatform.system;
+  currentPlatform = if stdenvNoCC.hostPlatform.isLinux then "linux" else "darwin";
+  currentSystem = stdenvNoCC.hostPlatform.system;
   version =
     versions.${currentPlatform}.${branch}
       or (throw "Invalid branch ${branch} for platform ${currentPlatform}");
@@ -447,7 +448,7 @@ let
           );
 
         in
-        stdenv.mkDerivation (
+        stdenvNoCC.mkDerivation (
           rec {
             inherit version src;
             pname = value.pname;
@@ -455,7 +456,7 @@ let
             nativeBuildInputs = [
               makeWrapper
             ]
-            ++ lib.optionals stdenv.hostPlatform.isLinux [
+            ++ lib.optionals stdenvNoCC.hostPlatform.isLinux [
               autoPatchelfHook
               cups
               libdrm
@@ -471,9 +472,9 @@ let
               wrapGAppsHook3
               makeShellWrapper
             ]
-            ++ lib.optionals stdenv.hostPlatform.isDarwin [ undmg ];
+            ++ lib.optionals stdenvNoCC.hostPlatform.isDarwin [ undmg ];
 
-            buildInputs = lib.optionals stdenv.hostPlatform.isLinux [
+            buildInputs = lib.optionals stdenvNoCC.hostPlatform.isLinux [
               alsa-lib
               gtk3
               systemdLibs
@@ -481,14 +482,14 @@ let
               wayland
             ];
 
-            runtimeDependencies = lib.optionals stdenv.hostPlatform.isLinux (lib.splitString ":" libPath);
+            runtimeDependencies = lib.optionals stdenvNoCC.hostPlatform.isLinux (lib.splitString ":" libPath);
 
-            dontWrapGApps = lib.optional stdenv.hostPlatform.isLinux true;
+            dontWrapGApps = lib.optional stdenvNoCC.hostPlatform.isLinux true;
 
-            sourceRoot = lib.optionalString stdenv.hostPlatform.isDarwin ".";
+            sourceRoot = lib.optionalString stdenvNoCC.hostPlatform.isDarwin ".";
 
             installPhase =
-              if stdenv.hostPlatform.isLinux then
+              if stdenvNoCC.hostPlatform.isLinux then
                 ''
                   runHook preInstall
 
@@ -539,7 +540,7 @@ let
             postInstall =
               let
                 resourcesPath =
-                  if stdenv.hostPlatform.isLinux then
+                  if stdenvNoCC.hostPlatform.isLinux then
                     "$out/opt/${binaryName}/resources"
                   else
                     "$out/Applications/${desktopName}.app/Contents/Resources";
@@ -565,8 +566,8 @@ let
             };
             passthru.updateScript = updateScriptDrv;
           }
-          // lib.optionalAttrs stdenv.hostPlatform.isLinux { inherit desktopItem; }
-          // lib.optionalAttrs stdenv.hostPlatform.isLinux {
+          // lib.optionalAttrs stdenvNoCC.hostPlatform.isLinux { inherit desktopItem; }
+          // lib.optionalAttrs stdenvNoCC.hostPlatform.isLinux {
             inherit withTTS enableAutoscroll;
           }
         )
@@ -579,17 +580,17 @@ let
         };
         ptb = rec {
           pname = "discord-ptb";
-          binaryName = if stdenv.hostPlatform.isLinux then "DiscordPTB" else desktopName;
+          binaryName = if stdenvNoCC.hostPlatform.isLinux then "DiscordPTB" else desktopName;
           desktopName = "Discord PTB";
         };
         canary = rec {
           pname = "discord-canary";
-          binaryName = if stdenv.hostPlatform.isLinux then "DiscordCanary" else desktopName;
+          binaryName = if stdenvNoCC.hostPlatform.isLinux then "DiscordCanary" else desktopName;
           desktopName = "Discord Canary";
         };
         development = rec {
           pname = "discord-development";
-          binaryName = if stdenv.hostPlatform.isLinux then "DiscordDevelopment" else desktopName;
+          binaryName = if stdenvNoCC.hostPlatform.isLinux then "DiscordDevelopment" else desktopName;
           desktopName = "Discord Development";
         };
       };
