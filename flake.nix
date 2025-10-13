@@ -23,25 +23,29 @@
             config.allowUnfree = true;
           };
 
-          packages = {
-            discord = pkgs.callPackage ./pkgs/discord.nix { };
-            discord-ptb = pkgs.callPackage ./pkgs/discord.nix { branch = "ptb"; };
-            discord-canary = pkgs.callPackage ./pkgs/discord.nix { branch = "canary"; };
-            discord-development = pkgs.callPackage ./pkgs/discord.nix { branch = "development"; };
-            dorion = pkgs.callPackage ./pkgs/dorion.nix { };
-            vencord = pkgs.callPackage ./pkgs/vencord.nix { };
-            vencord-unstable = pkgs.callPackage ./pkgs/vencord.nix { unstable = true; };
-            docs-html =
-              (import ./docs {
-                inherit pkgs;
-                lib = pkgs.lib;
-              }).html;
-            docs-json =
-              (import ./docs {
-                inherit pkgs;
-                lib = pkgs.lib;
-              }).json;
-          };
+          packages =
+            let
+              discord = pkgs.callPackage ./pkgs/discord { };
+            in
+            {
+              discord = discord.discord;
+              discord-ptb = discord.discord-ptb;
+              discord-canary = discord.discord-canary;
+              discord-development = discord.discord-development;
+              dorion = pkgs.callPackage ./pkgs/dorion.nix { };
+              vencord = pkgs.callPackage ./pkgs/vencord.nix { };
+              vencord-unstable = pkgs.callPackage ./pkgs/vencord.nix { unstable = true; };
+              docs-html =
+                (import ./docs {
+                  inherit pkgs;
+                  lib = pkgs.lib;
+                }).html;
+              docs-json =
+                (import ./docs {
+                  inherit pkgs;
+                  lib = pkgs.lib;
+                }).json;
+            };
 
           apps.docs = {
             type = "app";

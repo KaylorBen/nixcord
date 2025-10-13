@@ -13,269 +13,201 @@ jobs:
   update-discord:
     name: Update Discord
     runs-on: ubuntu-latest
-    timeout-minutes: 4
     permissions:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4.2.2
+      - name: Checkout repository
+        uses: actions/checkout@v5.0.0
         with:
           fetch-depth: 1
 
-      - uses: DeterminateSystems/nix-installer-action@v16
-
-      - name: Validate workspace
-        run: |
-          set -euo pipefail
-          if [[ ! -f "pkgs/discord.nix" ]]; then
-            echo "::error::pkgs/discord.nix not found"
-            exit 1
-          fi
-          echo "::notice::Workspace validation passed"
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@v20
 
       - name: Get old versions
         id: old-versions
-        shell: bash
         run: |
           set -euo pipefail
-          
-          echo "::group::Extracting current versions"
-          
-          if ! perl_output=$(perl -ne '
-            BEGIN { our $platform = ""; }
-            if (/^\s*linux\s*=\s*\{/) { $platform="linux"; }
-            if (/^\s*darwin\s*=\s*\{/) { $platform="darwin"; }
-            if ($platform && /^\s*(stable|ptb|canary|development)\s*=\s*"([^"]+)";/) {
-              print "OUTPUT_VAR:${platform}_$1=$2\n";
-            }
-          ' pkgs/discord.nix 2>&1); then
-            echo "::error::Failed to parse discord.nix for version extraction"
-            echo "::error::Perl output: $perl_output"
-            exit 1
-          fi
+          echo "::group::Extracting current versions using nix eval"
+          PACKAGES=("discord" "discord-ptb" "discord-canary" "discord-development")
 
-          if [[ -z "$perl_output" ]]; then
-            echo "::error::No version information extracted from discord.nix"
-            exit 1
-          fi
+          # Linux Versions
+          for pkg in "${PACKAGES[@]}"; do
+            version=$(nix eval --raw --impure ".#${pkg}.version")
+            echo "linux_${pkg}=${version}" >> "$GITHUB_OUTPUT"
+            echo "Extracted Linux: ${pkg}=${version}"
+          done
 
-          echo "::debug::Perl output: $perl_output"
-
-          while IFS= read -r line; do
-            line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-            if [[ -z "$line" ]]; then continue; fi
-
-            if [[ "$line" == "OUTPUT_VAR:"* ]]; then
-              key_value="${line#OUTPUT_VAR:}"
-              echo "$key_value" >> "$GITHUB_OUTPUT"
-              echo "::debug::Extracted: $key_value"
-            else
-              echo "::warning::Unexpected Perl output line: [$line]"
-            fi
-          done < <(echo "$perl_output" | tr -d '\r')
-          
+          # Darwin Versions
+          for pkg in "${PACKAGES[@]}"; do
+            version=$(nix eval --raw --system "aarch64-darwin" --impure ".#${pkg}.version")
+            echo "darwin_${pkg}=${version}" >> "$GITHUB_OUTPUT"
+            echo "Extracted Darwin: ${pkg}=${version}"
+          done
           echo "::endgroup::"
 
-      - name: Update Discord
+      - name: Update Discord sources for all variants
         id: update
         env:
           NIXPKGS_ALLOW_UNFREE: 1
         run: |
           set -euo pipefail
+          PACKAGES=("discord" "discord-ptb" "discord-canary" "discord-development")
           
-          echo "::group::Building update script"
-          if ! nix build --impure --expr 'let pkgs = import <nixpkgs> { config.allowUnfree = true; }; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.updateScript' 2>&1; then
-            echo "::error::Failed to build the update script"
-            exit 1
-          fi
-          echo "::endgroup::"
+          for pkg in "${PACKAGES[@]}"; do
+            echo "::group::Updating ${pkg}"
 
-          echo "::group::Running update script"
-          if ! timeout 600 ./result/bin/discord-update 2>&1; then
-            echo "::error::Update script failed or timed out"
-            exit 1
-          fi
-          echo "::notice::Discord update script completed successfully"
-          echo "::endgroup::"
-          
-          rm -f ./result
+            nix build ".#${pkg}.passthru.updateScript"
+            script_path="./result/bin/${pkg}-update-script"
+            
+            if [[ ! -f "$script_path" ]]; then
+              echo "::error::Update script for ${pkg} not found at $script_path"
+              exit 1
+            fi
+            
+            "$script_path"
+            
+            rm -rf ./result
+            
+            echo "::endgroup::"
+          done
+          echo "::notice::All variants have been updated."
 
       - name: Get new versions
         id: new-versions
-        shell: bash
         run: |
           set -euo pipefail
-          
-          echo "::group::Extracting updated versions"
-          
-          if [[ ! -f ./pkgs/discord.nix ]]; then
-            echo "::error::pkgs/discord.nix not found after update script ran"
-            exit 1
-          fi
-          
-          if ! perl_output=$(perl -ne '
-            BEGIN { our $platform = ""; }
-            if (/^\s*linux\s*=\s*\{/) { $platform="linux"; }
-            if (/^\s*darwin\s*=\s*\{/) { $platform="darwin"; }
-            if ($platform && /^\s*(stable|ptb|canary|development)\s*=\s*"([^"]+)";/) {
-              print "OUTPUT_VAR:${platform}_$1=$2\n";
-            }
-          ' pkgs/discord.nix 2>&1); then
-            echo "::error::Failed to parse updated discord.nix"
-            echo "::error::Perl output: $perl_output"
-            exit 1
-          fi
+          echo "::group::Extracting new versions using nix eval"
+          PACKAGES=("discord" "discord-ptb" "discord-canary" "discord-development")
 
-          if [[ -z "$perl_output" ]]; then
-            echo "::error::No version information extracted from updated discord.nix"
-            exit 1
-          fi
+          # Linux Versions
+          for pkg in "${PACKAGES[@]}"; do
+            version=$(nix eval --raw --impure ".#${pkg}.version")
+            echo "linux_${pkg}=${version}" >> "$GITHUB_OUTPUT"
+            echo "Extracted new Linux: ${pkg}=${version}"
+          done
 
-          echo "::debug::Updated Perl output: $perl_output"
-
-          while IFS= read -r line; do
-             line=$(echo "$line" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-             if [[ -z "$line" ]]; then continue; fi
-
-             if [[ "$line" == "OUTPUT_VAR:"* ]]; then
-              key_value="${line#OUTPUT_VAR:}"
-              echo "$key_value" >> "$GITHUB_OUTPUT"
-              echo "::debug::Updated: $key_value"
-             else
-              echo "::warning::Unexpected Perl output line: [$line]"
-             fi
-          done < <(echo "$perl_output" | tr -d '\r')
-          
+          # Darwin Versions
+          for pkg in "${PACKAGES[@]}"; do
+            version=$(nix eval --raw --system "aarch64-darwin" --impure ".#${pkg}.version")
+            echo "darwin_${pkg}=${version}" >> "$GITHUB_OUTPUT"
+            echo "Extracted new Darwin: ${pkg}=${version}"
+          done
           echo "::endgroup::"
 
-      - name: Test Build
+      - name: Test Linux Builds
         env:
           NIXPKGS_ALLOW_UNFREE: 1
         run: |
           set -euo pipefail
-          
-          echo "::group::Testing builds"
-          failed_branches=()
-          
-          for branch in stable ptb canary development; do
-            echo "::notice::Testing build for $branch"
-            if ! timeout 300 nix-build --arg config '{ allowUnfree = true; }' -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./pkgs/discord.nix { branch = \"$branch\"; }" 2>&1; then
-               echo "::error::Failed to build $branch"
-               failed_branches+=("$branch")
-               continue
+          echo "::group::Testing Linux builds with new versions"
+          PACKAGES=("discord" "discord-ptb" "discord-canary" "discord-development")
+          failed_packages=()
+          for pkg in "${PACKAGES[@]}"; do
+            echo "::notice::Testing build for ${pkg}"
+            if ! nix build --no-link ".#${pkg}"; then
+               echo "::error::Failed to build ${pkg}"
+               failed_packages+=("$pkg")
+            else
+               echo "::notice::Successfully built ${pkg}"
             fi
-            echo "::notice::Successfully built $branch"
-            rm -f result
           done
-          
-          if [[ ${#failed_branches[@]} -gt 0 ]]; then
-            echo "::error::Failed to build branches: ${failed_branches[*]}"
+          if [[ ${#failed_packages[@]} -gt 0 ]]; then
+            echo "::error::Failed to build packages: ${failed_packages[*]}"
             exit 1
           fi
-          
-          echo "::notice::All Linux builds tested successfully"
+          echo "::notice::All Linux builds tested successfully."
           echo "::endgroup::"
 
       - name: Commit changes
-        if: |
-          success() && (
-            steps.old-versions.outputs.linux_stable != steps.new-versions.outputs.linux_stable || 
-            steps.old-versions.outputs.linux_ptb != steps.new-versions.outputs.linux_ptb || 
-            steps.old-versions.outputs.linux_canary != steps.new-versions.outputs.linux_canary || 
-            steps.old-versions.outputs.linux_development != steps.new-versions.outputs.linux_development ||
-            steps.old-versions.outputs.darwin_stable != steps.new-versions.outputs.darwin_stable || 
-            steps.old-versions.outputs.darwin_ptb != steps.new-versions.outputs.darwin_ptb || 
-            steps.old-versions.outputs.darwin_canary != steps.new-versions.outputs.darwin_canary || 
-            steps.old-versions.outputs.darwin_development != steps.new-versions.outputs.darwin_development
-          )
+        if: success()
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OLD_linux_stable: ${{ steps.old-versions.outputs.linux_stable }}
-          OLD_linux_ptb: ${{ steps.old-versions.outputs.linux_ptb }}
-          OLD_linux_canary: ${{ steps.old-versions.outputs.linux_canary }}
-          OLD_linux_development: ${{ steps.old-versions.outputs.linux_development }}
-          OLD_darwin_stable: ${{ steps.old-versions.outputs.darwin_stable }}
-          OLD_darwin_ptb: ${{ steps.old-versions.outputs.darwin_ptb }}
-          OLD_darwin_canary: ${{ steps.old-versions.outputs.darwin_canary }}
-          OLD_darwin_development: ${{ steps.old-versions.outputs.darwin_development }}
-          NEW_linux_stable: ${{ steps.new-versions.outputs.linux_stable }}
-          NEW_linux_ptb: ${{ steps.new-versions.outputs.linux_ptb }}
-          NEW_linux_canary: ${{ steps.new-versions.outputs.linux_canary }}
-          NEW_linux_development: ${{ steps.new-versions.outputs.linux_development }}
-          NEW_darwin_stable: ${{ steps.new-versions.outputs.darwin_stable }}
-          NEW_darwin_ptb: ${{ steps.new-versions.outputs.darwin_ptb }}
-          NEW_darwin_canary: ${{ steps.new-versions.outputs.darwin_canary }}
-          NEW_darwin_development: ${{ steps.new-versions.outputs.darwin_development }}
+          OLD_linux_discord: ${{ steps.old-versions.outputs.linux_discord }}
+          NEW_linux_discord: ${{ steps.new-versions.outputs.linux_discord }}
+          
+          OLD_linux_discord-ptb: ${{ steps.old-versions.outputs.linux_discord-ptb }}
+          NEW_linux_discord-ptb: ${{ steps.new-versions.outputs.linux_discord-ptb }}
+          
+          OLD_linux_discord-canary: ${{ steps.old-versions.outputs.linux_discord-canary }}
+          NEW_linux_discord-canary: ${{ steps.new-versions.outputs.linux_discord-canary }}
+          
+          OLD_linux_discord-development: ${{ steps.old-versions.outputs.linux_discord-development }}
+          NEW_linux_discord-development: ${{ steps.new-versions.outputs.linux_discord-development }}
+          
+          OLD_darwin_discord: ${{ steps.old-versions.outputs.darwin_discord }}
+          NEW_darwin_discord: ${{ steps.new-versions.outputs.darwin_discord }}
+          
+          OLD_darwin_discord-ptb: ${{ steps.old-versions.outputs.darwin_discord-ptb }}
+          NEW_darwin_discord-ptb: ${{ steps.new-versions.outputs.darwin_discord-ptb }}
+          
+          OLD_darwin_discord-canary: ${{ steps.old-versions.outputs.darwin_discord-canary }}
+          NEW_darwin_discord-canary: ${{ steps.new-versions.outputs.darwin_discord-canary }}
+          
+          OLD_darwin_discord-development: ${{ steps.old-versions.outputs.darwin_discord-development }}
+          NEW_darwin_discord-development: ${{ steps.new-versions.outputs.darwin_discord-development }}
         run: |
           set -euo pipefail
           
-          echo "::group::Preparing commit"
+          if ! git diff --quiet --exit-code pkgs/discord/default.nix; then
+            echo "::notice::Changes detected in pkgs/discord/default.nix. Proceeding with commit."
+          else
+            echo "::notice::No changes detected. Nothing to commit."
+            exit 0
+          fi
           
           git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
           commit_body=""
+          
+          add_change() {
+            local list_name="$1"
+            local branch_name="$2"
+            local old_ver="$3"
+            local new_ver="$4"
+            if [[ "$old_ver" != "$new_ver" ]]; then
+              eval "$list_name+=(\"$branch_name: $old_ver -> $new_ver\")"
+            fi
+          }
+          
           linux_changes=()
+          add_change linux_changes "stable" "$OLD_linux_discord" "$NEW_linux_discord"
+          add_change linux_changes "ptb" "$OLD_linux_discord-ptb" "$NEW_linux_discord-ptb"
+          add_change linux_changes "canary" "$OLD_linux_discord-canary" "$NEW_linux_discord-canary"
+          add_change linux_changes "development" "$OLD_linux_discord-development" "$NEW_linux_discord-development"
+          
           darwin_changes=()
-
-          # Check for Linux changes
-          [[ "$OLD_linux_stable" != "$NEW_linux_stable" ]] && linux_changes+=("stable: $OLD_linux_stable -> $NEW_linux_stable")
-          [[ "$OLD_linux_ptb" != "$NEW_linux_ptb" ]] && linux_changes+=("ptb: $OLD_linux_ptb -> $NEW_linux_ptb")
-          [[ "$OLD_linux_canary" != "$NEW_linux_canary" ]] && linux_changes+=("canary: $OLD_linux_canary -> $NEW_linux_canary")
-          [[ "$OLD_linux_development" != "$NEW_linux_development" ]] && linux_changes+=("development: $OLD_linux_development -> $NEW_linux_development")
-
-          # Check for Darwin changes
-          [[ "$OLD_darwin_stable" != "$NEW_darwin_stable" ]] && darwin_changes+=("stable: $OLD_darwin_stable -> $NEW_darwin_stable")
-          [[ "$OLD_darwin_ptb" != "$NEW_darwin_ptb" ]] && darwin_changes+=("ptb: $OLD_darwin_ptb -> $NEW_darwin_ptb")
-          [[ "$OLD_darwin_canary" != "$NEW_darwin_canary" ]] && darwin_changes+=("canary: $OLD_darwin_canary -> $NEW_darwin_canary")
-          [[ "$OLD_darwin_development" != "$NEW_darwin_development" ]] && darwin_changes+=("development: $OLD_darwin_development -> $NEW_darwin_development")
-
-          # Build commit message
+          add_change darwin_changes "stable" "$OLD_darwin_discord" "$NEW_darwin_discord"
+          add_change darwin_changes "ptb" "$OLD_darwin_discord-ptb" "$NEW_darwin_discord-ptb"
+          add_change darwin_changes "canary" "$OLD_darwin_discord-canary" "$NEW_darwin_discord-canary"
+          add_change darwin_changes "development" "$OLD_darwin_discord-development" "$NEW_darwin_discord-development"
+          
           if [[ ${#linux_changes[@]} -gt 0 ]]; then
             commit_body+="- linux: $(IFS=, ; echo "${linux_changes[*]}")\n"
           fi
           if [[ ${#darwin_changes[@]} -gt 0 ]]; then
             commit_body+="- darwin: $(IFS=, ; echo "${darwin_changes[*]}")\n"
           fi
-
-          if [[ -z "$commit_body" ]]; then
-            echo "::notice::No version changes detected, skipping commit"
-            exit 0
-          fi
-
-          # Remove trailing newline
-          commit_body=$(echo -e "$commit_body" | sed '/^$/d' | sed '$ s/\\n$//')
-          COMMIT_MSG="github: update discord versions\n\n$commit_body"
-
-          echo "::endgroup::"
-
-          if [[ -n "$(git status --porcelain pkgs/discord.nix)" ]]; then
-            echo "::group::Committing and pushing changes"
-            
-            git add pkgs/discord.nix
-            printf "%b" "$COMMIT_MSG" | git commit -F -
-
-            echo "::notice::Pushing changes with retry logic..."
-            for attempt in {1..5}; do
-              echo "::debug::Push attempt $attempt/5"
-              
-              if git fetch origin 2>&1 && \
-                 git pull --rebase origin ${{ github.ref_name }} 2>&1 && \
-                 git push origin HEAD:${{ github.ref_name }} 2>&1; then
-                echo "::notice::Successfully pushed changes on attempt $attempt"
-                break
-              fi
-              
-              if [[ $attempt == 5 ]]; then
-                echo "::error::Failed to push after 5 attempts"
-                exit 1
-              fi
-              
-              echo "::warning::Push attempt $attempt failed, retrying in $((attempt * 2)) seconds..."
-              sleep $((attempt * 2))
-            done
-            
-            echo "::endgroup::"
-          else
-            echo "::notice::No changes to commit (git status shows no modifications)"
-          fi
+          
+          COMMIT_MSG=$(printf "discord: update versions\n\n%b" "$commit_body")
+          
+          echo -e "Commit message:\n$COMMIT_MSG"
+          
+          git add pkgs/discord/default.nix
+          git commit -m "$COMMIT_MSG"
+          
+          echo "::notice::Pushing changes with retry logic..."
+          for attempt in {1..5}; do
+            if git push; then
+              echo "::notice::Successfully pushed changes on attempt $attempt."
+              exit 0
+            fi
+            if [[ $attempt == 5 ]]; then
+              echo "::error::Failed to push after 5 attempts."
+              exit 1
+            fi
+            echo "::warning::Push attempt $attempt failed. Rebasing and retrying in $((attempt * 2))s..."
+            git pull --rebase
+            sleep $((attempt * 2))
+          done
