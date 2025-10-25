@@ -213,6 +213,21 @@ in
       Client plugin for arRPC to enable RPC on Discord Web (experimental)
     '';
   };
+  autoDNDWhilePlaying = {
+    enable = mkEnableOption ''
+      Automatically updates your online status (online, idle, dnd) when launching games
+    '';
+    statusToSet = mkOption {
+      type = types.enum [
+        "online"
+        "idle"
+        "dnd"
+        "invisible"
+      ];
+      default = "dnd";
+      description = "Status to set while playing a game";
+    };
+  };
   betterFolders = {
     enable = mkEnableOption ''
       Shows server folders on dedicated sidebar and adds folder related improvements
