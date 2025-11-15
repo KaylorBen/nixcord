@@ -1,9 +1,9 @@
 # Nixcord
 
-Manage [Vencord](https://github.com/Vendicated/Vencord) settings and plugins
+Manage [Vencord](https://github.com/Vendicated/Vencord) and [Equicord](https://github.com/Equicord/Equicord) settings and plugins
 declaratively with Nix!
 
-This repo can be used to make a clean looking config for Vencord without needing
+This repo can be used to make a clean looking config for Vencord or Equicord without needing
 to pollute system config with needless utils to override the discord pacakge,
 and write ugly JSON code directly in .nix files.
 
@@ -13,11 +13,11 @@ than 4 times. With Nixcord you can configure once and save it to a git repo.
 
 >[!WARNING]
 > Using Nixcord means comitting to declaratively installing plugins. This means
-> that the normal "plugins" menu in Vencord will not apply permenant changes.
+> that the normal "plugins" menu in Vencord or Equicord will not apply permenant changes.
 > You can still use it to test out plugins but on restarting the client, any
 > changes will be gone.
 >
-> The primary goal of this project is to reduce the need to configure Vencord
+> The primary goal of this project is to reduce the need to configure Vencord or Equicord
 > again on every new system you install.
 
 ## How to use Nixcord
@@ -95,6 +95,10 @@ This is an example home-manager configuration using Nixcord
   # ...
   programs.nixcord = {
     enable = true;          # Enable Nixcord (It also installs Discord)
+    discord = {
+      vencord.enable = true;  # Use Vencord (default)
+      # equicord.enable = true;  # Or use Equicord instead (cannot enable both)
+    };
     vesktop.enable = true;  # Vesktop
     dorion.enable = true;   # Dorion
     quickCss = "some CSS";  # quickCSS file
@@ -103,9 +107,9 @@ This is an example home-manager configuration using Nixcord
       themeLinks = [        # or use an online theme
         "https://raw.githubusercontent.com/link/to/some/theme.css"
       ];
-      frameless = true;                   # Set some Vencord options
+      frameless = true;                   # Set some Vencord/Equicord options
       plugins = {
-        hideAttachments.enable = true;    # Enable a Vencord plugin
+        hideAttachments.enable = true;    # Enable a plugin (works with both Vencord and Equicord)
         ignoreActivities = {              # Enable a plugin and set some options
           enable = true;
           ignorePlaying = true;
@@ -169,10 +173,23 @@ This step is required because nixcord automatically configures Vencord settings
 in Dorion's LocalStorage database, but these databases only exist after the
 first launch and login
 
-It is highly recommend configuring Nixcord with an open Vencord
+It is highly recommend configuring Nixcord with an open Vencord or Equicord
 client to look through available plugins and options. A list of
 all available options is available in the online documentation
 [here](https://kaylorben.github.io/nixcord/).
+
+### Choosing Between Vencord and Equicord
+
+Nixcord supports both [Vencord](https://github.com/Vendicated/Vencord) and [Equicord](https://github.com/Equicord/Equicord).
+Both are Discord client modifications with similar functionality, but Equicord includes
+additional plugins and features. You can only enable one at a time:
+
+- **Vencord**: The original and more widely used client mod
+- **Equicord**: A fork with additional plugins and features, including Equicord-specific plugins
+
+When you enable Equicord, you'll have access to all shared plugins (available in both),
+plus Equicord-only plugins. Similarly, with Vencord you get shared plugins plus
+Vencord-only plugins.
 
 ## Documentation
 
@@ -186,6 +203,7 @@ You can also export all options to JSON using `nix build .#docs-json`
 ## Special Thanks
 
 Special Thanks to [Vencord](https://github.com/Vendicated/Vencord),
+[Equicord](https://github.com/Equicord/Equicord),
 [Home Manager](https://github.com/nix-community/home-manager), and
 [Nix](https://nixos.org/) and all the contributers behind them. Without them,
 this project would not be possible.
