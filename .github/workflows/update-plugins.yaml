@@ -1,0 +1,191 @@
+name: Update Plugins
+
+on:
+  schedule:
+    - cron: "0 */8 * * *" # Every 8 hours
+  workflow_dispatch:
+
+jobs:
+  update-plugin:
+    name: Update ${{ matrix.variant }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    permissions:
+      contents: write
+      actions: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.commit_prefix }}-${{ github.ref }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: "Equicord"
+            package: "equicord"
+            package_file: "equicord.nix"
+            update_bin: "equicord-update"
+            commit_prefix: "equicord"
+            version_expr: "version"
+            nix_call_args: "{}"
+            version_truncate: false
+          - variant: "Vencord Stable"
+            package: "vencord"
+            package_file: "vencord.nix"
+            update_bin: "vencord-update"
+            commit_prefix: "vencord"
+            version_expr: "version"
+            nix_call_args: "{ unstable = false; }"
+            version_truncate: false
+          - variant: "Vencord Unstable"
+            package: "vencord"
+            package_file: "vencord.nix"
+            update_bin: "vencord-update"
+            commit_prefix: "vencord-unstable"
+            version_expr: "src.rev"
+            nix_call_args: "{ unstable = true; }"
+            version_truncate: true
+
+    steps:
+      - uses: actions/checkout@v5.0.0
+
+      - uses: DeterminateSystems/nix-installer-action@v21
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get old version
+        id: old-version
+        shell: bash
+        run: |
+          set -eo pipefail
+          VERSION_EXPR="${{ matrix.version_expr }}"
+          OLD_VERSION=$(nix eval --impure --raw --expr \
+            "with import <nixpkgs> {}; (callPackage ./pkgs/${{ matrix.package_file }} ${{ matrix.nix_call_args }}).$VERSION_EXPR")
+          if [ "${{ matrix.version_truncate }}" == "true" ]; then
+            OLD_VERSION=${OLD_VERSION:0:7}
+          fi
+          echo "version=$OLD_VERSION" >> $GITHUB_OUTPUT
+          echo "Old ${{ matrix.variant }} version: $OLD_VERSION"
+
+      - name: Update ${{ matrix.variant }}
+        id: update
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -eo pipefail
+          echo "::group::Updating ${{ matrix.variant }}"
+          nix build --impure --expr 'let pkgs = import <nixpkgs> {}; in (pkgs.callPackage ./pkgs/${{ matrix.package_file }} ${{ matrix.nix_call_args }}).passthru.updateScript'
+          ./result/bin/${{ matrix.update_bin }}
+          echo "::notice::${{ matrix.variant }} update finished."
+          echo "::endgroup::"
+          rm ./result
+
+      - name: Get new version
+        id: new-version
+        shell: bash
+        run: |
+          set -eo pipefail
+          VERSION_EXPR="${{ matrix.version_expr }}"
+          NEW_VERSION=$(nix eval --impure --raw --expr \
+            "with import <nixpkgs> {}; (callPackage ./pkgs/${{ matrix.package_file }} ${{ matrix.nix_call_args }}).$VERSION_EXPR")
+          if [ "${{ matrix.version_truncate }}" == "true" ]; then
+            NEW_VERSION=${NEW_VERSION:0:7}
+          fi
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New ${{ matrix.variant }} version: $NEW_VERSION"
+          
+          if [[ "${{ steps.old-version.outputs.version }}" == "$NEW_VERSION" ]]; then
+            echo "::warning::No version change detected for ${{ matrix.variant }} - no commit needed"
+          else
+            echo "::notice::Version changed for ${{ matrix.variant }}: ${{ steps.old-version.outputs.version }} -> $NEW_VERSION"
+          fi
+
+      - name: Test Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -eo pipefail
+          echo "::group::Testing build of ${{ matrix.variant }}"
+          nix-build -E 'with import <nixpkgs> {}; callPackage ./pkgs/${{ matrix.package_file }} ${{ matrix.nix_call_args }}'
+          echo "::notice::Build succeeded"
+          echo "::endgroup::"
+          unlink result
+
+      - name: Setup Node.js
+        if: steps.old-version.outputs.version != steps.new-version.outputs.version
+        uses: actions/setup-node@v6.0.0
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: scripts/generate-plugin-options/package-lock.json
+
+      - name: Generate plugin options
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: steps.old-version.outputs.version != steps.new-version.outputs.version
+        shell: bash
+        run: |
+          set -eo pipefail
+          echo "::group::Generating plugin options"
+          echo "Generating plugin options after ${{ matrix.variant }} update..."
+          nix run .#generatePluginOptions
+          echo "::endgroup::"
+
+      - name: Commit changes
+        id: commit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: success()
+        shell: bash
+        run: |
+          set -eo pipefail
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global pull.rebase true
+          git config --global rebase.autoStash true
+
+          if [[ -n "$(git status --porcelain pkgs/${{ matrix.package_file }} modules/plugins/)" ]]; then
+            git add pkgs/${{ matrix.package_file }} modules/plugins/
+            git commit -m "github: update ${{ matrix.commit_prefix }} ${{ steps.old-version.outputs.version }} -> ${{ steps.new-version.outputs.version }}"
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: success() && steps.commit.outputs.changes == 'true'
+        shell: bash
+        run: |
+          echo "::group::Pushing changes"
+          for i in {1..5}; do
+            echo "Attempt $i: Fetching latest changes..."
+            git fetch origin
+            
+            echo "Rebasing local changes..."
+            if ! git pull --rebase origin ${{ github.ref_name }}; then
+              echo "::warning::Rebase failed on attempt $i, retrying..."
+              sleep $((i * 2))
+              continue
+            fi
+            
+            echo "Pushing changes..."
+            if git push origin HEAD:${{ github.ref_name }}; then
+              echo "::notice::Successfully pushed changes on attempt $i"
+              echo "::endgroup::"
+              break
+            fi
+            
+            echo "::warning::Push failed on attempt $i, retrying in $((i * 2)) seconds..."
+            sleep $((i * 2))
+            
+            if [ $i -eq 5 ]; then
+              echo "::error::Failed to push after 5 attempts"
+              git log --oneline -5
+              git status
+              echo "::endgroup::"
+              exit 1
+            fi
+          done

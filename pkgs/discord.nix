@@ -78,6 +78,8 @@
   openasar,
   withVencord ? false,
   vencord,
+  withEquicord ? false,
+  equicord,
   enableAutoscroll ? false,
   commandLineArgs ? "",
 
@@ -546,15 +548,22 @@ let
                     "$out/Applications/${desktopName}.app/Contents/Resources";
               in
               # OpenASAR
-              lib.strings.optionalString (withOpenASAR && openasar != null) ''
+              lib.strings.optionalString withOpenASAR ''
                 cp -f ${openasar} "${resourcesPath}/app.asar"
               ''
               # Vencord
-              + lib.strings.optionalString (withVencord && vencord != null) ''
+              + lib.strings.optionalString withVencord ''
                 mv ${resourcesPath}/app.asar ${resourcesPath}/_app.asar
                 mkdir -p ${resourcesPath}/app.asar
                 echo '{"name":"discord","main":"index.js"}' > ${resourcesPath}/app.asar/package.json
                 echo 'require("${vencord}/patcher.js")' > ${resourcesPath}/app.asar/index.js
+              ''
+              # Equicord
+              + lib.strings.optionalString withEquicord ''
+                mv ${resourcesPath}/app.asar ${resourcesPath}/_app.asar
+                mkdir ${resourcesPath}/app.asar
+                echo '{"name":"discord","main":"index.js"}' > ${resourcesPath}/app.asar/package.json
+                echo 'require("${equicord}/desktop/patcher.js")' > ${resourcesPath}/app.asar/index.js
               '';
 
             meta = genericMeta // {
@@ -562,7 +571,8 @@ let
               description =
                 genericMeta.description
                 + lib.optionalString (withOpenASAR && openasar != null) " (with OpenASAR)"
-                + lib.optionalString (withVencord && vencord != null) " (with Vencord)";
+                + lib.optionalString (withVencord && vencord != null) " (with Vencord)"
+                + lib.optionalString (withEquicord && equicord != null) " (with Equicord)";
             };
             passthru.updateScript = updateScriptDrv;
           }

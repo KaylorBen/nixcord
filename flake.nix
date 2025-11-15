@@ -31,6 +31,11 @@
             dorion = pkgs.callPackage ./pkgs/dorion.nix { };
             vencord = pkgs.callPackage ./pkgs/vencord.nix { };
             vencord-unstable = pkgs.callPackage ./pkgs/vencord.nix { unstable = true; };
+            equicord = pkgs.callPackage ./pkgs/equicord.nix { };
+            generatePluginOptions = pkgs.callPackage ./pkgs/generate-options.nix {
+              vencord = pkgs.callPackage ./pkgs/vencord.nix { unstable = false; };
+              equicord = pkgs.callPackage ./pkgs/equicord.nix { };
+            };
             docs-html =
               (import ./docs {
                 inherit pkgs;
@@ -56,6 +61,23 @@
                 }/share/doc/nixcord/index.xhtml"
               fi
             ''}";
+          };
+
+          apps.generatePluginOptions = {
+            type = "app";
+            program = pkgs.lib.getExe (
+              pkgs.writeShellApplication {
+                name = "generate-plugin-options";
+                runtimeInputs = [ pkgs.nixfmt-rfc-style ];
+                text = ''
+                  nix build .#generatePluginOptions --out-link ./result
+                  rm -rf ./modules/plugins
+                  cp -r ./result/plugins ./modules/plugins
+                  chmod -R u+w ./modules/plugins
+                  nixfmt ./modules/plugins/*.nix
+                '';
+              }
+            );
           };
         };
       flake = {
