@@ -94,6 +94,94 @@ in
       vencordOnlyPlugins = import ./plugins/vencord.nix { inherit lib; };
       equicordOnlyPlugins = import ./plugins/equicord.nix { inherit lib; };
 
+      pluginNameMigrations = import ./plugins/deprecated.nix;
+
+      # Migrate plugin names from old to new
+      migratePluginNames =
+        configAttrs:
+        let
+          plugins = configAttrs.plugins or { };
+          # Start with plugins that don't need migration (exclude old names)
+          basePlugins = lib.filterAttrs (name: _: !(pluginNameMigrations ? ${name})) plugins;
+          # Migrate each old plugin name to its new name
+          migratedPlugins = lib.foldl' (
+            acc: oldName:
+            if plugins ? ${oldName} then
+              let
+                newName = pluginNameMigrations.${oldName};
+                oldValue = plugins.${oldName};
+                # If new name already exists in base, merge them (migrated value takes precedence)
+                existingValue = basePlugins.${newName} or { };
+                mergedValue = lib.recursiveUpdate existingValue oldValue;
+              in
+              acc // { ${newName} = mergedValue; }
+            else
+              acc
+          ) { } (builtins.attrNames pluginNameMigrations);
+          # Combine: base plugins (without old names) + migrated plugins
+          cleanedPlugins = basePlugins // migratedPlugins;
+        in
+        configAttrs // { plugins = cleanedPlugins; };
+
+      # Collect deprecated plugin names used in config (checks all config sources)
+      collectDeprecatedPlugins =
+        configAttrs:
+        let
+          plugins = configAttrs.plugins or { };
+          extraPlugins = (cfg.extraConfig.plugins or { });
+          vencordPlugins = (cfg.vencordConfig.plugins or { });
+          equicordPlugins = (cfg.equicordConfig.plugins or { });
+          allPlugins = plugins // extraPlugins // vencordPlugins // equicordPlugins;
+        in
+        lib.filter (oldName: allPlugins ? ${oldName}) (builtins.attrNames pluginNameMigrations);
+
+      # Check if a plugin is enabled
+      isPluginEnabled =
+        pluginConfig: if builtins.isAttrs pluginConfig then pluginConfig.enable or false else false;
+
+      # Collect enabled Equicord-only plugins from all config sources
+      # A plugin is Equicord-only if it exists in equicordOnlyPlugins but NOT in sharedPlugins or vencordOnlyPlugins
+      collectEnabledEquicordOnlyPlugins =
+        let
+          plugins = cfg.config.plugins or { };
+          extraPlugins = cfg.extraConfig.plugins or { };
+          vencordPlugins = cfg.vencordConfig.plugins or { };
+          equicordPlugins = cfg.equicordConfig.plugins or { };
+          allPlugins = plugins // extraPlugins // vencordPlugins // equicordPlugins;
+          sharedPluginNames = builtins.attrNames sharedPlugins;
+          vencordOnlyPluginNames = builtins.attrNames vencordOnlyPlugins;
+          equicordOnlyPluginNames = builtins.attrNames equicordOnlyPlugins;
+          # True Equicord-only plugins: in equicordOnlyPlugins but not in shared or vencord-only
+          trulyEquicordOnlyPluginNames = lib.filter (
+            name: !(builtins.elem name sharedPluginNames) && !(builtins.elem name vencordOnlyPluginNames)
+          ) equicordOnlyPluginNames;
+          enabledEquicordPlugins = lib.filterAttrs (
+            name: value: builtins.elem name trulyEquicordOnlyPluginNames && isPluginEnabled value
+          ) allPlugins;
+        in
+        builtins.attrNames enabledEquicordPlugins;
+
+      # Collect enabled Vencord-only plugins from all config sources
+      # A plugin is Vencord-only if it exists in vencordOnlyPlugins but NOT in sharedPlugins
+      collectEnabledVencordOnlyPlugins =
+        let
+          plugins = cfg.config.plugins or { };
+          extraPlugins = cfg.extraConfig.plugins or { };
+          vencordPlugins = cfg.vencordConfig.plugins or { };
+          equicordPlugins = cfg.equicordConfig.plugins or { };
+          allPlugins = plugins // extraPlugins // vencordPlugins // equicordPlugins;
+          sharedPluginNames = builtins.attrNames sharedPlugins;
+          vencordOnlyPluginNames = builtins.attrNames vencordOnlyPlugins;
+          # True Vencord-only plugins: in vencordOnlyPlugins but not in shared
+          trulyVencordOnlyPluginNames = lib.filter (
+            name: !(builtins.elem name sharedPluginNames)
+          ) vencordOnlyPluginNames;
+          enabledVencordPlugins = lib.filterAttrs (
+            name: value: builtins.elem name trulyVencordOnlyPluginNames && isPluginEnabled value
+          ) allPlugins;
+        in
+        builtins.attrNames enabledVencordPlugins;
+
       # Filter plugins based on which client is enabled
       # When vencord: shared + vencord-only (exclude equicord-only)
       # When equicord: shared + equicord-only (exclude vencord-only)
@@ -134,6 +222,16 @@ in
             assertion = !(cfg.discord.vencord.enable && cfg.discord.equicord.enable);
             message = "programs.nixcord.discord: Cannot enable both Vencord and Equicord at the same time. Choose one or the other.";
           }
+          {
+            assertion =
+              !(!cfg.discord.equicord.enable && (builtins.length collectEnabledEquicordOnlyPlugins > 0));
+            message = "programs.nixcord: Cannot enable Equicord-only plugins when Equicord is disabled. Enabled plugins: ${lib.concatStringsSep ", " collectEnabledEquicordOnlyPlugins}. Either enable Equicord (discord.equicord.enable = true) or disable these plugins.";
+          }
+          {
+            assertion =
+              !(!cfg.discord.vencord.enable && (builtins.length collectEnabledVencordOnlyPlugins > 0));
+            message = "programs.nixcord: Cannot enable Vencord-only plugins when Vencord is disabled. Enabled plugins: ${lib.concatStringsSep ", " collectEnabledVencordOnlyPlugins}. Either enable Vencord (discord.vencord.enable = true) or disable these plugins.";
+          }
         ];
 
         programs.nixcord.finalPackage = mkFinalPackages {
@@ -159,11 +257,14 @@ in
         # Vencord Settings
         (mkIf cfg.discord.vencord.enable (
           let
-            filteredConfig = filterPluginsForClient cfg.config;
+            migratedConfig = migratePluginNames cfg.config;
+            migratedExtraConfig = migratePluginNames cfg.extraConfig;
+            migratedVencordConfig = migratePluginNames cfg.vencordConfig;
+            filteredConfig = filterPluginsForClient migratedConfig;
             fullConfig = recursiveUpdateAttrsList [
               (filteredConfig // { plugins = filteredConfig.filteredPlugins; })
-              cfg.extraConfig
-              cfg.vencordConfig
+              migratedExtraConfig
+              migratedVencordConfig
             ];
           in
           {
@@ -175,11 +276,14 @@ in
         # Equicord Settings
         (mkIf cfg.discord.equicord.enable (
           let
-            filteredConfig = filterPluginsForClient cfg.config;
+            migratedConfig = migratePluginNames cfg.config;
+            migratedExtraConfig = migratePluginNames cfg.extraConfig;
+            migratedEquicordConfig = migratePluginNames cfg.equicordConfig;
+            filteredConfig = filterPluginsForClient migratedConfig;
             fullConfig = recursiveUpdateAttrsList [
               (filteredConfig // { plugins = filteredConfig.filteredPlugins; })
-              cfg.extraConfig
-              cfg.equicordConfig
+              migratedExtraConfig
+              migratedEquicordConfig
             ];
           in
           {
@@ -254,7 +358,11 @@ in
       ]))
       # Warnings
       {
-        warnings = import ../warnings.nix { inherit cfg mkIf; };
+        warnings = import ../warnings.nix {
+          inherit cfg mkIf lib;
+          deprecatedPlugins = collectDeprecatedPlugins cfg.config;
+          pluginNameMigrations = pluginNameMigrations;
+        };
       }
     ]);
 }

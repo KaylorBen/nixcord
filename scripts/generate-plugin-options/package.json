@@ -17,8 +17,8 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "clean": "rm -rf dist",
-    "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx,json}\""
+    "format": "prettier --write \"{src,tests}/**/*.{ts,tsx,json}\"",
+    "format:check": "prettier --check \"{src,tests}/**/*.{ts,tsx,json}\""
   },
   "author": "FlameFlag",
   "license": "MIT",

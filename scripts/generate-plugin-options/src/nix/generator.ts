@@ -2,14 +2,14 @@ import { entries, keys, map, pipe, reduce } from 'remeda';
 import { filter as iterFilter, map as iterMap, toArray as iterToArray } from 'iter-tools';
 import { match, P } from 'ts-pattern';
 import { z } from 'zod';
-import type { PluginConfig, PluginSetting } from '../types.js';
+import type { PluginConfig, PluginSetting } from '../shared/types.js';
 import { type NixAttrSet, NixGenerator, type NixRaw, type NixValue } from './generator-base.js';
 import {
   INTEGER_STRING_PATTERN,
   NIX_ENUM_TYPE,
   NIX_TYPE_FLOAT,
   NIX_TYPE_INT,
-} from '../ast/extractor/constants.js';
+} from '../core/ast/extractor/constants.js';
 
 const StringSchema = z.string();
 const NumberSchema = z.number();

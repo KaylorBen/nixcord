@@ -434,9 +434,35 @@ in
     frameless = mkEnableOption "Make client frameless";
     transparent = mkEnableOption "Enable client transparency";
     disableMinSize = mkEnableOption "Disable minimum window size for client";
-    plugins = lib.recursiveUpdate (lib.recursiveUpdate (import ./plugins/shared.nix { inherit lib; }) (
-      import ./plugins/vencord.nix { inherit lib; }
-    )) (import ./plugins/equicord.nix { inherit lib; });
+    plugins =
+      let
+        # Plugin name migration map (old -> new)
+        pluginNameMigrations = import ./plugins/deprecated.nix;
+
+        # Base plugins (new names only)
+        basePlugins =
+          lib.recursiveUpdate
+            (lib.recursiveUpdate (import ./plugins/shared.nix { inherit lib; }) (
+              import ./plugins/vencord.nix { inherit lib; }
+            ))
+            (import ./plugins/equicord.nix { inherit lib; });
+
+        # Add old names as aliases pointing to new names
+        # This allows old plugin names to be used in config while still being valid options
+        aliasedPlugins = lib.foldl' (
+          acc: oldName:
+          let
+            newName = pluginNameMigrations.${oldName};
+            newPlugin = basePlugins.${newName} or null;
+          in
+          if newPlugin != null then
+            # Create an alias: old name points to same structure as new name
+            acc // { ${oldName} = newPlugin; }
+          else
+            acc
+        ) basePlugins (builtins.attrNames pluginNameMigrations);
+      in
+      aliasedPlugins;
   };
   vesktopConfig = mkOption {
     type = types.attrs;

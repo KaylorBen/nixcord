@@ -19,11 +19,13 @@ stdenvNoCC.mkDerivation {
     npmDepsHash = "sha256-wUSk0wTdNOG+QqfAJxe0DjuYemyoT/ZxcdkzagtsIIU=";
     dontNpmBuild = true;
     installPhase = ''
-      mkdir -p $out
-      cp -r src $out/
-      cp package.json $out/
-      cp tsconfig.json $out/
-      cp -r node_modules $out/
+      mkdir -p "$out"
+      cp -r src "$out/"
+      cp -r tests "$out/"
+      cp package.json "$out/"
+      cp tsconfig.json "$out/"
+      cp vitest.config.ts "$out/"
+      cp -r node_modules "$out/"
     '';
   };
 

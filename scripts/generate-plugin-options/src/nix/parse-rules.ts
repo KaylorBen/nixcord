@@ -1,5 +1,5 @@
 import { entries, pipe, sortBy, unique, flatMap, filter, map } from 'remeda';
-import type { PluginConfig } from '../types.js';
+import type { PluginConfig } from '../shared/types.js';
 import { NixGenerator, type NixAttrSet } from './generator-base.js';
 
 const gen = new NixGenerator();
