@@ -695,6 +695,9 @@ in
   hideMedia = {
     enable = mkEnableOption ''Hide attachments and embeds for individual messages via hover button (Shared between Vencord and Equicord)'';
   };
+  iLoveSpam = {
+    enable = mkEnableOption ''Do not hide messages from 'likely spammers' (Shared between Vencord and Equicord)'';
+  };
   ignoreActivities = {
     enable = mkEnableOption ''Ignore activities from showing up on your status ONLY. You can configure which ones are specifically ignored from the Registered Games and Activities tabs, or use the general settings below (Shared between Vencord and Equicord)'';
     idsList = mkOption {
@@ -1349,6 +1352,14 @@ in
       default = "";
       description = ''User IDs (comma + space) whose pings should NEVER be throttled (restart required)'';
       type = types.str;
+    };
+  };
+  oneko = {
+    enable = mkEnableOption ''cat follow mouse (real) (Shared between Vencord and Equicord)'';
+    speed = mkOption {
+      default = 10;
+      description = ''Speed of Da Cat :3'';
+      type = types.int;
     };
   };
   openInApp = {
@@ -2035,6 +2046,14 @@ in
       type = types.bool;
     };
   };
+  sortFriendRequests = {
+    enable = mkEnableOption ''Sorts friend requests by date of receipt (Shared between Vencord and Equicord)'';
+    showDates = mkOption {
+      default = false;
+      description = ''Show dates on friend requests (restart required)'';
+      type = types.bool;
+    };
+  };
   spotifyCrack = {
     enable = mkEnableOption ''Free listen along, no auto-pausing in voice chat, and allows activity to continue playing when idling (Shared between Vencord and Equicord)'';
     keepSpotifyActivityOnIdle = mkOption {
@@ -2056,6 +2075,9 @@ in
   };
   stickerPaste = {
     enable = mkEnableOption ''Makes picking a sticker in the sticker picker insert it into the chatbox instead of instantly sending (Shared between Vencord and Equicord)'';
+  };
+  streamerModeOnStream = {
+    enable = mkEnableOption ''Automatically enables streamer mode when you start streaming in Discord (Shared between Vencord and Equicord)'';
   };
   summaries = {
     enable = mkEnableOption ''Enables Discord's experimental Summaries feature on every server, displaying AI generated summaries of conversations (Shared between Vencord and Equicord)'';
@@ -2328,7 +2350,7 @@ in
       ];
     };
     imgSize = mkOption {
-      default = "128";
+      default = "1024";
       description = ''The image size to use'';
       type = types.enum [
         "128"
@@ -2388,6 +2410,9 @@ in
   };
   webKeybinds = {
     enable = mkEnableOption ''Re-adds keybinds missing in the web version of Discord: ctrl+t, ctrl+shift+t, ctrl+tab, ctrl+shift+tab, ctrl+1-9, ctrl+,. Only works fully on Vesktop/Legcord, not inside your browser (Shared between Vencord and Equicord)'';
+  };
+  webRichPresence = {
+    enable = mkEnableOption ''Client plugin for arRPC to enable RPC on Discord Web (experimental) (Shared between Vencord and Equicord)'';
   };
   webScreenShareFixes = {
     enable = mkEnableOption ''Removes 2500kbps bitrate cap on chromium and vesktop clients. (Shared between Vencord and Equicord)'';

@@ -2,7 +2,7 @@ import { camelCase } from 'change-case';
 import { pipe, isEmpty, keys, omitBy, sortBy } from 'remeda';
 import { match, P } from 'ts-pattern';
 import { z } from 'zod';
-import { escapeNixDoubleQuotedString, escapeNixString } from '../utils/nix-escape.js';
+import { escapeNixDoubleQuotedString, escapeNixString } from './utils/nix-escape.js';
 
 const NullSchema = z.null();
 const ArraySchema = z.array(z.unknown());
@@ -52,6 +52,11 @@ const NIX_DOUBLE_QUOTED_STRING_START = '"';
 const NIX_DOUBLE_QUOTED_STRING_END = '"';
 const NEWLINE_CHAR = '\n';
 
+/**
+ * Tiny Nix serializer used by the plugin generator. All the data we feed in comes from
+ * Vencord/Equicord plugin configs, so the output needs to stay readable in Git diffs
+ * when people add settings upstream.
+ */
 export class NixGenerator {
   private readonly options: Readonly<NixGeneratorOptions>;
 

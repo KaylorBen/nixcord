@@ -65,8 +65,6 @@
   };
   lowerPluginTitles = [
     "arRPCBun"
-    "iLoveSpam"
-    "oneko"
     "petpet"
   ];
   upperNames = [
