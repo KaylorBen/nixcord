@@ -1,31 +1,32 @@
 import { describe, test, expect } from 'vitest';
+import type { ReadonlyDeep } from 'type-fest';
 import type { PluginConfig } from '../../src/shared/types.js';
 import { generateParseRulesModule } from '../../src/nix/parse-rules.js';
 
 describe('generateParseRulesModule()', () => {
-  const shared: Record<string, PluginConfig> = {
+  const shared: ReadonlyDeep<Record<string, PluginConfig>> = {
     showConnections: {
       name: 'ShowConnections',
       description: 'Show connected accounts',
       settings: {},
     },
-  };
+  } as const;
 
-  const vencordOnly: Record<string, PluginConfig> = {
+  const vencordOnly: ReadonlyDeep<Record<string, PluginConfig>> = {
     iLoveSpam: {
       name: 'iLoveSpam',
       description: 'Keep spam visible',
       settings: {},
     },
-  };
+  } as const;
 
-  const equicordOnly: Record<string, PluginConfig> = {
+  const equicordOnly: ReadonlyDeep<Record<string, PluginConfig>> = {
     petpet: {
       name: 'petpet',
       description: 'Pet pets',
       settings: {},
     },
-  };
+  } as const;
 
   test('includes auto-detected lowercase plugin names', () => {
     const output = generateParseRulesModule(shared, vencordOnly, equicordOnly);

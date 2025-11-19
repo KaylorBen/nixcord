@@ -2,16 +2,21 @@ import { camelCase } from 'change-case';
 import { pipe, isEmpty, keys, omitBy, sortBy } from 'remeda';
 import { match, P } from 'ts-pattern';
 import { z } from 'zod';
+import type { ReadonlyDeep } from 'type-fest';
 import { escapeNixDoubleQuotedString, escapeNixString } from './utils/nix-escape.js';
 
 const NullSchema = z.null();
 const ArraySchema = z.array(z.unknown());
-const ObjectSchema = z.object({}).catchall(z.unknown());
+const ObjectSchema = z
+  .object({})
+  .catchall(z.unknown())
+  .refine((val) => typeof val === 'object' && val !== null && !Array.isArray(val), {
+    message: 'Must be a non-array object',
+  });
 
 const isNull = (x: unknown): x is null => NullSchema.safeParse(x).success;
 const isArray = (x: unknown): x is unknown[] => ArraySchema.safeParse(x).success;
-const isObject = (x: unknown): x is object =>
-  typeof x === 'object' && x !== null && ObjectSchema.safeParse(x).success;
+const isObject = (x: unknown): x is object => ObjectSchema.safeParse(x).success;
 
 export type NixValue = string | number | boolean | null | NixValue[] | NixAttrSet | NixRaw;
 
@@ -19,9 +24,7 @@ export interface NixAttrSet {
   [key: string]: NixValue | undefined;
 }
 
-export type ReadonlyNixAttrSet = Readonly<{
-  readonly [key: string]: NixValue | undefined;
-}>;
+export type ReadonlyNixAttrSet = ReadonlyDeep<Record<string, NixValue | undefined>>;
 
 export interface NixRaw {
   type: 'raw';
@@ -78,14 +81,21 @@ export class NixGenerator {
    * special characters better.
    */
   string(str: string, multiline: boolean = false): string {
-    const shouldUseMultiline = multiline || str.includes(NEWLINE_CHAR);
-    if (shouldUseMultiline) {
-      return `${NIX_MULTILINE_STRING_START}${escapeNixString(str)}${NIX_MULTILINE_STRING_END}`;
-    } else {
-      return `${NIX_DOUBLE_QUOTED_STRING_START}${escapeNixDoubleQuotedString(
-        str
-      )}${NIX_DOUBLE_QUOTED_STRING_END}`;
-    }
+    return match([multiline, str.includes(NEWLINE_CHAR)] as const)
+      .with(
+        [P.union(true, false), true],
+        () => `${NIX_MULTILINE_STRING_START}${escapeNixString(str)}${NIX_MULTILINE_STRING_END}`
+      )
+      .with(
+        [true, false],
+        () => `${NIX_MULTILINE_STRING_START}${escapeNixString(str)}${NIX_MULTILINE_STRING_END}`
+      )
+      .otherwise(
+        () =>
+          `${NIX_DOUBLE_QUOTED_STRING_START}${escapeNixDoubleQuotedString(
+            str
+          )}${NIX_DOUBLE_QUOTED_STRING_END}`
+      );
   }
 
   number(n: number): string {
@@ -141,26 +151,35 @@ export class NixGenerator {
       keys(),
       sortBy((x) => x)
     );
-    const enableIdx = sortedKeys.indexOf('enable');
-    if (enableIdx > -1) {
-      sortedKeys.splice(enableIdx, 1);
-      sortedKeys.unshift('enable');
-    }
-    if (isEmpty(sortedKeys)) return NIX_EMPTY_ATTR_SET;
+    const sortedKeysWithEnable = match(sortedKeys.indexOf('enable'))
+      .with(-1, () => sortedKeys)
+      .otherwise((enableIdx) => {
+        const keys = [...sortedKeys];
+        keys.splice(enableIdx, 1);
+        keys.unshift('enable');
+        return keys;
+      });
 
-    const indent = this.indent(level);
-    const propIndent = this.indent(level + 1);
-    const result: string[] = [NIX_ATTR_SET_OPEN];
-    for (const key of sortedKeys) {
-      const value = filteredAttrs[key];
-      if (value === undefined) continue;
-      const keyStr = this.identifier(key);
-      const valueStr = this.value(value as NixValue, level + 1);
-      result.push(`${propIndent}${keyStr}${NIX_ASSIGNMENT}${valueStr}${NIX_STATEMENT_TERMINATOR}`);
-    }
+    return match(isEmpty(sortedKeysWithEnable))
+      .with(true, () => NIX_EMPTY_ATTR_SET)
+      .with(false, () => {
+        const indent = this.indent(level);
+        const propIndent = this.indent(level + 1);
+        const result: string[] = [NIX_ATTR_SET_OPEN];
+        for (const key of sortedKeysWithEnable) {
+          const attrValue = filteredAttrs[key];
+          if (attrValue === undefined) continue;
+          const keyStr = this.identifier(key);
+          const valueStr = this.value(attrValue as NixValue, level + 1);
+          result.push(
+            `${propIndent}${keyStr}${NIX_ASSIGNMENT}${valueStr}${NIX_STATEMENT_TERMINATOR}`
+          );
+        }
 
-    result.push(`${indent}${NIX_ATTR_SET_CLOSE}`);
-    return result.join(NIX_LIST_SEPARATOR);
+        result.push(`${indent}${NIX_ATTR_SET_CLOSE}`);
+        return result.join(NIX_LIST_SEPARATOR);
+      })
+      .exhaustive();
   }
 
   /**

@@ -18,13 +18,16 @@ import type { Logger } from '../../shared/logger.js';
 
 type SourceLabel = 'Vencord' | 'Equicord';
 
+const LoggerMethodsSchema = z.object({
+  info: z.function(),
+  warn: z.function(),
+  error: z.function(),
+  success: z.function(),
+  debug: z.function(),
+});
+
 const LoggerSchema = z.custom<Logger>(
-  (value): value is Logger =>
-    typeof value === 'object' &&
-    value !== null &&
-    ['info', 'warn', 'error', 'success', 'debug'].every(
-      (method) => typeof (value as Record<string, unknown>)[method] === 'function'
-    ),
+  (value): value is Logger => LoggerMethodsSchema.safeParse(value).success,
   {
     message: 'Logger must expose info, warn, error, success, and debug methods',
   }
@@ -180,24 +183,23 @@ export const runGeneratePluginOptions = async (
       `Vencord plugins directory not found: ${vencordPluginsPath}`
     );
 
-    let resolvedEquicordPath: string | undefined;
-    if (equicordPath) {
-      resolvedEquicordPath = resolve(process.cwd(), equicordPath);
-      const equicordPackageJsonPath = resolve(
-        resolvedEquicordPath,
-        CLI_CONFIG.filenames.packageJson
-      );
-      await ensurePathExists(
-        equicordPackageJsonPath,
-        `Equicord source path does not exist or is not a directory: ${resolvedEquicordPath}`
-      );
+    const resolvedEquicordPath = await match(equicordPath)
+      .with(P.string, async (path) => {
+        const resolved = resolve(process.cwd(), path);
+        const equicordPackageJsonPath = resolve(resolved, CLI_CONFIG.filenames.packageJson);
+        await ensurePathExists(
+          equicordPackageJsonPath,
+          `Equicord source path does not exist or is not a directory: ${resolved}`
+        );
 
-      const equicordPluginsPath = resolve(resolvedEquicordPath, equicordPluginsDir);
-      await ensurePathExists(
-        equicordPluginsPath,
-        `Equicord plugins directory not found: ${equicordPluginsPath}`
-      );
-    }
+        const equicordPluginsPath = resolve(resolved, equicordPluginsDir);
+        await ensurePathExists(
+          equicordPluginsPath,
+          `Equicord plugins directory not found: ${equicordPluginsPath}`
+        );
+        return resolved;
+      })
+      .otherwise(async () => undefined);
 
     const parseOptions: ParsePluginsOptions = {
       vencordPluginsDir,

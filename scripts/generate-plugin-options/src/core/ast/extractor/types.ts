@@ -98,7 +98,7 @@ export type EnumValueResult = Result<EnumLiteral, ExtractionError>;
  */
 export interface SelectOptionsWithLabels {
   readonly values: readonly EnumLiteral[];
-  readonly labels: Readonly<Record<string, string> & Partial<Record<number, string>>>;
+  readonly labels: ReadonlyDeep<Record<string, string> & Partial<Record<number, string>>>;
 }
 
 /**

@@ -70,14 +70,15 @@ function inferNixTypeFromRuntimeDefault(defaultValue: unknown): string {
     .otherwise(() => NIX_TYPE_STR);
 }
 
-function extractEnumValueFromDeclaration(valueDeclaration: import('ts-morph').Node): Maybe<number> {
+function extractEnumValueFromDeclaration(valueDeclaration: Node): Maybe<number> {
   return match(valueDeclaration.getKind())
     .with(SyntaxKind.EnumMember, () => {
       try {
         const value = (valueDeclaration as { getValue?: () => number }).getValue?.();
         if (z.number().safeParse(value).success) return Maybe.just(value as number);
       } catch {
-        // Fall through to try initializer
+        // When ts-morph refuses to evaluate a const enum (Happens with Vendicated's ActivityType),
+        // keep digging through the initializer instead of swallowing the error
       }
       const enumMember = valueDeclaration.asKind(SyntaxKind.EnumMember);
       const initializer = enumMember?.getInitializer();
@@ -110,7 +111,8 @@ function resolveOptionTypeNameFromNode(typeNode: Node, _checker: TypeChecker): M
             }
           }
         } catch {
-          // Fall through
+          // The symbol API likes to throw when the declaration lives outside the current project;
+          // if that happens, just fall back to the raw property name
         }
         return Maybe.just<string | number>(propName);
       })
@@ -171,8 +173,9 @@ function buildEnumValuesFromOptions(
 }
 
 function nixTypeForComponentOrCustom(defaultValue: unknown): string {
-  if (defaultValue === undefined) return NIX_TYPE_ATTRS;
-  return inferNixTypeFromRuntimeDefault(defaultValue);
+  return match(defaultValue)
+    .with(undefined, () => NIX_TYPE_ATTRS)
+    .otherwise(() => inferNixTypeFromRuntimeDefault(defaultValue));
 }
 
 function inferTypeFromTypeScriptType(
@@ -187,16 +190,17 @@ function inferTypeFromTypeScriptType(
     const symbol = type.getSymbol();
     const typeName = symbol?.getName() ?? type.getText();
 
-    // Check for common TypeScript types using pattern matching
-    if (typeName === TS_TYPE_STRING || typeName.includes(TS_TYPE_STRING)) {
-      return NIX_TYPE_STR;
-    }
-
+    // Equicord and Vencord sprinkle string/number/bool annotations all over settings;
+    // sniff those fast so we don't have to walk union members for the most common cases
     return match(typeName)
+      .when(
+        (name) => name === TS_TYPE_STRING || name.includes(TS_TYPE_STRING),
+        () => NIX_TYPE_STR
+      )
       .when(
         (name) => name === TS_TYPE_NUMBER || name.includes(TS_TYPE_NUMBER),
         () => {
-          // Infer int vs float from default value
+          // Slider defaults in actual plugins are floats while toggles are ints
           return match(defaultValue)
             .with(P.number, (val) => (Number.isInteger(val) ? NIX_TYPE_INT : NIX_TYPE_FLOAT))
             .otherwise(() => NIX_TYPE_INT);
@@ -209,29 +213,29 @@ function inferTypeFromTypeScriptType(
       .when(
         (name) =>
           name.includes(TS_ARRAY_BRACKET_PATTERN) || name.includes(TS_ARRAY_GENERIC_PATTERN),
-        () => NIX_TYPE_ATTRS // Will be refined to listOf later
+        () => NIX_TYPE_ATTRS // Arrays become listOf* in a later inference pass once we know shape
       )
       .otherwise(() => {
-        // Check for union types (e.g., string | number)
+        // Union types show up in shared helpers (e.g., string | undefined defaults);
         const unionTypes = type.getUnionTypes();
-        if (unionTypes.length > 0) {
-          const typeNames = pipe(
-            unionTypes,
-            map((t) => t.getText())
-          );
-          if (every((n: string) => n === TS_TYPE_STRING || n.includes(TS_TYPE_STRING), typeNames)) {
-            return NIX_TYPE_STR;
-          }
-          if (every((n: string) => n === TS_TYPE_NUMBER || n.includes(TS_TYPE_NUMBER), typeNames)) {
-            return NIX_TYPE_INT;
-          }
-          if (
-            every((n: string) => n === TS_TYPE_BOOLEAN || n.includes(TS_TYPE_BOOLEAN), typeNames)
-          ) {
-            return NIX_TYPE_BOOL;
-          }
-        }
-        return undefined;
+        return match(unionTypes.length === 0)
+          .with(true, () => undefined as string | undefined)
+          .with(false, () => {
+            const typeNames = pipe(
+              unionTypes,
+              map((t) => t.getText())
+            );
+            return match([
+              every((n: string) => n === TS_TYPE_STRING || n.includes(TS_TYPE_STRING), typeNames),
+              every((n: string) => n === TS_TYPE_NUMBER || n.includes(TS_TYPE_NUMBER), typeNames),
+              every((n: string) => n === TS_TYPE_BOOLEAN || n.includes(TS_TYPE_BOOLEAN), typeNames),
+            ] as const)
+              .with([true, P._, P._], () => NIX_TYPE_STR)
+              .with([P._, true, P._], () => NIX_TYPE_INT)
+              .with([P._, P._, true], () => NIX_TYPE_BOOL)
+              .otherwise(() => undefined as string | undefined);
+          })
+          .exhaustive();
       });
   } catch {
     return undefined;
@@ -248,26 +252,19 @@ export function tsTypeToNixType(
 }> {
   const type = setting.type;
   if (!type || !isNode(type)) {
-    if (typeof type === 'number' && type in OptionTypeMap) {
-      const typeValue = OptionTypeMap[type];
+    const NumberTypeSchema = z.number();
+    const parsedType = NumberTypeSchema.safeParse(type);
+    if (parsedType.success && parsedType.data in OptionTypeMap) {
+      const typeValue = OptionTypeMap[parsedType.data];
       if (typeValue === OPTION_TYPE_COMPONENT || typeValue === OPTION_TYPE_CUSTOM) {
         return { nixType: nixTypeForComponentOrCustom(setting.default) };
       }
     }
-    // If there's no explicit type but there are options, infer SELECT type.
-    //
-    // Some settings have options arrays but no explicit `type: OptionType.SELECT` property.
-    // Without this check, they'd be inferred as the wrong type (usually STR based on the
-    // default value) and the enum values would be lost. This causes the setting to appear
-    // in the generated Nix but without the proper enum constraint, or worse, disappear entirely.
-    //
-    // Real-world example: greetStickerPicker.greetMode has options but no explicit type.
-    // Without this check, it was inferred as STR instead of enum, and disappeared from the
-    // generated Nix files. This was a regression that broke the plugin configuration.
-    //
-    // If we see options but no explicit type, we infer it's a SELECT type and extract
-    // the enum values from the options array. This ensures enum-based settings work even
-    // when the type isn't explicitly declared.
+    // Equicord/Vencord authors frequently forget `type: OptionType.SELECT` when they already
+    // provide an options array (see Equicord `src/plugins/greetStickerPicker/index.tsx`)
+    // Without this block the AST would scream “string”, we'd emit a plain str in Nix, and the
+    // enum disappears from the generated module. Treat “options without type” as a select and
+    // salvage the enum values
     const enumValues = buildEnumValuesFromOptions(setting.options);
     if (enumValues && !isEmpty(enumValues)) {
       const boolEnum =
@@ -300,7 +297,7 @@ export function tsTypeToNixType(
         const enumValues = buildEnumValuesFromOptions(setting.options) ?? Object.freeze([]);
         const boolEnum =
           enumValues.length === BOOLEAN_ENUM_LENGTH &&
-          every((value): value is boolean => typeof value === 'boolean', enumValues) &&
+          every((value): value is boolean => BooleanSchema.safeParse(value).success, enumValues) &&
           new Set(enumValues).size === BOOLEAN_ENUM_LENGTH;
         if (boolEnum) {
           return { nixType: NIX_TYPE_BOOL };
@@ -317,7 +314,8 @@ export function tsTypeToNixType(
       .otherwise(() => ({ nixType: inferNixTypeFromRuntimeDefault(setting.default) }));
   }
 
-  // Try to infer from TypeScript type when OptionType is missing
+  // Still no explicit OptionType? Lean on the TS checker so third-party plugins that only ship
+  // types (common in Equicord forks) continue to map to sensible Nix types
   const inferredType = inferTypeFromTypeScriptType(type, _checker, setting.default);
   const enumValues = buildEnumValuesFromOptions(setting.options);
   if (inferredType) {

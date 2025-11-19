@@ -1,9 +1,7 @@
 import { describe, test, expect } from 'vitest';
 import { Project, ModuleKind, SyntaxKind } from 'ts-morph';
-import {
-  extractPluginInfo,
-  findDefinePluginSettings,
-} from '../../../../src/core/ast/extractor/plugin.js';
+import { extractPluginInfo } from '../../../../src/core/ast/extractor/plugin.js';
+import { findDefinePluginSettings } from '../../../../src/core/ast/navigator/plugin-navigator.js';
 
 function createProject(): Project {
   return new Project({

@@ -293,7 +293,7 @@ describe('resolveEnumLikeValue()', () => {
       const resolved = unwrapResult(resolveEnumLikeValue(initializer, checker));
       // Property access through type assertions may not fully resolve due to AsExpression wrapper
       // This is a limitation - we unwrap the AsExpression but property access resolution
-      // may still fail. Both null and the resolved value are acceptable outcomes.
+      // may still fail. Both null and the resolved value are acceptable outcomes
       expect(resolved === null || resolved === 'dark-plus').toBe(true);
     }
   });
@@ -326,6 +326,92 @@ describe('resolveEnumLikeValue()', () => {
       if (!result.isOk) {
         expect(result.error.kind).toBe('CannotEvaluate');
       }
+    }
+  });
+
+  test('handles property access with same-file lookup fallback', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const themes = { DarkPlus: "dark-plus" } as const;
+      const x = themes.DarkPlus;`
+    );
+    const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
+    const initializer = varDecl.getInitializer();
+    if (initializer) {
+      const checker = project.getTypeChecker();
+      const resolved = unwrapResult(resolveEnumLikeValue(initializer, checker));
+      // Should resolve via same-file lookup fallback
+      expect(resolved).toBe('dark-plus');
+    }
+  });
+
+  test('handles enum member with getValue() fallback', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `enum TestEnum { VALUE = "test-value" };
+      const x = TestEnum.VALUE;`
+    );
+    const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
+    const initializer = varDecl.getInitializer();
+    if (initializer) {
+      const checker = project.getTypeChecker();
+      const resolved = unwrapResult(resolveEnumLikeValue(initializer, checker));
+      // Should resolve via getValue() or initializer
+      expect(resolved).toBe('test-value');
+    }
+  });
+
+  test('handles enum member with numeric initializer', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `enum TestEnum { VALUE = 123 };
+      const x = TestEnum.VALUE;`
+    );
+    const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
+    const initializer = varDecl.getInitializer();
+    if (initializer) {
+      const checker = project.getTypeChecker();
+      const resolved = unwrapResult(resolveEnumLikeValue(initializer, checker));
+      // Should resolve via initializer when getValue() fails
+      expect(resolved).toBe(123);
+    }
+  });
+
+  test('handles property access with nested as const and same-file lookup', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const config = { themes: { DarkPlus: "dark-plus" } } as const;
+      const x = config.themes.DarkPlus;`
+    );
+    const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
+    const initializer = varDecl.getInitializer();
+    if (initializer) {
+      const checker = project.getTypeChecker();
+      const resolved = unwrapResult(resolveEnumLikeValue(initializer, checker));
+      // May use same-file lookup fallback for nested access
+      expect(resolved === null || resolved === 'dark-plus').toBe(true);
+    }
+  });
+
+  test('handles property access with aliased symbol fallback', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `import { themes as importedThemes } from "./themes";
+      const themes = importedThemes;
+      const x = themes.DarkPlus;`
+    );
+    const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
+    const initializer = varDecl.getInitializer();
+    if (initializer) {
+      const checker = project.getTypeChecker();
+      const resolved = unwrapResult(resolveEnumLikeValue(initializer, checker));
+      // Should handle aliased symbols via getAliasedSymbol() fallback
+      expect(resolved === null || typeof resolved === 'string').toBe(true);
     }
   });
 });

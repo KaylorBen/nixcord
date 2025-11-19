@@ -133,7 +133,9 @@ in
           equicordPlugins = (cfg.equicordConfig.plugins or { });
           allPlugins = plugins // extraPlugins // vencordPlugins // equicordPlugins;
         in
-        lib.filter (oldName: allPlugins ? ${oldName}) (builtins.attrNames pluginNameMigrations);
+        lib.filter (oldName: allPlugins ? ${oldName} && isPluginEnabled allPlugins.${oldName}) (
+          builtins.attrNames pluginNameMigrations
+        );
 
       # Check if a plugin is enabled
       isPluginEnabled =

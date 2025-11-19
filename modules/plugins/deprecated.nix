@@ -11,4 +11,3 @@
   onePingPerDM = "onePingPerDm";
   reviewDB = "reviewDb";
 }
-

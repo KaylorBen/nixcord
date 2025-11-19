@@ -6,6 +6,9 @@ import type {
   PropertyAccessExpression,
   Identifier,
   AsExpression,
+  NoSubstitutionTemplateLiteral,
+  NumericLiteral,
+  EnumMember,
 } from 'ts-morph';
 import { SyntaxKind } from 'ts-morph';
 import { Result } from 'true-myth';
@@ -27,7 +30,8 @@ export function resolveEnumLikeValue(
 ): EnumValueResult {
   return (
     match(valueInitializer.getKind())
-      // Unwrap common wrappers
+      // TypeScript wraps values in various expression types (as expressions, type assertions,
+      // parentheses). We recursively unwrap them to get to the actual literal value underneath
       .with(SyntaxKind.AsExpression, () => {
         const inner = (valueInitializer as any).getExpression?.() as Node | undefined;
         return inner
@@ -79,7 +83,7 @@ export function resolveEnumLikeValue(
             );
       })
       .with(SyntaxKind.NoSubstitutionTemplateLiteral, () => {
-        const template = asKind<import('ts-morph').NoSubstitutionTemplateLiteral>(
+        const template = asKind<NoSubstitutionTemplateLiteral>(
           valueInitializer,
           SyntaxKind.NoSubstitutionTemplateLiteral
         ).unwrapOr(undefined);
@@ -103,10 +107,9 @@ export function resolveEnumLikeValue(
         )
       )
       .with(SyntaxKind.NumericLiteral, () => {
-        const num = asKind<import('ts-morph').NumericLiteral>(
-          valueInitializer,
-          SyntaxKind.NumericLiteral
-        ).unwrapOr(undefined);
+        const num = asKind<NumericLiteral>(valueInitializer, SyntaxKind.NumericLiteral).unwrapOr(
+          undefined
+        );
         return num
           ? Result.ok(num.getLiteralValue())
           : Result.err(
@@ -137,9 +140,7 @@ export function resolveEnumLikeValue(
         const valueDeclaration = symbol?.getValueDeclaration();
 
         const enumMember = valueDeclaration
-          ? asKind<import('ts-morph').EnumMember>(valueDeclaration, SyntaxKind.EnumMember).unwrapOr(
-              undefined
-            )
+          ? asKind<EnumMember>(valueDeclaration, SyntaxKind.EnumMember).unwrapOr(undefined)
           : undefined;
         if (enumMember) {
           try {
@@ -153,10 +154,7 @@ export function resolveEnumLikeValue(
           }
           const init = enumMember.getInitializer();
           if (init) {
-            const num = asKind<import('ts-morph').NumericLiteral>(
-              init,
-              SyntaxKind.NumericLiteral
-            ).unwrapOr(undefined);
+            const num = asKind<NumericLiteral>(init, SyntaxKind.NumericLiteral).unwrapOr(undefined);
             if (num) {
               return Result.ok(num.getLiteralValue());
             }
@@ -169,7 +167,7 @@ export function resolveEnumLikeValue(
 
         // Resolve property access like themes.DarkPlus by finding the themes object
         // and pulling out the DarkPlus property value. Also handles nested access like
-        // config.themes.DarkPlus.
+        // config.themes.DarkPlus
         const baseExpr = expr.getExpression();
         const baseIdent = asKind<Identifier>(baseExpr, SyntaxKind.Identifier).unwrapOr(undefined);
         if (baseIdent) {
@@ -189,7 +187,8 @@ export function resolveEnumLikeValue(
               ? (baseDecl as { getInitializer: () => Node | undefined }).getInitializer()
               : undefined;
 
-          // Unwrap "as const" assertions
+          // TypeScript's "as const" assertion wraps the object literal in an AsExpression
+          // We need to unwrap it to get the actual object literal so we can access its properties
           const asExpr = baseInit
             ? asKind<AsExpression>(baseInit, SyntaxKind.AsExpression).unwrapOr(undefined)
             : undefined;
@@ -215,7 +214,8 @@ export function resolveEnumLikeValue(
             }
           }
 
-          // Fallback: try same-file lookup
+          // If symbol resolution failed (common in test environments or when declarations
+          // are in different files), try looking up the variable declaration in the same file
           if (!baseInit) {
             const sourceFile = baseIdent.getSourceFile();
             const decl = sourceFile.getVariableDeclaration(baseIdent.getText());
@@ -250,8 +250,9 @@ export function resolveEnumLikeValue(
           }
         }
 
-        // Fallback for external enums we don't have declarations for. Discord's ActivityType
-        // enum isn't available in the AST, so we hardcode the mapping.
+        // Some Discord enums (like ActivityType) aren't available in the AST because they're
+        // defined in external packages. We hardcode the mapping for these common cases
+        // This is why we manually add Discord enum files in the parser's createProject function
         const enumObject = expr.getExpression().getText();
         const memberName = expr.getName();
         if (enumObject === 'ActivityType') {

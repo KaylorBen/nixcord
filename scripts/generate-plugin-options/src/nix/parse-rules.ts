@@ -1,6 +1,7 @@
 import { entries, pipe, sortBy, unique, flatMap, filter, map } from 'remeda';
+import type { ReadonlyDeep } from 'type-fest';
 import type { PluginConfig } from '../shared/types.js';
-import { NixGenerator, type NixAttrSet } from './generator-base.js';
+import { NixGenerator } from './generator-base.js';
 
 const gen = new NixGenerator();
 
@@ -25,62 +26,7 @@ const baseUpperNames = [
 
 const baseLowerPluginTitles: readonly string[] = [];
 
-const baseFakeEnums = {
-  zero: [
-    'randomCharacters',
-    'never',
-    'playing',
-    'none',
-    'everything',
-    'all',
-    'recentlyActive',
-    'normal',
-    'highestRole',
-    'mostRecent',
-    'disabled',
-    'compact',
-    'plain',
-    'whitelist',
-  ],
-  one: [
-    'consistent',
-    'always',
-    'streaming',
-    'discordUptime',
-    'titles',
-    'only@Mentions',
-    'list',
-    'datePosted',
-    'better',
-    'lowestRole',
-    'custom',
-    'preferDiscord',
-    'enabled',
-    'onlyServerCount',
-    'cozy',
-    'muted',
-    'animatedDots',
-    'blacklist',
-  ],
-  two: [
-    'timestamp',
-    'moreThanOne',
-    'listening',
-    'currentTime',
-    'thumbnails',
-    'nothing',
-    'gallery',
-    'projectX',
-    'followNoReplyMention',
-    'onlyFriendCount',
-    'roomy',
-    'avatars',
-  ],
-  three: ['watching', 'customTime', 'serverDefault', 'both'],
-  four: ['competing'],
-} as const;
-
-type PluginCollections = ReadonlyArray<Readonly<Record<string, PluginConfig>>>;
+type PluginCollections = ReadonlyArray<ReadonlyDeep<Record<string, PluginConfig>>>;
 
 function collectLowerPluginTitles(...collections: PluginCollections): string[] {
   const entriesList = flatMap(collections, (collection) => entries(collection));
@@ -102,24 +48,15 @@ function collectLowerPluginTitles(...collections: PluginCollections): string[] {
 }
 
 export function generateParseRulesModule(
-  shared: Readonly<Record<string, PluginConfig>>,
-  vencordOnly: Readonly<Record<string, PluginConfig>>,
-  equicordOnly: Readonly<Record<string, PluginConfig>>
+  shared: ReadonlyDeep<Record<string, PluginConfig>>,
+  vencordOnly: ReadonlyDeep<Record<string, PluginConfig>>,
+  equicordOnly: ReadonlyDeep<Record<string, PluginConfig>>
 ): string {
   const lowerPluginTitles = collectLowerPluginTitles(shared, vencordOnly, equicordOnly);
-
-  const fakeEnums: NixAttrSet = {
-    zero: [...baseFakeEnums.zero],
-    one: [...baseFakeEnums.one],
-    two: [...baseFakeEnums.two],
-    three: [...baseFakeEnums.three],
-    four: [...baseFakeEnums.four],
-  };
 
   const output = gen.attrSet({
     upperNames: [...baseUpperNames],
     lowerPluginTitles,
-    fakeEnums,
   });
 
   return [

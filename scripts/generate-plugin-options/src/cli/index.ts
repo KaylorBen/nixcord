@@ -52,7 +52,8 @@ export const buildCli = (): Command => {
     )
     .option('-v, --verbose', 'Enable verbose output', false)
     .action(async (vencordArg: string | undefined, options: unknown) => {
-      // Validate CLI options with Zod
+      // Run the options through Zod before we touch the filesystem; this mirrors how we catch
+      // typos like `--vencrod` in our release scripts before the Equicord/Vencord paths are read
       const validationResult = CliOptionsSchema.safeParse(options);
       if (!validationResult.success) {
         const zodError = fromZodError(validationResult.error);

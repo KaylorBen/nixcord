@@ -2,7 +2,6 @@
 let
   inherit (lib)
     attrsets
-    findFirst
     lists
     strings
     ;
@@ -18,17 +17,6 @@ let
 
   upperNames = mergeLists defaultParseRules.upperNames parseRules.upperNames;
   lowerPluginTitles = mergeLists defaultParseRules.lowerPluginTitles parseRules.lowerPluginTitles;
-
-  mergeFakeEnumList =
-    name: mergeLists (defaultParseRules.fakeEnums.${name} or [ ]) (parseRules.fakeEnums.${name} or [ ]);
-
-  fakeEnums = {
-    zero = mergeFakeEnumList "zero";
-    one = mergeFakeEnumList "one";
-    two = mergeFakeEnumList "two";
-    three = mergeFakeEnumList "three";
-    four = mergeFakeEnumList "four";
-  };
 
   isLowerCase = s: strings.toLower s == s;
 
@@ -71,47 +59,12 @@ let
     else
       name;
 
-  fakeEnumMapping = [
-    {
-      values = fakeEnums.zero;
-      mapped = 0;
-    }
-    {
-      values = fakeEnums.one;
-      mapped = 1;
-    }
-    {
-      values = fakeEnums.two;
-      mapped = 2;
-    }
-    {
-      values = fakeEnums.three;
-      mapped = 3;
-    }
-    {
-      values = fakeEnums.four;
-      mapped = 4;
-    }
-  ];
-
-  applyFakeEnum =
-    value:
-    if builtins.typeOf value != "string" then
-      value
-    else
-      let
-        matched = findFirst (entry: builtins.elem value entry.values) null fakeEnumMapping;
-      in
-      if matched == null then value else matched.mapped;
-
-  normalizeScalar = value: applyFakeEnum value;
-
   mkVencordCfg =
     cfg:
     mapAttrs' (
       name: value:
       let
-        normalizedValue = if builtins.isAttrs value then mkVencordCfg value else normalizeScalar value;
+        normalizedValue = if builtins.isAttrs value then mkVencordCfg value else value;
       in
       nameValuePair (normalizeName name value) normalizedValue
     ) cfg;
