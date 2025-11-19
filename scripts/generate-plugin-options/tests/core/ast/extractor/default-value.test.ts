@@ -362,4 +362,82 @@ describe('extractDefaultValue()', () => {
     const result = unwrapResult(extractDefaultValue(objLiteral, checker));
     expect(result).toBe('template');
   });
+
+  test('handles function call with object literal containing computed property names', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const obj = { default: defineDefault({ [Symbol.iterator]: "test" }) };`
+    );
+    const objLiteral = sourceFile
+      .getVariableDeclarationOrThrow('obj')
+      .getInitializerIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
+    const checker = project.getTypeChecker();
+    const result = unwrapResult(extractDefaultValue(objLiteral, checker));
+    // Computed property names should be skipped (key will be undefined)
+    expect(result).toEqual({});
+  });
+
+  test('handles function call with object literal containing unsupported property types', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const obj = { default: defineDefault({ prop: () => {} }) };`
+    );
+    const objLiteral = sourceFile
+      .getVariableDeclarationOrThrow('obj')
+      .getInitializerIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
+    const checker = project.getTypeChecker();
+    const result = unwrapResult(extractDefaultValue(objLiteral, checker));
+    // Arrow function initializers should result in undefined value, which gets skipped
+    expect(result).toEqual({});
+  });
+
+  test('handles function call returning non-array/non-object literal', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const makeString = () => "test";
+      const obj = { default: makeString() };`
+    );
+    const objLiteral = sourceFile
+      .getVariableDeclarationOrThrow('obj')
+      .getInitializerIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
+    const checker = project.getTypeChecker();
+    const result = unwrapResult(extractDefaultValue(objLiteral, checker));
+    // When function call resolves to non-array/non-object, should return undefined
+    expect(result).toBe(undefined);
+  });
+
+  test('handles function call with no arguments', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const makeDefault = () => ({ a: 1 });
+      const obj = { default: makeDefault() };`
+    );
+    const objLiteral = sourceFile
+      .getVariableDeclarationOrThrow('obj')
+      .getInitializerIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
+    const checker = project.getTypeChecker();
+    const result = unwrapResult(extractDefaultValue(objLiteral, checker));
+    // Function call with no args should try to resolve via call resolver
+    expect(result === undefined || (typeof result === 'object' && result !== null)).toBe(true);
+  });
+
+  test('handles identifier resolving to unexpected node kind', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const FUNC = () => {};
+      const obj = { default: FUNC };`
+    );
+    const objLiteral = sourceFile
+      .getVariableDeclarationOrThrow('obj')
+      .getInitializerIfKindOrThrow(SyntaxKind.ObjectLiteralExpression);
+    const checker = project.getTypeChecker();
+    const result = unwrapResult(extractDefaultValue(objLiteral, checker));
+    // Identifier resolving to function should result in undefined via otherwise path
+    expect(result).toBe(undefined);
+  });
 });

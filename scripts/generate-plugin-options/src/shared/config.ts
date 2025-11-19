@@ -39,7 +39,8 @@ export const CLI_CONFIG = {
   },
 } as const;
 
-// Validate config at module load time
+// Fail fast if someone edits CLI_CONFIG incorrectly; catching schema drift here keeps prod
+// builds from spitting half-written Nix files before Equicord/Vencord extraction even runs
 CliConfigSchema.parse(CLI_CONFIG);
 
 export type CliConfig = Simplify<z.infer<typeof CliConfigSchema>>;

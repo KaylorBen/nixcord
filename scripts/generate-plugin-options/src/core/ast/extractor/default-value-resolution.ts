@@ -3,8 +3,8 @@ import { SyntaxKind } from 'ts-morph';
 import { isEmpty } from 'remeda';
 import { match, P } from 'ts-pattern';
 import { getPropertyAssignment, asKind } from '../utils/node-helpers.js';
-import { extractSelectDefault } from './select.js';
-import { hasObjectArrayDefault, hasComponentProp } from './default-value-checks.js';
+import { extractSelectDefault } from './select/index.js';
+import { hasObjectArrayDefault, hasComponentProp } from './default-value-checks/index.js';
 import {
   DEFAULT_PROPERTY,
   TYPE_PROPERTY,
@@ -23,7 +23,7 @@ import {
 import { every } from 'iter-tools';
 import type { Node } from 'ts-morph';
 import { getDefaultPropertyInitializer, isCustomType } from './type-helpers.js';
-import type { SettingProperties } from './type-inference.js';
+import type { SettingProperties } from './type-inference/index.js';
 
 function isBareComponentSetting(obj: ObjectLiteralExpression): boolean {
   const allowed = new Set([
@@ -77,103 +77,105 @@ export function resolveDefaultValue(
   let defaultValue = defaultLiteralValue;
   let finalNixTypeWithNull = finalNixType;
 
-  // Handle enum and boolean types with pattern matching
+  // Enums often hide their defaults in the options array, so peek there before falling back to
+  // literal defaults. Boolean enums are treated as raw booleans rather than enum strings
   match([finalNixType, defaultLiteralValue] as const)
     .with([P.union(NIX_ENUM_TYPE, NIX_TYPE_BOOL), undefined], () => {
-      // Try to extract default from select options if no explicit default
+      // No literal default? Use the first option, which mirrors how plugins render their menus
       const selectDefaultResult = extractSelectDefault(valueObj, checker);
-      if (selectDefaultResult.isOk && selectDefaultResult.value !== undefined) {
-        defaultValue = selectDefaultResult.value;
-      } else if (finalNixType === NIX_ENUM_TYPE && selectEnumValues && !isEmpty(selectEnumValues)) {
-        // Fallback to first enum value for regular enums
-        defaultValue = selectEnumValues[0];
-      }
+      defaultValue = selectDefaultResult.match({
+        Ok: (value) => {
+          if (value !== undefined) {
+            return value;
+          }
+          // Still nothing—choose the first enum entry so the generated Nix has a concrete value
+          if (finalNixType === NIX_ENUM_TYPE && selectEnumValues && !isEmpty(selectEnumValues)) {
+            return selectEnumValues[0];
+          }
+          return undefined;
+        },
+        Err: () => {
+          // Same deal for numeric enums
+          if (finalNixType === NIX_ENUM_TYPE && selectEnumValues && !isEmpty(selectEnumValues)) {
+            return selectEnumValues[0];
+          }
+          return undefined;
+        },
+      });
     })
     .with([P.union(NIX_ENUM_TYPE, NIX_TYPE_BOOL), P._], () => {
-      // Use the explicit default value
+      // Respect explicit defaults; nothing clever needed here
       defaultValue = defaultLiteralValue;
     })
     .otherwise(() => {
-      // Keep existing defaultValue for other types
+      // Everything else keeps whatever default we already inferred
     });
 
-  // Optional strings without an explicit default become nullable with null default.
-  // Exception: if it's a CUSTOM type with an identifier default, assume it's ATTRS instead.
-  if (finalNixType === NIX_TYPE_STR && defaultValue === undefined) {
-    const minimalProps: SettingProperties = {
-      typeNode: { isJust: false } as any,
-      description: undefined,
-      placeholder: undefined,
-      restartNeeded: false,
-      hidden: { isJust: false } as any,
-      defaultLiteralValue: undefined,
-    };
+  // Settings shaped like optional strings (common for token fields) get promoted to nullOr str
+  // with a `null` default so Home Manager surfaces them properly. Custom components that point to
+  // identifiers stay as attrs instead, because they represent nested objects
+  match([finalNixType, defaultValue] as const)
+    .with([NIX_TYPE_STR, undefined], () => {
+      const minimalProps: SettingProperties = {
+        typeNode: { isJust: false } as any,
+        description: undefined,
+        placeholder: undefined,
+        restartNeeded: false,
+        hidden: { isJust: false } as any,
+        defaultLiteralValue: undefined,
+      };
 
-    const init = getDefaultPropertyInitializer(valueObj);
-    const customType = isCustomType(valueObj, minimalProps);
+      const init = getDefaultPropertyInitializer(valueObj);
+      const customType = isCustomType(valueObj, minimalProps);
 
-    const initIdent = init
-      ? asKind<Identifier>(init, SyntaxKind.Identifier).unwrapOr(undefined)
-      : undefined;
-    if (initIdent && (customType || hasObjectArrayDefault(valueObj, checker))) {
-      finalNixTypeWithNull = NIX_TYPE_ATTRS;
-      defaultValue = {};
-    } else {
-      finalNixTypeWithNull = NIX_TYPE_NULL_OR_STR;
-      defaultValue = null;
-    }
-  }
-  // Nullable types without an explicit default get null. This makes sure types.nullOr
-  // always has default = null in the generated Nix. This runs after the STR->nullOr
-  // conversion above, and before other type-specific checks. We check both the original
-  // and modified type in case it was already nullOr from type inference.
-  //
-  // Use defaultLiteralValue (not defaultValue) here. This is a common bug source.
-  // defaultValue might have been changed by previous checks (e.g., the STR->nullOr
-  // conversion above sets it to null). If we check defaultValue instead of
-  // defaultLiteralValue, we'll think there's already a default and skip setting it
-  // to null, which breaks nullable types.
-  //
-  // Example bug: Type is STR with no explicit default. STR->nullOr conversion sets
-  // defaultValue = null and finalNixTypeWithNull = "nullOr str". If we check defaultValue
-  // here, we see null and think there's already a default. We skip setting it, but the
-  // type is now nullOr str which needs default = null. Generated Nix has nullOr str
-  // type but no default, which is invalid.
+      const initIdent = init
+        ? asKind<Identifier>(init, SyntaxKind.Identifier).unwrapOr(undefined)
+        : undefined;
+
+      match([initIdent, customType || hasObjectArrayDefault(valueObj, checker)] as const)
+        .with([P.not(undefined), true], () => {
+          finalNixTypeWithNull = NIX_TYPE_ATTRS;
+          defaultValue = {};
+        })
+        .otherwise(() => {
+          finalNixTypeWithNull = NIX_TYPE_NULL_OR_STR;
+          defaultValue = null;
+        });
+    })
+    .otherwise(() => {
+      // Leave values alone when the condition doesn't apply
+    });
+  // Every `types.nullOr ...` needs an explicit `default = null`. We look at the literal default
+  // rather than the inferred one because earlier passes may have already set `defaultValue` to
+  // null. The bug we fixed: Vencord settings that started as `type: STR` (no default) were later
+  // promoted to `nullOr str` but skipped the default assignment, producing invalid Nix
   const isNullOrType = finalNixType.includes('nullOr') || finalNixTypeWithNull.includes('nullOr');
-  if (isNullOrType && defaultLiteralValue === undefined) {
-    defaultValue = null;
-    if (finalNixType.includes('nullOr') && !finalNixTypeWithNull.includes('nullOr')) {
-      finalNixTypeWithNull = finalNixType;
-    }
-  }
-  // Booleans without an explicit default default to false.
+  match([isNullOrType, defaultLiteralValue] as const)
+    .with([true, undefined], () => {
+      defaultValue = null;
+      if (finalNixType.includes('nullOr') && !finalNixTypeWithNull.includes('nullOr')) {
+        finalNixTypeWithNull = finalNixType;
+      }
+    })
+    .otherwise(() => {
+      // Nothing to do when a nullable default already exists
+    });
+  // Mirror upstream behavior: `types.bool` without `default` should become `false`
   match([finalNixType, defaultValue] as const)
     .with([NIX_TYPE_BOOL, undefined], () => {
       defaultValue = false;
     })
     .otherwise(() => {
-      // Keep existing defaultValue
+      // Leave prior defaults untouched when the condition fails
     });
-  // COMPONENT settings without defaults (including getters that return undefined) need
-  // a default value (even if it's an empty object), otherwise they get filtered out during
-  // Nix generation and disappear.
-  //
-  // During Nix generation, settings without defaults can get filtered out. For COMPONENT
-  // types, this means entire plugin sections disappear from the generated Nix files.
-  // This was a regression where customRpc.config and customTimestamps.formats were
-  // missing because they had no default values.
-  //
-  // We always provide a default for ATTRS types, even if it's just an empty object {}.
-  // This ensures the setting appears in the generated Nix, even if it's empty. The user
-  // can still configure it, but at least it's visible.
-  //
-  // Edge cases: Getters return null (can't be statically evaluated). Identifiers and
-  // function calls return {} (shape-only defaults). Bare component settings (just type +
-  // component, no default) get {}.
-  if (finalNixType === NIX_TYPE_ATTRS && defaultValue === undefined) {
-    if (isBareComponentSetting(valueObj)) {
+  // COMPONENT/CUSTOM settings vanish from the generated module if they don't have a default
+  // We force them to `{}` (or `null` for getters) so sections like `customRpc.config` always show
+  // up even when the plugin authors rely on runtime initialization
+  match([finalNixType, defaultValue, isBareComponentSetting(valueObj)] as const)
+    .with([NIX_TYPE_ATTRS, undefined, true], () => {
       defaultValue = {};
-    } else {
+    })
+    .with([NIX_TYPE_ATTRS, undefined, false], () => {
       const defProp = getPropertyAssignment(valueObj, DEFAULT_PROPERTY).unwrapOr(undefined);
       const defPropNode = valueObj.getProperty(DEFAULT_PROPERTY);
       const propKind = defPropNode?.getKind();
@@ -185,33 +187,42 @@ export function resolveDefaultValue(
         .with([SyntaxKind.PropertyAssignment, SyntaxKind.CallExpression], () => ({}))
         .with([SyntaxKind.GetAccessor, P._], () => null)
         .otherwise(() => ({}));
-    }
-  }
-  // Getters that were converted to nullable string types: if it's a CUSTOM type with
-  // an identifier default, convert it back to ATTRS.
-  if (finalNixType === NIX_TYPE_NULL_OR_STR && defaultValue === null) {
-    const minimalProps: SettingProperties = {
-      typeNode: { isJust: false } as any,
-      description: undefined,
-      placeholder: undefined,
-      restartNeeded: false,
-      hidden: { isJust: false } as any,
-      defaultLiteralValue: undefined,
-    };
+    })
+    .otherwise(() => {
+      // Skip when we already supplied a concrete default in a previous pass
+    });
+  // If a getter default later morphed into `nullOr str`, but the plugin really references an
+  // identifier containing an object, switch back to attrs. This keeps complex components usable
+  match([finalNixType, defaultValue] as const)
+    .with([NIX_TYPE_NULL_OR_STR, null], () => {
+      const minimalProps: SettingProperties = {
+        typeNode: { isJust: false } as any,
+        description: undefined,
+        placeholder: undefined,
+        restartNeeded: false,
+        hidden: { isJust: false } as any,
+        defaultLiteralValue: undefined,
+      };
 
-    const init = getDefaultPropertyInitializer(valueObj);
-    const customType = isCustomType(valueObj, minimalProps);
+      const init = getDefaultPropertyInitializer(valueObj);
+      const customType = isCustomType(valueObj, minimalProps);
 
-    const initIdent = init
-      ? asKind<Identifier>(init, SyntaxKind.Identifier).unwrapOr(undefined)
-      : undefined;
-    if (initIdent && (customType || hasObjectArrayDefault(valueObj, checker))) {
-      finalNixTypeWithNull = NIX_TYPE_ATTRS;
-      defaultValue = {};
-    } else {
-      defaultValue = null;
-    }
-  }
+      const initIdent = init
+        ? asKind<Identifier>(init, SyntaxKind.Identifier).unwrapOr(undefined)
+        : undefined;
+
+      match([initIdent, customType || hasObjectArrayDefault(valueObj, checker)] as const)
+        .with([P.not(undefined), true], () => {
+          finalNixTypeWithNull = NIX_TYPE_ATTRS;
+          defaultValue = {};
+        })
+        .otherwise(() => {
+          defaultValue = null;
+        });
+    })
+    .otherwise(() => {
+      // No change when the predicate fails
+    });
 
   return { finalNixType: finalNixTypeWithNull, defaultValue };
 }

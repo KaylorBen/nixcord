@@ -2,23 +2,23 @@ import type { ObjectLiteralExpression, Node } from 'ts-morph';
 import { SyntaxKind } from 'ts-morph';
 import { match, P } from 'ts-pattern';
 import { TYPE_PROPERTY, DEFAULT_PROPERTY, OPTION_TYPE_CUSTOM } from './constants.js';
-import type { SettingProperties } from './type-inference.js';
+import type { SettingProperties } from './type-inference/index.js';
 import { getPropertyInitializer } from '../utils/node-helpers.js';
 
 /**
- * Gets the default property initializer from an object literal expression.
- * Returns undefined if the property doesn't exist or isn't a PropertyAssignment.
+ * Grab the node used as `default:` so callers can analyze it without repeating the property lookup.
  */
 export function getDefaultPropertyInitializer(obj: ObjectLiteralExpression): Node | undefined {
   return getPropertyInitializer(obj, DEFAULT_PROPERTY).unwrapOr(undefined);
 }
 
 /**
- * Checks if a value object represents a CUSTOM type.
- * Checks both the type property directly and the props.typeNode as fallback.
+ * Determine whether a setting explicitly declares `OptionType.CUSTOM`. We look at both the raw
+ * property inside the object literal and the previously parsed `props.typeNode` because some
+ * plugins only set one or the other.
  */
 export function isCustomType(valueObj: ObjectLiteralExpression, props: SettingProperties): boolean {
-  // Check type property directly from valueObj (most reliable)
+  // Most plugins set `type: OptionType.CUSTOM` directly; inspect that first
   const typeProp = valueObj.getProperty(TYPE_PROPERTY);
   const typePropCheck = match(typeProp)
     .when(
@@ -43,7 +43,7 @@ export function isCustomType(valueObj: ObjectLiteralExpression, props: SettingPr
 
   if (typePropCheck) return true;
 
-  // Also check props.typeNode as fallback
+  // Some settings omit the literal type property but still carry a type annotation; fall back to it
   return match(props.typeNode)
     .when(
       (maybe): maybe is typeof maybe & { isJust: true; value: Node } => maybe.isJust,
@@ -68,7 +68,7 @@ export function isCustomType(valueObj: ObjectLiteralExpression, props: SettingPr
 }
 
 /**
- * Checks if the default property has a string literal value.
+ * Quick helper used by the coercion logic to tell whether `default:` is a literal string.
  */
 export function hasStringLiteralDefault(obj: ObjectLiteralExpression): boolean {
   const init = getDefaultPropertyInitializer(obj);

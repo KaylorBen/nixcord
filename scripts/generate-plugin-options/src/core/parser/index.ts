@@ -1,4 +1,4 @@
-import { Project, ts } from 'ts-morph';
+import { Project, ts, type CallExpression } from 'ts-morph';
 import pLimit from 'p-limit';
 import { basename, dirname, normalize, join } from 'pathe';
 import fse from 'fs-extra';
@@ -15,11 +15,14 @@ import {
   isNonNull,
   entries,
   partition,
+  reduce,
 } from 'remeda';
-import { match } from 'ts-pattern';
+import { match, P } from 'ts-pattern';
 import { z } from 'zod';
+import type { ReadonlyDeep, SetOptional } from 'type-fest';
 import type { PluginConfig, ParsedPluginsResult } from '../../shared/types.js';
-import { extractPluginInfo, findDefinePluginSettings } from '../ast/extractor/plugin.js';
+import { extractPluginInfo } from '../ast/extractor/plugin.js';
+import { findDefinePluginSettings } from '../ast/navigator/plugin-navigator.js';
 import { extractSettingsFromCall } from '../ast/extractor/settings-extractor.js';
 import { CLI_CONFIG } from '../../shared/config.js';
 
@@ -45,6 +48,19 @@ const ParsePluginsOptionsSchema = z.object({
  * (global types, Discord enums, shiki theme blobs). If either upstream repo shifts paths,
  * fix them here first or the extractor starts hallucinating defaults.
  */
+/**
+ * Creates a ts-morph Project configured for parsing Vencord/Equicord plugins.
+ *
+ * Configuration:
+ * - Sets `tsConfigFilePath` to use compiler options (including baseUrl and paths) from tsconfig
+ * - Sets `skipAddingFilesFromTsConfig: true` to avoid auto-adding all files (performance)
+ * - Sets `skipFileDependencyResolution: true` to avoid auto-resolving imports (performance)
+ * - Manually adds only the files we need (types, enums, plugins)
+ *
+ * Path mappings from tsconfig ARE used by the TypeChecker for symbol resolution,
+ * even though we manually add files. This allows the TypeChecker to resolve imports
+ * like `@api/Settings` and `@utils/types` using the path mappings.
+ */
 async function createProject(sourcePath: string): Promise<Project> {
   const tsConfigPath = normalize(join(sourcePath, TSCONFIG_FILE_NAME));
   const projectOptions: {
@@ -60,9 +76,14 @@ async function createProject(sourcePath: string): Promise<Project> {
     };
     tsConfigFilePath?: string;
   } = {
+    // Equicord and Vencord repositories ship ten thousand+ files. Adding only the files we care
+    // about keeps ts-morph from choking while still letting us hand-pick plugin sources later
     skipAddingFilesFromTsConfig: true,
+    // Dependency resolution would drag in Discord's entire bundler output. We skip it and rely on
+    // manual `project.addSourceFileAtPath` plus path mappings for anything we truly need
     skipFileDependencyResolution: true,
     skipLoadingLibFiles: true,
+    // Baseline compiler options; each repo's tsconfig still wins once we wire it in below
     compilerOptions: {
       target: ts.ScriptTarget.ES2022,
       module: ts.ModuleKind.ESNext,
@@ -72,6 +93,8 @@ async function createProject(sourcePath: string): Promise<Project> {
     },
   };
 
+  // Point ts-morph at the repo's tsconfig so `baseUrl`, `paths`, and friends match the real build
+  // Even with dependency resolution disabled, the checker respects those mappings
   if (await fse.pathExists(tsConfigPath)) {
     projectOptions.tsConfigFilePath = tsConfigPath;
   }
@@ -83,10 +106,9 @@ async function createProject(sourcePath: string): Promise<Project> {
     project.addSourceFileAtPath(typesPath);
   }
 
-  // Discord enums keep showing up in plugin defaults (ActivityType.PLAYING, ChannelType.GUILD_TEXT),
-  // so we inline their source instead of hardcoding magic numbers. Both Vencord and Equicord
-  // now ship the enums under packages/discord-types/enums/*.ts, which means we have to add
-  // every file manually because this project skips dependency resolution on purpose.
+  // Plugins love to reference `ActivityType.PLAYING` or `ChannelType.GUILD_TEXT` inside defaults
+  // Rather than hardcoding numbers, pull in every file under packages/discord-types/enums so the
+  // checker can resolve the actual enum values while we still keep dependency resolution disabled
   const discordEnumsDir = normalize(join(sourcePath, DISCORD_ENUMS_DIR));
   if (await fse.pathExists(discordEnumsDir)) {
     const enumFiles = await fg('**/*.ts', {
@@ -100,7 +122,8 @@ async function createProject(sourcePath: string): Promise<Project> {
     }
   }
 
-  // Equicord’s shikiCodeblocks plugin needs literal theme values, otherwise we emit junk.
+  // Equicord’s `shikiCodeblocks.desktop` plugin constructs theme URLs at runtime; add its helper
+  // file so enum extraction can see the literal values instead of emitting “<computed>”
   const shikiThemesPath = normalize(
     join(sourcePath, 'src/plugins/shikiCodeblocks.desktop/api/themes.ts')
   );
@@ -117,7 +140,9 @@ async function findPluginSourceFile(pluginPath: string): Promise<Maybe<string>> 
     return await fse.pathExists(filePath);
   }, PLUGIN_SOURCE_FILE_PATTERNS);
 
-  return found !== undefined ? Maybe.just(normalize(join(pluginPath, found))) : Maybe.nothing();
+  return match(found)
+    .with(P.string, (path) => Maybe.just(normalize(join(pluginPath, path))))
+    .otherwise(() => Maybe.nothing<string>());
 }
 
 async function parseSinglePlugin(
@@ -127,11 +152,11 @@ async function parseSinglePlugin(
   typeChecker: ReturnType<Project['getTypeChecker']>
 ): Promise<Maybe<[string, PluginConfig]>> {
   const filePath = await findPluginSourceFile(pluginPath);
-  if (filePath.isNothing) {
+  const path = filePath.unwrapOr(null);
+
+  if (!path) {
     return Maybe.nothing();
   }
-
-  const path = filePath.value;
   const sourceFile = project.addSourceFileAtPath(path);
   const pluginInfo = extractPluginInfo(sourceFile, typeChecker);
   const pluginName =
@@ -149,10 +174,14 @@ async function parseSinglePlugin(
 
   if (settingsCall.isNothing) {
     const settingsPath = normalize(join(pluginPath, 'settings.ts'));
-    if (await fse.pathExists(settingsPath)) {
-      const settingsFile = project.addSourceFileAtPath(settingsPath);
-      settingsCall = findDefinePluginSettings(settingsFile);
-    }
+    const pathExists = await fse.pathExists(settingsPath);
+    settingsCall = match(pathExists)
+      .with(true, () => {
+        const settingsFile = project.addSourceFileAtPath(settingsPath);
+        return findDefinePluginSettings(settingsFile);
+      })
+      .with(false, () => Maybe.nothing<CallExpression>())
+      .exhaustive();
   }
 
   const settings = settingsCall
@@ -163,9 +192,9 @@ async function parseSinglePlugin(
     name: pluginName,
     settings,
     directoryName: pluginDir,
-    ...(pluginInfo.description !== undefined && {
-      description: pluginInfo.description,
-    }),
+    ...match(pluginInfo.description)
+      .with(P.string, (desc) => ({ description: desc }))
+      .otherwise(() => ({})),
   };
 
   return Maybe.just<[string, PluginConfig]>([pluginName, pluginConfig]);
@@ -185,7 +214,7 @@ async function parsePluginsFromDirectory(
   project: Project,
   typeChecker: ReturnType<Project['getTypeChecker']>,
   isTTY: boolean
-): Promise<Record<string, PluginConfig>> {
+): Promise<ReadonlyDeep<Record<string, PluginConfig>>> {
   const files = await fg(PLUGIN_FILE_GLOB_PATTERN, {
     cwd: pluginsPath,
     absolute: false,
@@ -227,13 +256,18 @@ async function parsePluginsFromDirectory(
     map((maybe) => (maybe as Extract<typeof maybe, { isJust: true }>).value)
   );
 
-  return pipe(validResults, fromEntries, pickBy(isNonNull)) as Record<string, PluginConfig>;
+  return pipe(validResults, fromEntries, pickBy(isNonNull)) as ReadonlyDeep<
+    Record<string, PluginConfig>
+  >;
 }
 
-export interface ParsePluginsOptions {
-  vencordPluginsDir?: string;
-  equicordPluginsDir?: string;
-}
+export type ParsePluginsOptions = SetOptional<
+  {
+    vencordPluginsDir: string;
+    equicordPluginsDir: string;
+  },
+  'vencordPluginsDir' | 'equicordPluginsDir'
+>;
 
 /**
  * Parse all plugin directories for a given repo root.
@@ -273,7 +307,9 @@ export async function parsePlugins(
 
   const [vencordPlugins, equicordPlugins] = await match<
     [boolean, boolean],
-    Promise<[Record<string, PluginConfig>, Record<string, PluginConfig>]>
+    Promise<
+      [ReadonlyDeep<Record<string, PluginConfig>>, ReadonlyDeep<Record<string, PluginConfig>>]
+    >
   >([hasVencordPlugins, hasEquicordPlugins])
     .with([false, false], () => {
       throw new Error(
@@ -285,10 +321,10 @@ export async function parsePlugins(
     .with([true, true], async () => [await parseVencordPlugins(), await parseEquicordPlugins()])
     .with([true, false], async () => [
       await parseVencordPlugins(),
-      {} as Record<string, PluginConfig>,
+      {} as ReadonlyDeep<Record<string, PluginConfig>>,
     ])
     .with([false, true], async () => [
-      {} as Record<string, PluginConfig>,
+      {} as ReadonlyDeep<Record<string, PluginConfig>>,
       await parseEquicordPlugins(),
     ])
     .exhaustive();
@@ -308,34 +344,40 @@ export function categorizePlugins(
   vencordResult: Readonly<ParsedPluginsResult>,
   equicordResult?: Readonly<ParsedPluginsResult>
 ): {
-  readonly generic: Readonly<Record<string, PluginConfig>>;
-  readonly vencordOnly: Readonly<Record<string, PluginConfig>>;
-  readonly equicordOnly: Readonly<Record<string, PluginConfig>>;
+  readonly generic: ReadonlyDeep<Record<string, PluginConfig>>;
+  readonly vencordOnly: ReadonlyDeep<Record<string, PluginConfig>>;
+  readonly equicordOnly: ReadonlyDeep<Record<string, PluginConfig>>;
 } {
   const vencordPlugins = vencordResult.vencordPlugins;
   const equicordSharedPlugins = equicordResult?.vencordPlugins ?? {};
   const equicordOnlyPlugins = equicordResult?.equicordPlugins ?? {};
 
-  // Create a mapping from directory name to plugin name for Equicord plugins
-  // This allows matching plugins even when their names differ
-  const equicordDirectoryMap = new Map<string, string>();
-  for (const [name, config] of Object.entries(equicordSharedPlugins)) {
-    if (config.directoryName) {
-      equicordDirectoryMap.set(config.directoryName.toLowerCase(), name);
-    }
-  }
+  // Equicord occasionally renames plugins without touching the folder (e.g., `statusEverywhere` vs
+  // `StatusEverywhere`). Build a directory-name map so we can still line shared plugins up.
+  const equicordDirectoryMap = pipe(
+    entries(equicordSharedPlugins),
+    filter(([, config]) => config.directoryName !== undefined),
+    reduce((acc, [name, config]) => {
+      acc.set(config.directoryName!.toLowerCase(), name);
+      return acc;
+    }, new Map<string, string>())
+  );
 
   const pluginMatches = pipe(
     entries(vencordPlugins),
     map(([name, config]) => {
-      let equicordConfig = equicordSharedPlugins[name];
-
-      if (!equicordConfig && config?.directoryName) {
-        const equicordName = equicordDirectoryMap.get(config.directoryName.toLowerCase());
-        if (equicordName) {
-          equicordConfig = equicordSharedPlugins[equicordName];
-        }
-      }
+      const equicordConfig = match(equicordSharedPlugins[name])
+        .with(undefined, () => {
+          return match(config?.directoryName)
+            .with(P.string, (dirName) => {
+              const equicordName = equicordDirectoryMap.get(dirName.toLowerCase());
+              return match(equicordName)
+                .with(undefined, () => undefined)
+                .otherwise((equicordName) => equicordSharedPlugins[equicordName]);
+            })
+            .otherwise(() => undefined);
+        })
+        .otherwise((cfg) => cfg);
 
       return { name, config, equicordConfig };
     })
@@ -357,11 +399,14 @@ export function categorizePlugins(
   );
 
   return {
-    generic: pipe(genericTuples, fromEntries, pickBy(isNonNull)) as Record<string, PluginConfig>,
-    vencordOnly: pipe(vencordTuples, fromEntries, pickBy(isNonNull)) as Record<
-      string,
-      PluginConfig
+    generic: pipe(genericTuples, fromEntries, pickBy(isNonNull)) as ReadonlyDeep<
+      Record<string, PluginConfig>
     >,
-    equicordOnly: pickBy(equicordOnlyPlugins, isNonNull) as Record<string, PluginConfig>,
+    vencordOnly: pipe(vencordTuples, fromEntries, pickBy(isNonNull)) as ReadonlyDeep<
+      Record<string, PluginConfig>
+    >,
+    equicordOnly: pickBy(equicordOnlyPlugins, isNonNull) as ReadonlyDeep<
+      Record<string, PluginConfig>
+    >,
   };
 }

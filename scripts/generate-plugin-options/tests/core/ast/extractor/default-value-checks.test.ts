@@ -5,7 +5,7 @@ import {
   hasObjectArrayDefault,
   hasEmptyArrayWithTypeAnnotation,
   resolveIdentifierArrayDefault,
-} from '../../../../src/core/ast/extractor/default-value-checks.js';
+} from '../../../../src/core/ast/extractor/default-value-checks/index.js';
 
 function createProject(): Project {
   return new Project({

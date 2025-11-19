@@ -4,7 +4,7 @@ import {
   extractSelectOptions,
   extractSelectDefault,
 } from '../../../../src/core/ast/extractor/select.js';
-import * as nodeUtils from '../../../../src/core/ast/extractor/node-utils.js';
+import * as nodeUtils from '../../../../src/core/ast/extractor/node-utils/index.js';
 
 function unwrapResult<T>(result: {
   isOk: boolean;
@@ -651,7 +651,7 @@ describe('extractSelectDefault()', () => {
     }
   });
 
-  // Array.from() without arguments throws before we can analyze it, so we skip testing that branch.
+  // Array.from() without arguments throws before we can analyze it, so we skip testing that branch
 
   test('extracts first option when defaults cannot be inferred', () => {
     const project = createProject();

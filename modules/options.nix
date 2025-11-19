@@ -532,33 +532,6 @@ in
       default = [ ];
       example = [ "petpet" ];
     };
-    fakeEnums = {
-      zero = mkOption {
-        type = with types; listOf types.str;
-        description = "strings to evaluate to 0 in JSON";
-        default = [ ];
-      };
-      one = mkOption {
-        type = with types; listOf types.str;
-        description = "strings to evaluate to 1 in JSON";
-        default = [ ];
-      };
-      two = mkOption {
-        type = with types; listOf types.str;
-        description = "strings to evaluate to 2 in JSON";
-        default = [ ];
-      };
-      three = mkOption {
-        type = with types; listOf types.str;
-        description = "strings to evaluate to 3 in JSON";
-        default = [ ];
-      };
-      four = mkOption {
-        type = with types; listOf types.str;
-        description = "strings to evaluate to 4 in JSON";
-        default = [ ];
-      };
-    };
   };
 
   finalPackage = {

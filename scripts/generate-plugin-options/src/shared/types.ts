@@ -7,7 +7,7 @@ export interface PluginSetting {
   readonly description?: string;
   readonly default?: unknown;
   readonly enumValues?: readonly (string | number | boolean)[];
-  readonly enumLabels?: Readonly<Record<string, string> & Partial<Record<number, string>>>;
+  readonly enumLabels?: ReadonlyDeep<Record<string, string> & Partial<Record<number, string>>>;
   readonly example?: string;
   readonly hidden?: boolean;
   readonly restartNeeded?: boolean;

@@ -2,12 +2,12 @@ import { camelCase } from 'change-case';
 import { isEmpty } from 'remeda';
 import { match, P } from 'ts-pattern';
 
-const INTERPOLATION_START_SEQUENCE_LENGTH = 2; // "${" is 2 characters
+const INTERPOLATION_START_SEQUENCE_LENGTH = 2; // Skip both characters in "${" when neutering injected template snippets
 
-// Nix double-quoted string escape sequences
-const ESCAPED_BACKSLASH = '\\\\'; // \ -> \\
-const ESCAPED_INTERPOLATION = '\\${'; // ${ -> \${ to prevent string interpolation
-const ESCAPED_QUOTE = '\\"'; // " -> \"
+// Escape tables for the generated double-quoted strings that carry plugin descriptions/examples
+const ESCAPED_BACKSLASH = '\\\\'; // Keep literal backslashes from collapsing escape sequences (common in regex-heavy plugins)
+const ESCAPED_INTERPOLATION = '\\${'; // Prevent `${...}` text from becoming real interpolation in the rendered Nix module
+const ESCAPED_QUOTE = '\\"'; // Preserve quote marks inside descriptions so Nix parsing stays sane
 
 const BACKSLASH_CHAR = '\\';
 const DOLLAR_CHAR = '$';
@@ -48,20 +48,20 @@ export function escapeNixDoubleQuotedString(str: string): string {
   return result;
 }
 
-// Nix multiline string (''...'') escape sequences and markers
+// Escape tables for multiline (''...'') chunks used by shiki theme URLs and long descriptions
 const NIX_MULTILINE_START = "''";
-const ESCAPED_DOUBLE_QUOTE = "'''"; // '' inside string becomes ''' to escape it
-const DOLLAR_PREFIX = "''$"; // $ in multiline string becomes ''$ to escape it
-const ESCAPED_NEWLINE = "''\\\n"; // \n in multiline string becomes ''\n to escape it
+const ESCAPED_DOUBLE_QUOTE = "'''"; // Treat literal '' inside the body as text, not the closing delimiter
+const DOLLAR_PREFIX = "''$"; // Stop `${}` sequences embedded in docs from kicking off interpolation
+const ESCAPED_NEWLINE = "''\\\n"; // Preserve explicit "\n" strings (plenty of Equicord descriptions use them for emphasis)
 
 const SINGLE_QUOTE_CHAR = "'";
 const SPACE_CHAR = ' ';
 
-// Regex patterns for multiline string escaping
+// Regex helpers used to scrub troublesome characters from multiline bodies
 const DOUBLE_QUOTE_PATTERN = /''/g;
 const DOLLAR_PATTERN = /\$/g;
 const ESCAPED_NEWLINE_PATTERN = /\\\n/g;
-const SINGLE_QUOTE_AT_END_PATTERN = /\s'$/; // Whitespace followed by single quote at end
+const SINGLE_QUOTE_AT_END_PATTERN = /\s'$/; // Detect a trailing `'` so we can pad it; Nix refuses bare quotes at EOF
 
 /**
  * Escapes special characters in Nix multiline strings (''...'').
@@ -77,15 +77,15 @@ const SINGLE_QUOTE_AT_END_PATTERN = /\s'$/; // Whitespace followed by single quo
  */
 export function escapeNixString(str: string): string {
   let escaped = str;
-  // Escape '' delimiter by doubling one quote: '' -> '''
+  // Copy literal `''` into `'''` so the delimiter keeps behaving like plain text
   escaped = escaped.replace(DOUBLE_QUOTE_PATTERN, ESCAPED_DOUBLE_QUOTE);
-  // Escape $ to prevent interpolation: $ -> ''$
+  // `$` is an interpolation trigger even in multiline strings, so fence it off.
   escaped = escaped.replace(DOLLAR_PATTERN, DOLLAR_PREFIX);
-  // Escape escaped newlines: \n -> ''\n
+  // Turn `\n` into `''\n` so literal newline markers survive round-tripping
   escaped = escaped.replace(ESCAPED_NEWLINE_PATTERN, ESCAPED_NEWLINE);
 
-  // Nix parser requirement: cannot end with bare single quote
-  // Add space if ending with ' but not '' or whitespace+'
+  // Nix refuses to parse a multiline string that ends with a naked `'`;
+  // append a space unless it's already padded or part of the closing `''`
   if (
     escaped.endsWith(SINGLE_QUOTE_CHAR) &&
     !escaped.endsWith(NIX_MULTILINE_START) &&
@@ -101,12 +101,12 @@ export function toCamelCase(str: string): string {
   return camelCase(str);
 }
 
-// Regex patterns for identifier sanitization
-const PARENTHESES_PATTERN = /\s*\([^)]*\)\s*/g; // Remove text in parentheses: "name (restart)" -> "name"
-const INVALID_CHARS_PATTERN = /[^A-Za-z0-9_'-]/g; // Replace invalid chars with underscore
-const LEADING_TRAILING_UNDERSCORES_PATTERN = /^_+|_+$/g; // Remove leading/trailing underscores
-const MULTIPLE_UNDERSCORES_PATTERN = /_+/g; // Collapse multiple underscores into one
-const VALID_IDENTIFIER_START_PATTERN = /^[A-Za-z_]/; // Must start with letter or underscore
+// Patterns used to turn human-friendly setting names into camelCase identifiers for mkOption attr paths
+const PARENTHESES_PATTERN = /\s*\([^)]*\)\s*/g; // Drop reminders like " (restart required)"—they belong in descriptions, not identifiers
+const INVALID_CHARS_PATTERN = /[^A-Za-z0-9_'-]/g; // Anything else (em dashes, emojis) becomes `_`
+const LEADING_TRAILING_UNDERSCORES_PATTERN = /^_+|_+$/g; // Clean up edges after replacement
+const MULTIPLE_UNDERSCORES_PATTERN = /_+/g; // Collapse spammy `_` runs into a single underscore
+const VALID_IDENTIFIER_START_PATTERN = /^[A-Za-z_]/; // Nix insists identifiers start with alpha/underscore, so we check now
 
 const LEADING_UNDERSCORE_PREFIX = '_';
 
@@ -125,14 +125,14 @@ const LEADING_UNDERSCORE_PREFIX = '_';
  */
 export function sanitizeNixIdentifier(str: string): string {
   let sanitized = str
-    .replace(PARENTHESES_PATTERN, '') // Remove parenthetical content
-    .replace(INVALID_CHARS_PATTERN, '_') // Replace invalid chars with underscore
-    .replace(LEADING_TRAILING_UNDERSCORES_PATTERN, '') // Trim underscores from edges
-    .replace(MULTIPLE_UNDERSCORES_PATTERN, '_'); // Collapse consecutive underscores
+    .replace(PARENTHESES_PATTERN, '') // Drop "(restart)" noise so identifiers stay short
+    .replace(INVALID_CHARS_PATTERN, '_') // Swap anything odd for underscores
+    .replace(LEADING_TRAILING_UNDERSCORES_PATTERN, '') // Avoid accidental leading/trailing underscores
+    .replace(MULTIPLE_UNDERSCORES_PATTERN, '_'); // Leave at most one underscore at a time
 
   sanitized = toCamelCase(sanitized);
 
-  // Ensure identifier starts with letter or underscore (Nix requirement)
+  // If the cleaned identifier still starts with a digit (common for `24hClock`), prefix `_`
   if (isEmpty(sanitized) || !VALID_IDENTIFIER_START_PATTERN.test(sanitized)) {
     sanitized = LEADING_UNDERSCORE_PREFIX + sanitized;
   }

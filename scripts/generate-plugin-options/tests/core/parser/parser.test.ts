@@ -1,8 +1,8 @@
-import { describe, test, expect, beforeAll, afterAll } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fse from 'fs-extra';
-import { pipe, keys } from 'remeda';
+import { keys, map, pipe } from 'remeda';
 import { match, P } from 'ts-pattern';
 import { Maybe } from 'true-myth';
 import { parsePlugins, categorizePlugins } from '../../../src/core/parser/index.js';
@@ -10,121 +10,136 @@ import type { ParsedPluginsResult } from '../../../src/shared/types.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const FIXTURES_ROOT = join(__dirname, '..', '..', 'fixtures');
+const VENCORD_FIXTURE = join(FIXTURES_ROOT, 'vencord');
+const EQUICORD_FIXTURE = join(FIXTURES_ROOT, 'equicord');
+
+async function createTsConfig(
+  tempDir: string,
+  options?: {
+    baseUrl?: string;
+    include?: string[];
+  }
+): Promise<void> {
+  const config: any = {
+    compilerOptions: {
+      target: 'ES2022',
+      module: 'ESNext',
+      jsx: 'react',
+      allowJs: true,
+      skipLibCheck: true,
+    },
+  };
+
+  match(options?.baseUrl)
+    .with(P.string, (baseUrl) => {
+      config.compilerOptions.baseUrl = baseUrl;
+    })
+    .otherwise(() => {
+      // No baseUrl
+    });
+
+  match(options?.include)
+    .with(P.array(P.string), (include) => {
+      config.include = include;
+    })
+    .otherwise(() => {
+      // No include
+    });
+
+  await fse.writeFile(join(tempDir, 'tsconfig.json'), JSON.stringify(config));
+}
+
+async function createPluginFile(
+  pluginDir: string,
+  filename: string,
+  content: string
+): Promise<void> {
+  await fse.ensureDir(pluginDir);
+  await fse.writeFile(join(pluginDir, filename), content);
+}
+
+async function createPlugin(
+  tempDir: string,
+  pluginName: string,
+  config: {
+    indexContent: string;
+    settingsContent?: string;
+    settingsFilename?: string;
+    additionalFiles?: Array<{ path: string; content: string }>;
+  }
+): Promise<string> {
+  const pluginsDir = join(tempDir, 'src', 'plugins');
+  const pluginDir = join(pluginsDir, pluginName);
+
+  await fse.ensureDir(pluginDir);
+  await createPluginFile(pluginDir, 'index.ts', config.indexContent);
+
+  if (config.settingsContent) {
+    const settingsFilename = config.settingsFilename || 'settings.ts';
+    await createPluginFile(pluginDir, settingsFilename, config.settingsContent);
+  }
+
+  if (config.additionalFiles) {
+    for (const file of config.additionalFiles) {
+      const fileDir = dirname(join(pluginDir, file.path));
+      await fse.ensureDir(fileDir);
+      await fse.writeFile(join(pluginDir, file.path), file.content);
+    }
+  }
+
+  return pluginDir;
+}
 
 describe('parsePlugins()', () => {
-  let tempDir: string;
-  let pluginsDir: string;
-  let equicordPluginsDir: string;
-
-  beforeAll(async () => {
-    tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    pluginsDir = join(tempDir, 'src', 'plugins');
-    equicordPluginsDir = join(tempDir, 'src', 'equicordplugins');
-
-    // Create directories
-    await fse.ensureDir(pluginsDir);
-    await fse.ensureDir(equicordPluginsDir);
-
-    // Create a sample plugin
-    const pluginDir = join(pluginsDir, 'test-plugin');
-    await fse.ensureDir(pluginDir);
-    await fse.writeFile(
-      join(pluginDir, 'index.ts'),
-      `export function definePlugin(definition: { name: string; description: string }) {
-  return definition;
-}
-
-export function definePluginSettings(settings: Record<string, unknown>) {
-  return settings;
-}
-
-export const plugin = definePlugin({
-  name: "Test Plugin",
-  description: "A test plugin",
-});
-
-export const settings = definePluginSettings({
-  enable: {
-    type: "BOOLEAN",
-    description: "Enable the plugin",
-    default: true,
-  },
-  message: {
-    type: "STRING",
-    description: "Message to display",
-    default: "Hello World",
-  },
-});`
-    );
-
-    // Create tsconfig.json
-    await fse.writeFile(
-      join(tempDir, 'tsconfig.json'),
-      JSON.stringify({
-        compilerOptions: {
-          target: 'ES2022',
-          module: 'ESNext',
-          jsx: 'react',
-          allowJs: true,
-          skipLibCheck: true,
-        },
-      })
-    );
-  });
-
   test('parses shiki-like themeNames.map enums with default', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const apiDir = join(pluginsDir, 'shiki', 'api');
-    const pluginDir = join(pluginsDir, 'shiki');
     try {
+      const pluginsDir = join(tempDir, 'src', 'plugins');
+      const apiDir = join(pluginsDir, 'shiki', 'api');
+      const pluginDir = join(pluginsDir, 'shiki');
+
       await fse.ensureDir(apiDir);
       await fse.ensureDir(pluginDir);
+
       await fse.writeFile(
         join(apiDir, 'themes.ts'),
         `export const themes: Record<string, string> = {
-  DarkPlus: "https://darkplus",
-  LightPlus: "https://lightplus",
-  Moon: "https://moon"
-};
-export const themeNames = Object.keys(themes);`
+          DarkPlus: "https://darkplus",
+          LightPlus: "https://lightplus",
+          Moon: "https://moon"
+        };
+        export const themeNames = Object.keys(themes);`
       );
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
+
+      await createPluginFile(
+        pluginDir,
+        'settings.ts',
         `import { definePluginSettings, OptionType } from "@utils/types";
-import { themes, themeNames } from "./api/themes";
-export default definePluginSettings({
-  theme: {
-    type: OptionType.SELECT,
-    description: "Theme",
-    options: themeNames.map(name => ({
-      label: name,
-      value: themes[name],
-      default: themes[name] === themes.DarkPlus
-    }))
-  }
-});`
+         import { themes, themeNames } from "./api/themes";
+         export default definePluginSettings({
+           theme: {
+             type: OptionType.SELECT,
+             description: "Theme",
+             options: themeNames.map(name => ({
+               label: name,
+               value: themes[name],
+               default: themes[name] === themes.DarkPlus
+             }))
+           }
+         });`
       );
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
+
+      await createPluginFile(
+        pluginDir,
+        'index.ts',
         `import definePlugin from "@utils/types";
-import settings from "./settings";
-export default definePlugin({ name: "ShikiDesktop", description: "Shiki", settings });`
+         import settings from "./settings";
+         export default definePlugin({ name: "ShikiDesktop", description: "Shiki", settings });`
       );
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-            baseUrl: './src',
-          },
-          include: ['src'],
-        })
-      );
+
+      await createTsConfig(tempDir, { baseUrl: './src', include: ['src'] });
+
       const result = await parsePlugins(tempDir);
       const plugin =
         result.vencordPlugins['ShikiDesktop'] ?? result.equicordPlugins['ShikiDesktop'];
@@ -137,40 +152,26 @@ export default definePlugin({ name: "ShikiDesktop", description: "Shiki", settin
       await fse.remove(tempDir);
     }
   });
+
   test('parses method-style COMPONENT -> attrs {}', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'methodComponent');
     try {
-      await fse.ensureDir(pluginDir);
-      await fse.writeFile(
-        join(pluginDir, 'settings.tsx'),
-        `import { definePluginSettings, OptionType } from "@utils/types";
-export default definePluginSettings({
-  hotkey: {
-    type: OptionType.COMPONENT,
-    component() { return null; }
-  }
-});`
-      );
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
-export default definePlugin({ name: "MethodComponent", description: "", settings });`
-      );
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createPlugin(tempDir, 'methodComponent', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "MethodComponent", description: "", settings });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        export default definePluginSettings({
+          hotkey: {
+            type: OptionType.COMPONENT,
+            component() { return null; }
+          }
+        });`,
+        settingsFilename: 'settings.tsx',
+      });
+
+      await createTsConfig(tempDir);
+
       const result = await parsePlugins(tempDir);
       const plugin =
         result.vencordPlugins['MethodComponent'] ?? result.equicordPlugins['MethodComponent'];
@@ -183,39 +184,23 @@ export default definePlugin({ name: "MethodComponent", description: "", settings
 
   test('parses BigInt default on int end-to-end', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'bigIntInt');
     try {
-      await fse.ensureDir(pluginDir);
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings, OptionType } from "@utils/types";
-export default definePluginSettings({
-  emojiId: {
-    type: OptionType.STRING,
-    description: "id",
-    default: 1026532993923293184n
-  }
-});`
-      );
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
-export default definePlugin({ name: "BigIntInt", description: "", settings });`
-      );
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createPlugin(tempDir, 'bigIntInt', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "BigIntInt", description: "", settings });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        export default definePluginSettings({
+          emojiId: {
+            type: OptionType.STRING,
+            description: "id",
+            default: 1026532993923293184n
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
+
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['BigIntInt'] ?? result.equicordPlugins['BigIntInt'];
       const emojiId = plugin?.settings.emojiId as any;
@@ -228,39 +213,23 @@ export default definePlugin({ name: "BigIntInt", description: "", settings });`
 
   test('parses float default formatting when integer source given', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'floatFormat');
     try {
-      await fse.ensureDir(pluginDir);
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings, OptionType } from "@utils/types";
-export default definePluginSettings({
-  pitch: {
-    type: OptionType.SLIDER,
-    description: "Pitch",
-    default: 1
-  }
-});`
-      );
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
-export default definePlugin({ name: "FloatFormat", description: "", settings });`
-      );
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createPlugin(tempDir, 'floatFormat', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "FloatFormat", description: "", settings });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        export default definePluginSettings({
+          pitch: {
+            type: OptionType.SLIDER,
+            description: "Pitch",
+            default: 1
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
+
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['FloatFormat'] ?? result.equicordPlugins['FloatFormat'];
       const pitch = plugin?.settings.pitch as any;
@@ -274,43 +243,27 @@ export default definePlugin({ name: "FloatFormat", description: "", settings });
 
   test('parses SELECT with spread arrays and default', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'selectSpread');
     try {
-      await fse.ensureDir(pluginDir);
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings, OptionType } from "@utils/types";
-const valueOperation = [
-  { label: "First", value: 0 },
-  { label: "Second", value: 1, default: true }
-] as const;
-export default definePluginSettings({
-  op: {
-    type: OptionType.SELECT,
-    description: "Operation",
-    options: [ ...valueOperation, { label: "Third", value: 2 } ]
-  }
-});`
-      );
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
-export default definePlugin({ name: "SelectSpread", description: "", settings });`
-      );
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createPlugin(tempDir, 'selectSpread', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "SelectSpread", description: "", settings });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        const valueOperation = [
+          { label: "First", value: 0 },
+          { label: "Second", value: 1, default: true }
+        ] as const;
+        export default definePluginSettings({
+          op: {
+            type: OptionType.SELECT,
+            description: "Operation",
+            options: [ ...valueOperation, { label: "Third", value: 2 } ]
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
+
       const result = await parsePlugins(tempDir);
       const plugin =
         result.vencordPlugins['SelectSpread'] ?? result.equicordPlugins['SelectSpread'];
@@ -325,35 +278,19 @@ export default definePlugin({ name: "SelectSpread", description: "", settings })
 
   test('parses STRING without default -> nullOr str null', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'stringNull');
     try {
-      await fse.ensureDir(pluginDir);
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings, OptionType } from "@utils/types";
-export default definePluginSettings({
-  country: { type: OptionType.STRING, description: "Country" }
-});`
-      );
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
-export default definePlugin({ name: "StringNull", description: "", settings });`
-      );
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createPlugin(tempDir, 'stringNull', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "StringNull", description: "", settings });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        export default definePluginSettings({
+          country: { type: OptionType.STRING, description: "Country" }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
+
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['StringNull'] ?? result.equicordPlugins['StringNull'];
       const country = plugin?.settings.country as any;
@@ -366,38 +303,22 @@ export default definePlugin({ name: "StringNull", description: "", settings });`
 
   test('parses list defaults via identifier (strings vs objects)', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'listDefaults');
     try {
-      await fse.ensureDir(pluginDir);
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings, OptionType } from "@utils/types";
-const STRS = [] as string[];
-const OBJS = [{ a: 1 }] as const;
-export default definePluginSettings({
-  reasons: { type: OptionType.COMPONENT, description: "Reasons", default: STRS },
-  list: { type: OptionType.CUSTOM, description: "List", default: OBJS }
-});`
-      );
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
-export default definePlugin({ name: "ListDefaults", description: "", settings });`
-      );
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createPlugin(tempDir, 'listDefaults', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "ListDefaults", description: "", settings });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        const STRS = [] as string[];
+        const OBJS = [{ a: 1 }] as const;
+        export default definePluginSettings({
+          reasons: { type: OptionType.COMPONENT, description: "Reasons", default: STRS },
+          list: { type: OptionType.CUSTOM, description: "List", default: OBJS }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
+
       const result = await parsePlugins(tempDir);
       const plugin =
         result.vencordPlugins['ListDefaults'] ?? result.equicordPlugins['ListDefaults'];
@@ -412,14 +333,11 @@ export default definePlugin({ name: "ListDefaults", description: "", settings })
       await fse.remove(tempDir);
     }
   });
+
   test('parses plugin using external enum file within temp project', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'externalEnum');
-    const typesDir = join(tempDir, 'src', 'discord-types');
-
     try {
-      await fse.ensureDir(pluginDir);
+      const typesDir = join(tempDir, 'src', 'discord-types');
       await fse.ensureDir(typesDir);
 
       await fse.writeFile(
@@ -427,48 +345,30 @@ export default definePlugin({ name: "ListDefaults", description: "", settings })
         `export const ActivityType = { Playing: 0, Streaming: 1, Listening: 2 } as const;`
       );
 
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings, OptionType } from "@utils/types";
-import { ActivityType } from "../discord-types/enums";
-export default definePluginSettings({
-  mode: {
-    type: OptionType.SELECT,
-    description: "Mode",
-    options: [
-      { label: "Playing", value: ActivityType.Playing, default: true },
-      { label: "Streaming", value: ActivityType.Streaming },
-      { label: "Listening", value: ActivityType.Listening }
-    ]
-  }
-});`
-      );
+      await createPlugin(tempDir, 'externalEnum', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({
+          name: "ExternalEnum",
+          description: "Uses external enum",
+          settings
+        });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        import { ActivityType } from "../discord-types/enums";
+        export default definePluginSettings({
+          mode: {
+            type: OptionType.SELECT,
+            description: "Mode",
+            options: [
+              { label: "Playing", value: ActivityType.Playing, default: true },
+              { label: "Streaming", value: ActivityType.Streaming },
+              { label: "Listening", value: ActivityType.Listening }
+            ]
+          }
+        });`,
+      });
 
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
-export default definePlugin({
-  name: "ExternalEnum",
-  description: "Uses external enum",
-  settings
-});`
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-            baseUrl: './src',
-          },
-          include: ['src'],
-        })
-      );
+      await createTsConfig(tempDir, { baseUrl: './src', include: ['src'] });
 
       const result = await parsePlugins(tempDir);
       const plugin =
@@ -482,17 +382,20 @@ export default definePlugin({
       await fse.remove(tempDir);
     }
   });
+
   test('parses plugin with SELECT enum using property access and default', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'appleMusic');
-
     try {
-      await fse.ensureDir(pluginDir);
+      await createPlugin(tempDir, 'appleMusic', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
 
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings, OptionType } from "@utils/types";
+        export default definePlugin({
+          name: "AppleMusic",
+          description: "Test",
+          settings
+        });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
         const Methods = { Random: 0, Constant: 1 } as const;
         export default definePluginSettings({
           method: {
@@ -503,33 +406,10 @@ export default definePlugin({
               { label: "Constant", value: Methods.Constant }
             ]
           }
-        });`
-      );
+        });`,
+      });
 
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
-
-export default definePlugin({
-    name: "AppleMusic",
-    description: "Test",
-    settings
-});`
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['AppleMusic'] ?? result.equicordPlugins['AppleMusic'];
@@ -544,81 +424,113 @@ export default definePlugin({
       await fse.remove(tempDir);
     }
   });
-  afterAll(async () => {
-    if (tempDir) {
+
+  test('parses vencord plugins', async () => {
+    const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      await createPlugin(tempDir, 'test-plugin', {
+        indexContent: `export function definePlugin(definition: { name: string; description: string }) {
+          return definition;
+        }
+
+        export function definePluginSettings(settings: Record<string, unknown>) {
+          return settings;
+        }
+
+        export const plugin = definePlugin({
+          name: "Test Plugin",
+          description: "A test plugin",
+        });
+
+        export const settings = definePluginSettings({
+          enable: {
+            type: "BOOLEAN",
+            description: "Enable the plugin",
+            default: true,
+          },
+          message: {
+            type: "STRING",
+            description: "Message to display",
+            default: "Hello World",
+          },
+        });`,
+      });
+
+      await createTsConfig(tempDir);
+
+      const result = await parsePlugins(tempDir);
+      expect(result.vencordPlugins).toBeDefined();
+      expect(Object.keys(result.vencordPlugins).length).toBeGreaterThan(0);
+    } finally {
       await fse.remove(tempDir);
     }
   });
 
-  test('parses vencord plugins', async () => {
-    const result = await parsePlugins(tempDir);
-    expect(result.vencordPlugins).toBeDefined();
-    expect(Object.keys(result.vencordPlugins).length).toBeGreaterThan(0);
-  });
-
   test('parses equicord plugins', async () => {
-    // Create equicord plugin
-    const equicordPluginDir = join(equicordPluginsDir, 'equicord-plugin');
-    await fse.ensureDir(equicordPluginDir);
-    await fse.writeFile(
-      join(equicordPluginDir, 'index.ts'),
-      `export function definePlugin(definition: { name: string; description: string }) {
-  return definition;
-}
+    const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      const equicordPluginsDir = join(tempDir, 'src', 'equicordplugins');
+      const equicordPluginDir = join(equicordPluginsDir, 'equicord-plugin');
+      await fse.ensureDir(equicordPluginDir);
 
-export function definePluginSettings(settings: Record<string, unknown>) {
-  return settings;
-}
+      await createPluginFile(
+        equicordPluginDir,
+        'index.ts',
+        `export function definePlugin(definition: { name: string; description: string }) {
+          return definition;
+        }
 
-export const plugin = definePlugin({
-  name: "Equicord Plugin",
-  description: "An Equicord plugin",
-});
+        export function definePluginSettings(settings: Record<string, unknown>) {
+          return settings;
+        }
 
-export const settings = definePluginSettings({
-  enabled: {
-    type: "BOOLEAN",
-    description: "Enable",
-    default: false,
-  },
-});`
-    );
+        export const plugin = definePlugin({
+          name: "Equicord Plugin",
+          description: "An Equicord plugin",
+        });
 
-    const result = await parsePlugins(tempDir);
-    expect(result.equicordPlugins).toBeDefined();
-    expect(Object.keys(result.equicordPlugins).length).toBeGreaterThan(0);
+        export const settings = definePluginSettings({
+          enabled: {
+            type: "BOOLEAN",
+            description: "Enable",
+            default: false,
+          },
+        });`
+      );
+
+      await createTsConfig(tempDir);
+
+      const result = await parsePlugins(tempDir);
+      expect(result.equicordPlugins).toBeDefined();
+      expect(Object.keys(result.equicordPlugins).length).toBeGreaterThan(0);
+    } finally {
+      await fse.remove(tempDir);
+    }
   });
 
   test('handles missing directories', async () => {
-    const emptyDir = await fse.mkdtemp(join(__dirname, 'test-empty-'));
-    await expect(parsePlugins(emptyDir)).rejects.toThrow();
-    await fse.remove(emptyDir);
+    const emptyDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      await expect(parsePlugins(emptyDir)).rejects.toThrow();
+    } finally {
+      await fse.remove(emptyDir);
+    }
   });
 
   test('returns empty objects when no plugins', async () => {
-    const emptyDir = await fse.mkdtemp(join(__dirname, 'test-empty-'));
-    const emptyPluginsDir = join(emptyDir, 'src', 'plugins');
-    await fse.ensureDir(emptyPluginsDir);
+    const emptyDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      const emptyPluginsDir = join(emptyDir, 'src', 'plugins');
+      await fse.ensureDir(emptyPluginsDir);
 
-    // Create tsconfig.json
-    await fse.writeFile(
-      join(emptyDir, 'tsconfig.json'),
-      JSON.stringify({
-        compilerOptions: {
-          target: 'ES2022',
-          module: 'ESNext',
-          jsx: 'react',
-          allowJs: true,
-          skipLibCheck: true,
-        },
-      })
-    );
+      await createTsConfig(emptyDir);
 
-    const result = await parsePlugins(emptyDir);
-    expect(result.vencordPlugins).toEqual({});
-    expect(result.equicordPlugins).toEqual({});
-
-    await fse.remove(emptyDir);
+      const result = await parsePlugins(emptyDir);
+      expect(result.vencordPlugins).toEqual({});
+      expect(result.equicordPlugins).toEqual({});
+    } finally {
+      await fse.remove(emptyDir);
+    }
   });
 });
 
@@ -628,47 +540,31 @@ export const settings = definePluginSettings({
 describe('parseSinglePlugin()', () => {
   test('parses valid plugin', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'valid-plugin');
-
     try {
-      await fse.ensureDir(pluginDir);
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `export function definePlugin(definition: { name: string; description: string }) {
-  return definition;
-}
+      await createPlugin(tempDir, 'valid-plugin', {
+        indexContent: `export function definePlugin(definition: { name: string; description: string }) {
+          return definition;
+        }
 
-export function definePluginSettings(settings: Record<string, unknown>) {
-  return settings;
-}
+        export function definePluginSettings(settings: Record<string, unknown>) {
+          return settings;
+        }
 
-export const plugin = definePlugin({
-  name: "Valid Plugin",
-  description: "A valid test plugin",
-});
+        export const plugin = definePlugin({
+          name: "Valid Plugin",
+          description: "A valid test plugin",
+        });
 
-export const settings = definePluginSettings({
-  setting: {
-    type: "STRING",
-    description: "A setting",
-    default: "value",
-  },
-});`
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
+        export const settings = definePluginSettings({
+          setting: {
+            type: "STRING",
+            description: "A setting",
+            default: "value",
           },
-        })
-      );
+        });`,
+      });
+
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['Valid Plugin'];
@@ -681,25 +577,13 @@ export const settings = definePluginSettings({
 
   test('handles missing source file', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'missing-plugin');
-
     try {
+      const pluginsDir = join(tempDir, 'src', 'plugins');
+      const pluginDir = join(pluginsDir, 'missing-plugin');
       await fse.ensureDir(pluginDir);
       // Don't create index.ts
 
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       // Plugin without source file should not be in results
@@ -711,38 +595,21 @@ export const settings = definePluginSettings({
 
   test('handles missing plugin name', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'no-name-plugin');
-
     try {
-      await fse.ensureDir(pluginDir);
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `export function definePluginSettings(settings: Record<string, unknown>) {
-  return settings;
-}
+      await createPlugin(tempDir, 'no-name-plugin', {
+        indexContent: `export function definePluginSettings(settings: Record<string, unknown>) {
+          return settings;
+        }
 
-export const settings = definePluginSettings({
-  setting: {
-    type: "STRING",
-    description: "A setting",
-  },
-});`
-        // Note: no definePlugin call
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
+        export const settings = definePluginSettings({
+          setting: {
+            type: "STRING",
+            description: "A setting",
           },
-        })
-      );
+        });`,
+      });
+
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       // Plugin name should be derived from directory name
@@ -755,35 +622,19 @@ export const settings = definePluginSettings({
 
   test('handles plugin without settings', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'no-settings-plugin');
-
     try {
-      await fse.ensureDir(pluginDir);
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `export function definePlugin(definition: { name: string; description: string }) {
-  return definition;
-}
+      await createPlugin(tempDir, 'no-settings-plugin', {
+        indexContent: `export function definePlugin(definition: { name: string; description: string }) {
+          return definition;
+        }
 
-export const plugin = definePlugin({
-  name: "No Settings Plugin",
-  description: "A plugin without settings",
-});`
-      );
+        export const plugin = definePlugin({
+          name: "No Settings Plugin",
+          description: "A plugin without settings",
+        });`,
+      });
 
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['No Settings Plugin'];
@@ -796,55 +647,32 @@ export const plugin = definePlugin({
 
   test('handles settings in separate settings.ts file', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'test-plugin-settings-file');
-
     try {
-      await fse.ensureDir(pluginDir);
+      await createPlugin(tempDir, 'test-plugin-settings-file', {
+        indexContent: `import definePlugin from "@utils/types";
 
-      // Create index.ts with definePlugin but no settings
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
+        export default definePlugin({
+          name: "Test Plugin With Separate Settings",
+          description: "Plugin with settings in separate file",
+        });`,
+        settingsContent: `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
 
-export default definePlugin({
-  name: "Test Plugin With Separate Settings",
-  description: "Plugin with settings in separate file",
-});`
-      );
-
-      // Create settings.ts with definePluginSettings
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings } from "@api/Settings";
-import { OptionType } from "@utils/types";
-
-export default definePluginSettings({
-  enabled: {
-    type: OptionType.BOOLEAN,
-    description: "Enable the feature",
-    default: true,
-  },
-  message: {
-    type: OptionType.STRING,
-    description: "Message to display",
-    default: "Hello from settings file",
-  },
-});`
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
+        export default definePluginSettings({
+          enabled: {
+            type: OptionType.BOOLEAN,
+            description: "Enable the feature",
+            default: true,
           },
-        })
-      );
+          message: {
+            type: OptionType.STRING,
+            description: "Message to display",
+            default: "Hello from settings file",
+          },
+        });`,
+      });
+
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['Test Plugin With Separate Settings'];
@@ -862,40 +690,29 @@ export default definePluginSettings({
 describe('parsePluginsFromDirectory()', () => {
   test('parses multiple plugins', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-
     try {
+      const pluginsDir = join(tempDir, 'src', 'plugins');
       await fse.ensureDir(pluginsDir);
 
       // Create multiple plugins
       for (let i = 1; i <= 3; i++) {
         const pluginDir = join(pluginsDir, `plugin-${i}`);
         await fse.ensureDir(pluginDir);
-        await fse.writeFile(
-          join(pluginDir, 'index.ts'),
+        await createPluginFile(
+          pluginDir,
+          'index.ts',
           `export function definePlugin(definition: { name: string; description: string }) {
-  return definition;
-}
+            return definition;
+          }
 
-export const plugin = definePlugin({
-  name: "Plugin ${i}",
-  description: "Plugin ${i} description",
-});`
+          export const plugin = definePlugin({
+            name: "Plugin ${i}",
+            description: "Plugin ${i} description",
+          });`
         );
       }
 
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       expect(Object.keys(result.vencordPlugins).length).toBe(3);
@@ -909,24 +726,12 @@ export const plugin = definePlugin({
 
   test('handles empty directory', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-
     try {
+      const pluginsDir = join(tempDir, 'src', 'plugins');
       await fse.ensureDir(pluginsDir);
       // Don't create any plugins
 
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       expect(Object.keys(result.vencordPlugins).length).toBe(0);
@@ -937,43 +742,28 @@ export const plugin = definePlugin({
 
   test('filters out failed plugins', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-
     try {
+      const pluginsDir = join(tempDir, 'src', 'plugins');
       await fse.ensureDir(pluginsDir);
 
       // Valid plugin
-      const validPluginDir = join(pluginsDir, 'valid-plugin');
-      await fse.ensureDir(validPluginDir);
-      await fse.writeFile(
-        join(validPluginDir, 'index.ts'),
-        `export function definePlugin(definition: { name: string; description: string }) {
-  return definition;
-}
+      await createPlugin(tempDir, 'valid-plugin', {
+        indexContent: `export function definePlugin(definition: { name: string; description: string }) {
+          return definition;
+        }
 
-export const plugin = definePlugin({
-  name: "Valid Plugin",
-  description: "Valid",
-});`
-      );
+        export const plugin = definePlugin({
+          name: "Valid Plugin",
+          description: "Valid",
+        });`,
+      });
 
       // Invalid plugin (no source file)
       const invalidPluginDir = join(pluginsDir, 'invalid-plugin');
       await fse.ensureDir(invalidPluginDir);
       // Don't create index.ts
 
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       expect(Object.keys(result.vencordPlugins).length).toBe(1);
@@ -988,77 +778,54 @@ export const plugin = definePlugin({
 describe('Integration Tests with Real Plugin Structure', () => {
   test('parses relationshipNotifier plugin structure (real-world example)', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'relationshipNotifier');
-
     try {
-      await fse.ensureDir(pluginDir);
+      await createPlugin(tempDir, 'relationshipNotifier', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
 
-      // Create index.ts matching real relationshipNotifier pattern
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
+        export default definePlugin({
+          name: "RelationshipNotifier",
+          description: "Notifies you when a friend, group chat, or server removes you.",
+          settings
+        });`,
+        settingsContent: `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
 
-export default definePlugin({
-    name: "RelationshipNotifier",
-    description: "Notifies you when a friend, group chat, or server removes you.",
-    settings
-});`
-      );
-
-      // Create settings.ts matching real relationshipNotifier pattern
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings } from "@api/Settings";
-import { OptionType } from "@utils/types";
-
-export default definePluginSettings({
-    notices: {
-        type: OptionType.BOOLEAN,
-        description: "Also show a notice at the top of your screen when removed (use this if you don't want to miss any notifications).",
-        default: false
-    },
-    offlineRemovals: {
-        type: OptionType.BOOLEAN,
-        description: "Notify you when starting discord if you were removed while offline.",
-        default: true
-    },
-    friends: {
-        type: OptionType.BOOLEAN,
-        description: "Notify when a friend removes you",
-        default: true
-    },
-    friendRequestCancels: {
-        type: OptionType.BOOLEAN,
-        description: "Notify when a friend request is cancelled",
-        default: true
-    },
-    servers: {
-        type: OptionType.BOOLEAN,
-        description: "Notify when removed from a server",
-        default: true
-    },
-    groups: {
-        type: OptionType.BOOLEAN,
-        description: "Notify when removed from a group chat",
-        default: true
-    }
-});`
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
+        export default definePluginSettings({
+          notices: {
+            type: OptionType.BOOLEAN,
+            description: "Also show a notice at the top of your screen when removed (use this if you don't want to miss any notifications).",
+            default: false
           },
-        })
-      );
+          offlineRemovals: {
+            type: OptionType.BOOLEAN,
+            description: "Notify you when starting discord if you were removed while offline.",
+            default: true
+          },
+          friends: {
+            type: OptionType.BOOLEAN,
+            description: "Notify when a friend removes you",
+            default: true
+          },
+          friendRequestCancels: {
+            type: OptionType.BOOLEAN,
+            description: "Notify when a friend request is cancelled",
+            default: true
+          },
+          servers: {
+            type: OptionType.BOOLEAN,
+            description: "Notify when removed from a server",
+            default: true
+          },
+          groups: {
+            type: OptionType.BOOLEAN,
+            description: "Notify when removed from a group chat",
+            default: true
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['RelationshipNotifier'];
@@ -1094,53 +861,32 @@ export default definePluginSettings({
 
   test('infers bool type when select options contain booleans', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'userPfpSelect');
-
     try {
-      await fse.ensureDir(pluginDir);
+      await createPlugin(tempDir, 'userPfpSelect', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
 
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
+        export default definePlugin({
+          name: "UserPfpSelect",
+          description: "Allows you to use an animated avatar without Nitro",
+          settings
+        });`,
+        settingsContent: `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
 
-export default definePlugin({
-    name: "UserPfpSelect",
-    description: "Allows you to use an animated avatar without Nitro",
-    settings
-});`
-      );
+        export default definePluginSettings({
+          preferNitro: {
+            type: OptionType.SELECT,
+            description: "Which avatar to prefer when both are available",
+            options: [
+              { label: "UserPFP", value: false },
+              { label: "Nitro", value: true, default: true }
+            ]
+          }
+        });`,
+      });
 
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings } from "@api/Settings";
-import { OptionType } from "@utils/types";
-
-export default definePluginSettings({
-    preferNitro: {
-        type: OptionType.SELECT,
-        description: "Which avatar to prefer when both are available",
-        options: [
-            { label: "UserPFP", value: false },
-            { label: "Nitro", value: true, default: true }
-        ]
-    }
-});`
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['UserPfpSelect'];
@@ -1158,67 +904,45 @@ export default definePluginSettings({
 
   test('parses vcNarrator plugin structure with computed defaults', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'vcNarrator');
-
     try {
-      await fse.ensureDir(pluginDir);
+      await createPlugin(tempDir, 'vcNarrator', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
 
-      // Create settings.ts with computed defaults (like real vcNarrator)
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings } from "@api/Settings";
-import { OptionType } from "@utils/types";
+        export default definePlugin({
+          name: "VcNarrator",
+          description: "Narrates voice channel events",
+          settings
+        });`,
+        settingsContent: `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
 
-export const getDefaultVoice = () => window.speechSynthesis?.getVoices().find(v => v.default);
+        export const getDefaultVoice = () => window.speechSynthesis?.getVoices().find(v => v.default);
 
-export default definePluginSettings({
-    voice: {
-        type: OptionType.COMPONENT,
-        component: () => null,
-        get default() {
-            return getDefaultVoice()?.voiceURI;
-        }
-    },
-    volume: {
-        type: OptionType.SLIDER,
-        description: "Narrator Volume",
-        default: 1,
-        markers: [0, 0.25, 0.5, 0.75, 1],
-        stickToMarkers: false
-    },
-    joinMessage: {
-        type: OptionType.STRING,
-        description: "Join Message",
-        default: "{{USER}} joined"
-    }
-});`
-      );
-
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
-
-export default definePlugin({
-    name: "VcNarrator",
-    description: "Narrates voice channel events",
-    settings
-});`
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
+        export default definePluginSettings({
+          voice: {
+            type: OptionType.COMPONENT,
+            component: () => null,
+            get default() {
+              return getDefaultVoice()?.voiceURI;
+            }
           },
-        })
-      );
+          volume: {
+            type: OptionType.SLIDER,
+            description: "Narrator Volume",
+            default: 1,
+            markers: [0, 0.25, 0.5, 0.75, 1],
+            stickToMarkers: false
+          },
+          joinMessage: {
+            type: OptionType.STRING,
+            description: "Join Message",
+            default: "{{USER}} joined"
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['VcNarrator'];
@@ -1242,65 +966,44 @@ export default definePlugin({
 
   test('parses consoleJanitor plugin with COMPONENT type and object default', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'consoleJanitor');
-
     try {
-      await fse.ensureDir(pluginDir);
+      await createPlugin(tempDir, 'consoleJanitor', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
 
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
+        export default definePlugin({
+          name: "ConsoleJanitor",
+          description: "Cleans up console logs",
+          settings
+        });`,
+        settingsContent: `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
 
-export default definePlugin({
-    name: "ConsoleJanitor",
-    description: "Cleans up console logs",
-    settings
-});`
-      );
+        function defineDefault<T>(value: T): T { return value; }
 
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings } from "@api/Settings";
-import { OptionType } from "@utils/types";
-
-function defineDefault<T>(value: T): T { return value; }
-
-export default definePluginSettings({
-    disableLoggers: {
-        type: OptionType.BOOLEAN,
-        description: "Disables Discords loggers",
-        default: false,
-        restartNeeded: true
-    },
-    allowLevel: {
-        type: OptionType.COMPONENT,
-        component: () => null,
-        default: defineDefault({
-            error: true,
-            warn: false,
-            trace: false,
-            log: false,
-            info: false,
-            debug: false
-        })
-    }
-});`
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
+        export default definePluginSettings({
+          disableLoggers: {
+            type: OptionType.BOOLEAN,
+            description: "Disables Discords loggers",
+            default: false,
+            restartNeeded: true
           },
-        })
-      );
+          allowLevel: {
+            type: OptionType.COMPONENT,
+            component: () => null,
+            default: defineDefault({
+              error: true,
+              warn: false,
+              trace: false,
+              log: false,
+              info: false,
+              debug: false
+            })
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['ConsoleJanitor'];
@@ -1313,11 +1016,17 @@ export default definePluginSettings({
       expect(allowLevel.type).toBeDefined();
       // Default object should be extracted
       expect(allowLevel.default).toBeDefined();
-      if (typeof allowLevel.default === 'object' && allowLevel.default !== null) {
-        const defaultObj = allowLevel.default as Record<string, unknown>;
-        expect(defaultObj.error).toBe(true);
-        expect(defaultObj.warn).toBe(false);
-      }
+      match(allowLevel.default)
+        .when(
+          (val): val is Record<string, unknown> => typeof val === 'object' && val !== null,
+          (defaultObj) => {
+            expect(defaultObj.error).toBe(true);
+            expect(defaultObj.warn).toBe(false);
+          }
+        )
+        .otherwise(() => {
+          // Not an object, skip
+        });
     } finally {
       await fse.remove(tempDir);
     }
@@ -1325,69 +1034,48 @@ export default definePluginSettings({
 
   test('parses plugin with 3+ levels of nested settings', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'deeplyNested');
-
     try {
-      await fse.ensureDir(pluginDir);
+      await createPlugin(tempDir, 'deeplyNested', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
 
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
+        export default definePlugin({
+          name: "DeeplyNested",
+          description: "Plugin with deeply nested settings",
+          settings
+        });`,
+        settingsContent: `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
 
-export default definePlugin({
-    name: "DeeplyNested",
-    description: "Plugin with deeply nested settings",
-    settings
-});`
-      );
-
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings } from "@api/Settings";
-import { OptionType } from "@utils/types";
-
-export default definePluginSettings({
-    config: {
-        deep: {
-            deeper: {
+        export default definePluginSettings({
+          config: {
+            deep: {
+              deeper: {
                 type: OptionType.NUMBER,
                 description: "Deeply nested setting",
                 default: 42
-            },
-            another: {
+              },
+              another: {
                 type: OptionType.STRING,
                 description: "Another deep setting",
                 default: "test"
+              }
+            },
+            other: {
+              type: OptionType.BOOLEAN,
+              description: "Other setting",
+              default: true
             }
-        },
-        other: {
-            type: OptionType.BOOLEAN,
-            description: "Other setting",
-            default: true
-        }
-    },
-    topLevel: {
-        type: OptionType.STRING,
-        description: "Top level setting",
-        default: "value"
-    }
-});`
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
           },
-        })
-      );
+          topLevel: {
+            type: OptionType.STRING,
+            description: "Top level setting",
+            default: "value"
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['DeeplyNested'];
@@ -1428,37 +1116,20 @@ export default definePluginSettings({
 describe('Error Handling', () => {
   test('handles malformed TypeScript syntax gracefully', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'malformed');
-
     try {
-      await fse.ensureDir(pluginDir);
+      await createPlugin(tempDir, 'malformed', {
+        indexContent: `export default definePlugin({
+          name: "Malformed",
+          // Missing closing brace
+          settings: {
+            setting: {
+              type: OptionType.STRING
+            }
+          }
+        `,
+      });
 
-      // Create a file with syntax errors
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `export default definePlugin({
-    name: "Malformed",
-    // Missing closing brace
-    settings: {
-        setting: {
-            type: OptionType.STRING
-        }
-    `
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createTsConfig(tempDir);
 
       // Should not throw - ts-morph is tolerant and will parse what it can
       const result = await parsePlugins(tempDir);
@@ -1475,66 +1146,45 @@ describe('Error Handling', () => {
 
   test('handles very deep nesting (4+ levels)', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'deepNesting');
-
     try {
-      await fse.ensureDir(pluginDir);
+      await createPlugin(tempDir, 'deepNesting', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
 
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
-import settings from "./settings";
+        export default definePlugin({
+          name: "DeepNesting",
+          description: "Plugin with very deep nesting",
+          settings
+        });`,
+        settingsContent: `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
 
-export default definePlugin({
-    name: "DeepNesting",
-    description: "Plugin with very deep nesting",
-    settings
-});`
-      );
-
-      await fse.writeFile(
-        join(pluginDir, 'settings.ts'),
-        `import { definePluginSettings } from "@api/Settings";
-import { OptionType } from "@utils/types";
-
-export default definePluginSettings({
-    level1: {
-        level2: {
-            level3: {
+        export default definePluginSettings({
+          level1: {
+            level2: {
+              level3: {
                 level4: {
-                    type: OptionType.STRING,
-                    description: "4 levels deep",
-                    default: "deep-value"
+                  type: OptionType.STRING,
+                  description: "4 levels deep",
+                  default: "deep-value"
                 },
                 level4b: {
-                    type: OptionType.NUMBER,
-                    description: "Another 4 levels deep",
-                    default: 999
+                  type: OptionType.NUMBER,
+                  description: "Another 4 levels deep",
+                  default: 999
                 }
-            },
-            level3b: {
+              },
+              level3b: {
                 type: OptionType.BOOLEAN,
                 description: "3 levels deep",
                 default: true
+              }
             }
-        }
-    }
-});`
-      );
+          }
+        });`,
+      });
 
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createTsConfig(tempDir);
 
       const result = await parsePlugins(tempDir);
       const plugin = result.vencordPlugins['DeepNesting'];
@@ -1576,35 +1226,18 @@ export default definePluginSettings({
 
   test('handles plugins with invalid settings structure', async () => {
     const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
-    const pluginsDir = join(tempDir, 'src', 'plugins');
-    const pluginDir = join(pluginsDir, 'invalid');
-
     try {
-      await fse.ensureDir(pluginDir);
+      await createPlugin(tempDir, 'invalid', {
+        indexContent: `import definePlugin from "@utils/types";
 
-      await fse.writeFile(
-        join(pluginDir, 'index.ts'),
-        `import definePlugin from "@utils/types";
+        export default definePlugin({
+          name: "Invalid",
+          description: "Plugin with invalid settings"
+          // Missing settings property
+        });`,
+      });
 
-export default definePlugin({
-    name: "Invalid",
-    description: "Plugin with invalid settings"
-    // Missing settings property
-});`
-      );
-
-      await fse.writeFile(
-        join(tempDir, 'tsconfig.json'),
-        JSON.stringify({
-          compilerOptions: {
-            target: 'ES2022',
-            module: 'ESNext',
-            jsx: 'react',
-            allowJs: true,
-            skipLibCheck: true,
-          },
-        })
-      );
+      await createTsConfig(tempDir);
 
       // Should handle gracefully - plugin should be parsed but with empty settings
       const result = await parsePlugins(tempDir);
@@ -1613,6 +1246,535 @@ export default definePlugin({
       expect(plugin?.name).toBe('Invalid');
       // Settings should be empty since none were found
       expect(Object.keys(plugin?.settings || {})).toHaveLength(0);
+    } finally {
+      await fse.remove(tempDir);
+    }
+  });
+});
+
+describe('Options Without Explicit Type', () => {
+  test('handles greetStickerPicker.greetMode pattern (infers SELECT from options array)', async () => {
+    const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      await createPlugin(tempDir, 'greetStickerPicker', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "GreetStickerPicker", description: "Test", settings });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        export default definePluginSettings({
+          greetMode: {
+            description: "Greet mode",
+            options: [
+              { label: "Option 1", value: "value1" },
+              { label: "Option 2", value: "value2", default: true }
+            ]
+            // Note: no explicit type: OptionType.SELECT
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
+
+      const result = await parsePlugins(tempDir);
+      const plugin =
+        result.vencordPlugins['GreetStickerPicker'] ?? result.equicordPlugins['GreetStickerPicker'];
+      expect(plugin).toBeDefined();
+
+      const greetMode = plugin?.settings.greetMode as any;
+      expect(greetMode).toBeDefined();
+      // Should infer SELECT/enum type from options array
+      expect(greetMode.type).toBe('types.enum');
+      // Should extract enum values from options
+      expect(greetMode.enumValues).toEqual(['value1', 'value2']);
+      // Should extract default from options array
+      expect(greetMode.default).toBe('value2');
+    } finally {
+      await fse.remove(tempDir);
+    }
+  });
+
+  test('infers enum type from options array with numeric enum values', async () => {
+    const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      await createPlugin(tempDir, 'numericOptions', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "NumericOptions", description: "Test", settings });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        const Modes = { First: 0, Second: 1 } as const;
+        export default definePluginSettings({
+          mode: {
+            description: "Mode",
+            options: [
+              { label: "First", value: Modes.First },
+              { label: "Second", value: Modes.Second, default: true }
+            ]
+            // No explicit type
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir);
+
+      const result = await parsePlugins(tempDir);
+      const plugin =
+        result.vencordPlugins['NumericOptions'] ?? result.equicordPlugins['NumericOptions'];
+      expect(plugin).toBeDefined();
+
+      const mode = plugin?.settings.mode as any;
+      expect(mode).toBeDefined();
+      // Should infer enum type
+      expect(mode.type).toBe('types.enum');
+      // Should extract numeric enum values
+      expect(Array.isArray(mode.enumValues)).toBe(true);
+      expect(mode.enumValues.length).toBeGreaterThan(0);
+    } finally {
+      await fse.remove(tempDir);
+    }
+  });
+});
+
+describe('Path Mapping Resolution', () => {
+  /**
+   * Tests that the TypeChecker can resolve symbols using path mappings from tsconfig.
+   *
+   * Note: We manually add files to the project (for performance), but the TypeChecker
+   * uses path mappings from tsconfig to resolve symbols. This test verifies that
+   * path mappings are actually being used for symbol resolution, not just that
+   * files exist at the right paths.
+   */
+  test('resolves @api/Settings import with baseUrl and paths', async () => {
+    const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      // Create tsconfig with baseUrl and paths
+      const tsconfig = {
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'ESNext',
+          jsx: 'react',
+          allowJs: true,
+          skipLibCheck: true,
+          baseUrl: './src',
+          paths: {
+            '@api/*': ['api/*'],
+            '@utils/*': ['utils/*'],
+          },
+        },
+      };
+      await fse.writeFile(join(tempDir, 'tsconfig.json'), JSON.stringify(tsconfig));
+
+      // Create actual files at those paths
+      const apiDir = join(tempDir, 'src', 'api');
+      const utilsDir = join(tempDir, 'src', 'utils');
+      await fse.ensureDir(apiDir);
+      await fse.ensureDir(utilsDir);
+
+      await fse.writeFile(
+        join(apiDir, 'Settings.ts'),
+        `export function definePluginSettings(settings: Record<string, unknown>) {
+          return settings;
+        }`
+      );
+
+      await fse.writeFile(
+        join(utilsDir, 'types.ts'),
+        `export const enum OptionType {
+          STRING = 0,
+          NUMBER = 1,
+          BOOLEAN = 3,
+          SELECT = 4
+        }`
+      );
+
+      // Create plugin that uses path-mapped imports
+      await createPlugin(tempDir, 'pathMapped', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "PathMapped", description: "Test", settings });`,
+        settingsContent: `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
+        export default definePluginSettings({
+          enabled: {
+            type: OptionType.BOOLEAN,
+            description: "Enable",
+            default: true
+          }
+        });`,
+      });
+
+      const result = await parsePlugins(tempDir);
+      const plugin = result.vencordPlugins['PathMapped'] ?? result.equicordPlugins['PathMapped'];
+      expect(plugin).toBeDefined();
+      expect(plugin?.settings.enabled).toBeDefined();
+      const enabled = plugin?.settings.enabled as any;
+      // Verify that the TypeChecker resolved OptionType.BOOLEAN using path mappings
+      // If path mappings weren't working, this would fail or be inferred incorrectly
+      expect(enabled.type).toBe('types.bool');
+      expect(enabled.default).toBe(true);
+    } finally {
+      await fse.remove(tempDir);
+    }
+  });
+
+  test('resolves relative imports alongside path-mapped imports', async () => {
+    const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      const tsconfig = {
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'ESNext',
+          jsx: 'react',
+          allowJs: true,
+          skipLibCheck: true,
+          baseUrl: './src',
+          paths: {
+            '@api/*': ['api/*'],
+            '@utils/*': ['utils/*'],
+          },
+        },
+      };
+      await fse.writeFile(join(tempDir, 'tsconfig.json'), JSON.stringify(tsconfig));
+
+      const apiDir = join(tempDir, 'src', 'api');
+      const utilsDir = join(tempDir, 'src', 'utils');
+      await fse.ensureDir(apiDir);
+      await fse.ensureDir(utilsDir);
+
+      await fse.writeFile(
+        join(apiDir, 'Settings.ts'),
+        `export function definePluginSettings(settings: Record<string, unknown>) {
+          return settings;
+        }`
+      );
+
+      await fse.writeFile(
+        join(utilsDir, 'types.ts'),
+        `export const enum OptionType {
+          STRING = 0,
+          BOOLEAN = 3
+        }`
+      );
+
+      // Create plugin with both path-mapped and relative imports
+      const pluginDir = join(tempDir, 'src', 'plugins', 'mixedImports');
+      await fse.ensureDir(pluginDir);
+
+      await fse.writeFile(
+        join(pluginDir, 'localTypes.ts'),
+        `export const LocalOption = { Value: "test" } as const;`
+      );
+
+      await fse.writeFile(
+        join(pluginDir, 'settings.ts'),
+        `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
+        import { LocalOption } from "./localTypes";
+        export default definePluginSettings({
+          setting: {
+            type: OptionType.STRING,
+            description: "Setting",
+            default: LocalOption.Value
+          }
+        });`
+      );
+
+      await fse.writeFile(
+        join(pluginDir, 'index.ts'),
+        `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "MixedImports", description: "Test", settings });`
+      );
+
+      const result = await parsePlugins(tempDir);
+      const plugin =
+        result.vencordPlugins['MixedImports'] ?? result.equicordPlugins['MixedImports'];
+      expect(plugin).toBeDefined();
+      expect(plugin?.settings.setting).toBeDefined();
+    } finally {
+      await fse.remove(tempDir);
+    }
+  });
+});
+
+describe('Discord Enum Resolution', () => {
+  test('resolves Discord enums from packages/discord-types/enums structure', async () => {
+    const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      // Create enum file structure matching real layout
+      const enumsDir = join(tempDir, 'packages', 'discord-types', 'enums');
+      await fse.ensureDir(enumsDir);
+
+      await fse.writeFile(
+        join(enumsDir, 'ActivityType.ts'),
+        `export const ActivityType = {
+          Playing: 0,
+          Streaming: 1,
+          Listening: 2,
+          Watching: 3
+        } as const;`
+      );
+
+      await fse.writeFile(
+        join(enumsDir, 'ChannelType.ts'),
+        `export const ChannelType = {
+          GUILD_TEXT: 0,
+          DM: 1,
+          GUILD_VOICE: 2
+        } as const;`
+      );
+
+      await createPlugin(tempDir, 'discordEnums', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "DiscordEnums", description: "Test", settings });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        import { ActivityType } from "../../../packages/discord-types/enums/ActivityType";
+        import { ChannelType } from "../../../packages/discord-types/enums/ChannelType";
+        export default definePluginSettings({
+          activity: {
+            type: OptionType.SELECT,
+            description: "Activity",
+            options: [
+              { label: "Playing", value: ActivityType.Playing, default: true },
+              { label: "Streaming", value: ActivityType.Streaming },
+              { label: "Listening", value: ActivityType.Listening }
+            ]
+          },
+          channel: {
+            type: OptionType.SELECT,
+            description: "Channel",
+            options: [
+              { label: "Text", value: ChannelType.GUILD_TEXT },
+              { label: "DM", value: ChannelType.DM },
+              { label: "Voice", value: ChannelType.GUILD_VOICE }
+            ]
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir, { baseUrl: './src', include: ['src', 'packages'] });
+
+      const result = await parsePlugins(tempDir);
+      const plugin =
+        result.vencordPlugins['DiscordEnums'] ?? result.equicordPlugins['DiscordEnums'];
+      expect(plugin).toBeDefined();
+
+      const activity = plugin?.settings.activity as any;
+      expect(activity).toBeDefined();
+      expect(activity.type).toBe('types.enum');
+      expect(Array.isArray(activity.enumValues)).toBe(true);
+      expect(activity.enumValues).toContain(0); // ActivityType.Playing
+      expect(activity.enumValues).toContain(1); // ActivityType.Streaming
+      expect(activity.default).toBe(0); // ActivityType.Playing
+
+      const channel = plugin?.settings.channel as any;
+      expect(channel).toBeDefined();
+      expect(channel.type).toBe('types.enum');
+      expect(Array.isArray(channel.enumValues)).toBe(true);
+      expect(channel.enumValues).toContain(0); // ChannelType.GUILD_TEXT
+      expect(channel.enumValues).toContain(1); // ChannelType.DM
+    } finally {
+      await fse.remove(tempDir);
+    }
+  });
+
+  test('resolves Discord enums with property access pattern', async () => {
+    const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      const enumsDir = join(tempDir, 'packages', 'discord-types', 'enums');
+      await fse.ensureDir(enumsDir);
+
+      await fse.writeFile(
+        join(enumsDir, 'StatusType.ts'),
+        `export const StatusType = {
+          ONLINE: "online",
+          IDLE: "idle",
+          DND: "dnd",
+          OFFLINE: "offline"
+        } as const;`
+      );
+
+      await createPlugin(tempDir, 'statusEnum', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "StatusEnum", description: "Test", settings });`,
+        settingsContent: `import { definePluginSettings, OptionType } from "@utils/types";
+        import { StatusType } from "../../../packages/discord-types/enums/StatusType";
+        export default definePluginSettings({
+          status: {
+            type: OptionType.SELECT,
+            description: "Status",
+            options: [
+              { label: "Online", value: StatusType.ONLINE },
+              { label: "Idle", value: StatusType.IDLE },
+              { label: "DND", value: StatusType.DND, default: true },
+              { label: "Offline", value: StatusType.OFFLINE }
+            ]
+          }
+        });`,
+      });
+
+      await createTsConfig(tempDir, { baseUrl: './src', include: ['src', 'packages'] });
+
+      const result = await parsePlugins(tempDir);
+      const plugin = result.vencordPlugins['StatusEnum'] ?? result.equicordPlugins['StatusEnum'];
+      expect(plugin).toBeDefined();
+
+      const status = plugin?.settings.status as any;
+      expect(status).toBeDefined();
+      expect(status.type).toBe('types.enum');
+      expect(status.enumValues).toContain('online');
+      expect(status.enumValues).toContain('idle');
+      expect(status.enumValues).toContain('dnd');
+      expect(status.enumValues).toContain('offline');
+      expect(status.default).toBe('dnd');
+    } finally {
+      await fse.remove(tempDir);
+    }
+  });
+});
+
+describe('Complex TypeScript Config', () => {
+  /**
+   * Tests that the parser can handle complex tsconfig setups.
+   * The TypeChecker uses compiler options from tsconfig even with
+   * skipFileDependencyResolution: true.
+   */
+  test('handles tsconfig with composite project references', async () => {
+    const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      const tsconfig = {
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'ESNext',
+          jsx: 'react',
+          allowJs: true,
+          skipLibCheck: true,
+          baseUrl: './src',
+          paths: {
+            '@api/*': ['api/*'],
+            '@utils/*': ['utils/*'],
+          },
+          composite: true,
+          declaration: true,
+        },
+        include: ['src/**/*'],
+        exclude: ['node_modules'],
+      };
+      await fse.writeFile(join(tempDir, 'tsconfig.json'), JSON.stringify(tsconfig));
+
+      const apiDir = join(tempDir, 'src', 'api');
+      const utilsDir = join(tempDir, 'src', 'utils');
+      await fse.ensureDir(apiDir);
+      await fse.ensureDir(utilsDir);
+
+      await fse.writeFile(
+        join(apiDir, 'Settings.ts'),
+        `export function definePluginSettings(settings: Record<string, unknown>) {
+          return settings;
+        }`
+      );
+
+      await fse.writeFile(
+        join(utilsDir, 'types.ts'),
+        `export const enum OptionType {
+          STRING = 0,
+          BOOLEAN = 3
+        }`
+      );
+
+      await createPlugin(tempDir, 'compositeConfig', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "CompositeConfig", description: "Test", settings });`,
+        settingsContent: `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
+        export default definePluginSettings({
+          test: {
+            type: OptionType.STRING,
+            description: "Test",
+            default: "value"
+          }
+        });`,
+      });
+
+      const result = await parsePlugins(tempDir);
+      const plugin =
+        result.vencordPlugins['CompositeConfig'] ?? result.equicordPlugins['CompositeConfig'];
+      expect(plugin).toBeDefined();
+      expect(plugin?.settings.test).toBeDefined();
+    } finally {
+      await fse.remove(tempDir);
+    }
+  });
+
+  test('handles tsconfig with strict mode and additional compiler options', async () => {
+    const tempDir = await fse.mkdtemp(join(__dirname, 'test-'));
+    try {
+      const tsconfig = {
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'ESNext',
+          jsx: 'react',
+          allowJs: true,
+          skipLibCheck: true,
+          baseUrl: './src',
+          paths: {
+            '@api/*': ['api/*'],
+            '@utils/*': ['utils/*'],
+          },
+          strict: true,
+          noImplicitAny: true,
+          strictNullChecks: true,
+          esModuleInterop: true,
+          resolveJsonModule: true,
+        },
+      };
+      await fse.writeFile(join(tempDir, 'tsconfig.json'), JSON.stringify(tsconfig));
+
+      const apiDir = join(tempDir, 'src', 'api');
+      const utilsDir = join(tempDir, 'src', 'utils');
+      await fse.ensureDir(apiDir);
+      await fse.ensureDir(utilsDir);
+
+      await fse.writeFile(
+        join(apiDir, 'Settings.ts'),
+        `export function definePluginSettings(settings: Record<string, unknown>) {
+          return settings;
+        }`
+      );
+
+      await fse.writeFile(
+        join(utilsDir, 'types.ts'),
+        `export const enum OptionType {
+          STRING = 0,
+          BOOLEAN = 3
+        }`
+      );
+
+      await createPlugin(tempDir, 'strictConfig', {
+        indexContent: `import definePlugin from "@utils/types";
+        import settings from "./settings";
+        export default definePlugin({ name: "StrictConfig", description: "Test", settings });`,
+        settingsContent: `import { definePluginSettings } from "@api/Settings";
+        import { OptionType } from "@utils/types";
+        export default definePluginSettings({
+          enabled: {
+            type: OptionType.BOOLEAN,
+            description: "Enabled",
+            default: true
+          }
+        });`,
+      });
+
+      const result = await parsePlugins(tempDir);
+      const plugin =
+        result.vencordPlugins['StrictConfig'] ?? result.equicordPlugins['StrictConfig'];
+      expect(plugin).toBeDefined();
+      expect(plugin?.settings.enabled).toBeDefined();
+      const enabled = plugin?.settings.enabled as any;
+      expect(enabled.type).toBe('types.bool');
+      expect(enabled.default).toBe(true);
     } finally {
       await fse.remove(tempDir);
     }
@@ -1721,7 +1883,7 @@ describe('categorizePlugins()', () => {
     const result = categorizePlugins(vencordResult);
     const emptyCategorySizes = pipe(
       [result.generic, result.vencordOnly, result.equicordOnly] as const,
-      (records) => records.map((record) => keys(record).length)
+      map((record) => keys(record).length)
     );
 
     emptyCategorySizes.forEach((count) => expect(count).toBe(0));
@@ -1779,5 +1941,51 @@ describe('categorizePlugins()', () => {
       .otherwise(() => {
         throw new Error('Shared Plugin should prefer the Equicord definition');
       });
+  });
+});
+
+describe('parsePlugins() fixture integration', () => {
+  test('parses synthetic Vencord fixture tree', async () => {
+    const result = await parsePlugins(VENCORD_FIXTURE);
+
+    expect(result.equicordPlugins).toEqual({});
+    expect(Object.keys(result.vencordPlugins)).toEqual(
+      expect.arrayContaining(['Shared Plugin', 'Vencord Only'])
+    );
+
+    const shared = result.vencordPlugins['Shared Plugin'] as any;
+    expect(shared.description).toBe('Vencord shared description');
+    expect(shared.settings.message.default).toBe('vencord');
+
+    const only = result.vencordPlugins['Vencord Only'] as any;
+    expect(only.settings.enabled.default).toBe(true);
+  });
+
+  test('parses synthetic Equicord fixture tree', async () => {
+    const result = await parsePlugins(EQUICORD_FIXTURE);
+
+    expect(Object.keys(result.vencordPlugins)).toEqual(expect.arrayContaining(['Shared Plugin']));
+    expect(Object.keys(result.equicordPlugins)).toEqual(expect.arrayContaining(['Equicord Only']));
+
+    const shared = result.vencordPlugins['Shared Plugin'] as any;
+    expect(shared.description).toBe('Equicord shared description');
+    expect(shared.settings.message.default).toBe('equicord');
+
+    const equicordOnly = result.equicordPlugins['Equicord Only'] as any;
+    expect(equicordOnly.settings.theme.default).toBe('night');
+  });
+
+  test('categorizePlugins prefers Equicord definitions when both repos present', async () => {
+    const vencordResult = await parsePlugins(VENCORD_FIXTURE);
+    const equicordResult = await parsePlugins(EQUICORD_FIXTURE);
+
+    const categorized = categorizePlugins(vencordResult, equicordResult);
+    expect(categorized.generic['Shared Plugin']).toBeDefined();
+    expect((categorized.generic['Shared Plugin'] as any).description).toBe(
+      'Equicord shared description'
+    );
+
+    expect(categorized.vencordOnly['Vencord Only']).toBeDefined();
+    expect(categorized.equicordOnly['Equicord Only']).toBeDefined();
   });
 });

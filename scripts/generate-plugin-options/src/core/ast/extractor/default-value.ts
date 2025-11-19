@@ -6,17 +6,19 @@ import type {
   StringLiteral,
   AsExpression,
   CallExpression,
+  NoSubstitutionTemplateLiteral,
+  NumericLiteral,
 } from 'ts-morph';
 import { SyntaxKind } from 'ts-morph';
 import { Result } from 'true-myth';
 import { pipe, reduce } from 'remeda';
-import { match } from 'ts-pattern';
+import { match, P } from 'ts-pattern';
 import { asKind, iteratePropertyAssignments } from '../utils/node-helpers.js';
 import {
   unwrapNode,
   resolveIdentifierInitializerNode,
   resolveCallExpressionReturn,
-} from './node-utils.js';
+} from './node-utils/index.js';
 import { getPropertyInitializer } from '../utils/node-helpers.js';
 import { DEFAULT_PROPERTY, GET_FUNCTION_NAME, PARSE_INT_RADIX } from './constants.js';
 import { resolveEnumLikeValue } from './enum-resolver.js';
@@ -24,11 +26,10 @@ import type { DefaultValueResult } from './types.js';
 import { createExtractionError, ExtractionErrorKind } from './types.js';
 
 /**
- * Extracts the default value from a plugin setting object literal.
- *
- * Handles literals, identifiers, function calls, and getters. Function calls return
- * shape-only defaults ([] or {}), not computed values. Getters return undefined since
- * they can't be statically evaluated.
+ * Read whatever sits under `default:` in a setting definition and convert it into something the
+ * Nix generator can digest. We only evaluate what can be proven statically: literals, enums, and
+ * simple helpers. Calls/getters that execute real code devolve into "{}" or "[]", because running
+ * user code during generation would be a security nightmare.
  */
 export function extractDefaultValue(
   node: ObjectLiteralExpression,
@@ -49,7 +50,8 @@ export function extractDefaultValue(
       ).unwrapOr(undefined);
       if (!expr) return Result.ok(undefined);
       const expression = expr.getExpression();
-      // Getters like `get default() { ... }` can't be statically evaluated
+      // `get default()` accessors are runtime-only; we treat them as “no default” to mirror
+      // how both upstream projects fall back to nullable strings in that situation
       const ident = asKind<Identifier>(expression, SyntaxKind.Identifier).unwrapOr(undefined);
       if (ident && ident.getText() === GET_FUNCTION_NAME) {
         return Result.ok(undefined);
@@ -67,11 +69,12 @@ export function extractDefaultValue(
       return str ? Result.ok(str.getLiteralValue()) : Result.ok(undefined);
     })
     .with(SyntaxKind.TemplateExpression, () => {
-      // Template literals like `value ${var}` can't be statically evaluated
+      // Template strings that splice in identifiers depend on runtime data (see Equicord status
+      // plugins). Bail out so we don't accidentally emit half-resolved junk
       return Result.ok(undefined);
     })
     .with(SyntaxKind.NoSubstitutionTemplateLiteral, () => {
-      const template = asKind<import('ts-morph').NoSubstitutionTemplateLiteral>(
+      const template = asKind<NoSubstitutionTemplateLiteral>(
         unwrappedInitializer,
         SyntaxKind.NoSubstitutionTemplateLiteral
       ).unwrapOr(undefined);
@@ -91,17 +94,14 @@ export function extractDefaultValue(
           return str ? Result.ok(str.getLiteralValue()) : Result.ok(undefined);
         })
         .with(SyntaxKind.NoSubstitutionTemplateLiteral, () => {
-          const template = asKind<import('ts-morph').NoSubstitutionTemplateLiteral>(
+          const template = asKind<NoSubstitutionTemplateLiteral>(
             expr,
             SyntaxKind.NoSubstitutionTemplateLiteral
           ).unwrapOr(undefined);
           return template ? Result.ok(template.getLiteralValue()) : Result.ok(undefined);
         })
         .with(SyntaxKind.NumericLiteral, () => {
-          const num = asKind<import('ts-morph').NumericLiteral>(
-            expr,
-            SyntaxKind.NumericLiteral
-          ).unwrapOr(undefined);
+          const num = asKind<NumericLiteral>(expr, SyntaxKind.NumericLiteral).unwrapOr(undefined);
           if (!num) return Result.ok(undefined);
           const text = num.getLiteralValue();
           const parsed = parseFloat(text.toString());
@@ -114,16 +114,15 @@ export function extractDefaultValue(
         .otherwise(() => Result.ok(undefined));
     })
     .with(SyntaxKind.BigIntLiteral, () => {
-      // BigInt literals like 123n get converted to strings since Nix doesn't have native BigInt
+      // Convert `123n` into `"123"`; Nix has no native bigint but still needs the raw text
       const raw = unwrappedInitializer.getText();
       const trimmed = raw.toLowerCase().endsWith('n') ? raw.slice(0, -1) : raw;
       return Result.ok(trimmed);
     })
     .with(SyntaxKind.NumericLiteral, () => {
-      const num = asKind<import('ts-morph').NumericLiteral>(
-        unwrappedInitializer,
-        SyntaxKind.NumericLiteral
-      ).unwrapOr(undefined);
+      const num = asKind<NumericLiteral>(unwrappedInitializer, SyntaxKind.NumericLiteral).unwrapOr(
+        undefined
+      );
       if (!num) return Result.ok(undefined);
       const text = num.getLiteralValue();
       const parsed = parseFloat(text.toString());
@@ -161,7 +160,7 @@ export function extractDefaultValue(
                 return str ? Result.ok(str.getLiteralValue()) : Result.ok(undefined);
               })
               .with(SyntaxKind.NoSubstitutionTemplateLiteral, () => {
-                const template = asKind<import('ts-morph').NoSubstitutionTemplateLiteral>(
+                const template = asKind<NoSubstitutionTemplateLiteral>(
                   unwrapped,
                   SyntaxKind.NoSubstitutionTemplateLiteral
                 ).unwrapOr(undefined);
@@ -169,10 +168,9 @@ export function extractDefaultValue(
               })
               .with(SyntaxKind.TemplateExpression, () => Result.ok(undefined))
               .with(SyntaxKind.NumericLiteral, () => {
-                const num = asKind<import('ts-morph').NumericLiteral>(
-                  unwrapped,
-                  SyntaxKind.NumericLiteral
-                ).unwrapOr(undefined);
+                const num = asKind<NumericLiteral>(unwrapped, SyntaxKind.NumericLiteral).unwrapOr(
+                  undefined
+                );
                 if (!num) return Result.ok(undefined);
                 const text = num.getLiteralValue();
                 const parsed = parseFloat(text.toString());
@@ -208,14 +206,16 @@ export function extractDefaultValue(
       ).unwrapOr(undefined);
       if (!callExpr) return Result.ok(undefined);
       const args = callExpr.getArguments();
-      // Handle function calls like defineDefault({ key: value }) - extract the object literal
-      // from the first argument and pull out its properties
+      // Helpers such as `defineDefault({ ... })` return literal objects; peel the first argument
+      // apart and reuse that shape so nested settings keep their defaults
       const firstArg = args[0];
       const objLiteral = firstArg
         ? asKind<ObjectLiteralExpression>(firstArg, SyntaxKind.ObjectLiteralExpression).unwrapOr(
             undefined
           )
         : undefined;
+
+      // Same as above—if the helper handed us an object literal, iterate its properties directly
       if (objLiteral) {
         const result = pipe(
           Array.from(iteratePropertyAssignments(objLiteral)),
@@ -227,49 +227,49 @@ export function extractDefaultValue(
                   propName.getText().replace(/['"]/g, '')
                 )
                 .otherwise(() => undefined);
-              if (!key) return result;
 
-              const propInitializer = propAssign.getInitializer();
-              if (!propInitializer) return result;
+              return match([key, propAssign.getInitializer()] as const)
+                .with([P.string, P.not(undefined)], ([k, propInitializer]) => {
+                  const value = match(propInitializer.getKind())
+                    .with(SyntaxKind.TrueKeyword, () => true)
+                    .with(SyntaxKind.FalseKeyword, () => false)
+                    .with(SyntaxKind.NumericLiteral, () => {
+                      const num = asKind<NumericLiteral>(
+                        propInitializer,
+                        SyntaxKind.NumericLiteral
+                      ).unwrapOr(undefined);
+                      if (!num) return undefined;
+                      const numValue = num.getLiteralValue();
+                      const parsed = parseFloat(numValue.toString());
+                      return Number.isInteger(parsed)
+                        ? parseInt(numValue.toString(), PARSE_INT_RADIX)
+                        : parsed;
+                    })
+                    .with(SyntaxKind.StringLiteral, () => {
+                      const str = asKind<StringLiteral>(
+                        propInitializer,
+                        SyntaxKind.StringLiteral
+                      ).unwrapOr(undefined);
+                      return str ? str.getLiteralValue() : undefined;
+                    })
+                    .with(SyntaxKind.ObjectLiteralExpression, () => ({}))
+                    .with(SyntaxKind.ArrayLiteralExpression, () => [])
+                    .otherwise(() => undefined);
 
-              const value = match(propInitializer.getKind())
-                .with(SyntaxKind.TrueKeyword, () => true)
-                .with(SyntaxKind.FalseKeyword, () => false)
-                .with(SyntaxKind.NumericLiteral, () => {
-                  const num = asKind<import('ts-morph').NumericLiteral>(
-                    propInitializer,
-                    SyntaxKind.NumericLiteral
-                  ).unwrapOr(undefined);
-                  if (!num) return undefined;
-                  const numValue = num.getLiteralValue();
-                  const parsed = parseFloat(numValue.toString());
-                  return Number.isInteger(parsed)
-                    ? parseInt(numValue.toString(), PARSE_INT_RADIX)
-                    : parsed;
+                  return match(value)
+                    .with(undefined, () => result)
+                    .otherwise((val) => ({ ...result, [k]: val }));
                 })
-                .with(SyntaxKind.StringLiteral, () => {
-                  const str = asKind<StringLiteral>(
-                    propInitializer,
-                    SyntaxKind.StringLiteral
-                  ).unwrapOr(undefined);
-                  return str ? str.getLiteralValue() : undefined;
-                })
-                .with(SyntaxKind.ObjectLiteralExpression, () => ({}))
-                .with(SyntaxKind.ArrayLiteralExpression, () => [])
-                .otherwise(() => undefined);
-
-              if (value !== undefined) {
-                result[key] = value;
-              }
-              return result;
+                .otherwise(() => result);
             },
             {} as Record<string, unknown>
           )
         );
         return Result.ok(result);
       }
-      // Fallback: try to resolve the function call to see what it returns.
-      // This works for arrow functions that return array/object literals.
+
+      // Last resort: resolve the call expression and hope it's an inline arrow that returns an
+      // object/array literal. This covers factory-style defaults used in Vendicated's RPC plugins
       const resolved = resolveCallExpressionReturn(callExpr, checker);
       return resolved
         .map((node) =>

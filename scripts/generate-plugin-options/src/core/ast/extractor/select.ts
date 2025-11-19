@@ -7,12 +7,15 @@ import type {
   AsExpression,
   Identifier,
   PropertyAccessExpression,
+  ArrowFunction,
+  SpreadElement,
 } from 'ts-morph';
 import { SyntaxKind } from 'ts-morph';
 import { Result, Maybe } from 'true-myth';
 import { pipe, find, filter, map, partition, isEmpty } from 'remeda';
 import { map as iterMap, toArray as iterToArray, some } from 'iter-tools';
 import { match } from 'ts-pattern';
+import { z } from 'zod';
 import {
   isMethodCall,
   getFirstArgumentOfKind,
@@ -25,7 +28,7 @@ import {
   unwrapNode,
   resolveIdentifierInitializerNode,
   evaluateThemesValues,
-} from './node-utils.js';
+} from './node-utils/index.js';
 import {
   OPTIONS_PROPERTY,
   VALUE_PROPERTY,
@@ -65,7 +68,11 @@ function extractOptionsFromArrayMap(arr: Node, checker: TypeChecker): SelectOpti
     map((el) => resolveEnumLikeValue(el, checker))
   );
 
-  // Use Remeda partition to separate Ok and Err results
+  // When extracting enum values from array elements, some might resolve successfully
+  // while others fail (e.g., complex expressions we can't statically evaluate)
+  // We split the results so we can still emit a partial option list if at least
+  // some values were extracted. This prevents the entire setting from disappearing
+  // when only a few enum values are problematic
   const [okResults, errResults] = pipe(
     results,
     partition((result) => result.isOk)
@@ -133,7 +140,9 @@ function extractOptionsFromObjectKeysMap(call: Node, checker: TypeChecker): Sele
   const ident = innerTarget;
   const init = resolveIdentifierInitializerNode(ident, checker);
 
-  // Handle as const pattern: const obj = { ... } as const
+  // TypeScript's "as const" assertion wraps object literals in an AsExpression node
+  // We need to unwrap it to get the actual object literal underneath
+  // Example: `const obj = { a: 1, b: 2 } as const` -> unwrap to get `{ a: 1, b: 2 }`
   const objLiteral = init.andThen((node) => {
     const asExpr = asKind<AsExpression>(node, SyntaxKind.AsExpression).unwrapOr(undefined);
     if (asExpr) {
@@ -186,14 +195,15 @@ function extractOptionsFromThemePattern(
     );
   }
 
-  // Check arrow function body for themes[param] pattern
+  // Some plugins use arrow functions in map() calls that access theme objects via
+  // bracket notation: `themes[param]`. We need to check the arrow function body
+  // to extract the actual theme identifier and evaluate its values
+  // Example: `themeNames.map(name => ({ value: themes[name] }))`
   const args = callExpr.getArguments();
   if (!isEmpty(args)) {
     const firstArg = args[0];
     const arrowFunc = firstArg
-      ? asKind<import('ts-morph').ArrowFunction>(firstArg, SyntaxKind.ArrowFunction).unwrapOr(
-          undefined
-        )
+      ? asKind<ArrowFunction>(firstArg, SyntaxKind.ArrowFunction).unwrapOr(undefined)
       : undefined;
 
     if (arrowFunc) {
@@ -201,15 +211,17 @@ function extractOptionsFromThemePattern(
       if (body) body = unwrapNode(body);
       const obj = body
         ? asKind<ObjectLiteralExpression>(body, SyntaxKind.ObjectLiteralExpression).unwrapOr(
-            undefined
-          )
+          undefined
+        )
         : undefined;
 
       if (obj) {
         const valueProp = getPropertyAssignment(obj, VALUE_PROPERTY).unwrapOr(undefined);
         if (valueProp) {
           const vinit = valueProp.getInitializer();
-          // Check for ElementAccessExpression pattern
+          // ElementAccessExpression is the AST node for bracket notation like `themes[name]`
+          // We need to extract the base object (themes) and the key (name) to evaluate
+          // the actual theme values
           if (vinit && vinit.getKind() === SyntaxKind.ElementAccessExpression) {
             const ea = vinit.asKindOrThrow(SyntaxKind.ElementAccessExpression);
             const themesExpr = ea.getExpression();
@@ -230,18 +242,22 @@ function extractOptionsFromThemePattern(
     }
   }
 
-  // Enhanced: check if the identifier itself is Object.keys(themes) or resolves to it
+  // Sometimes the identifier itself resolves to `Object.keys(themes)` rather than
+  // being used in a map() call. We check if the identifier's initializer is
+  // a direct Object.keys() call and handle it separately
   const identInit = resolveIdentifierInitializerNode(ident, checker);
   if (identInit.isJust) {
     const initNode = identInit.value;
-    // Handle direct Object.keys(themes) call
+    // Pattern: `const keys = Object.keys(themes); options: keys`
     const ic = asKind<CallExpression>(initNode, SyntaxKind.CallExpression).unwrapOr(undefined);
     if (ic) {
       const keysMethod = isMethodCall(ic, METHOD_NAME_KEYS).unwrapOr(undefined);
       if (keysMethod) {
         const arg0 = getFirstArgumentOfKind(ic, SyntaxKind.Identifier).unwrapOr(undefined);
         if (arg0) {
-          // Try to evaluate themes values from the identifier
+          // First try to evaluate theme URLs if this is a theme object
+          // This handles cases like Equicord's shikiCodeblocks plugin where themes
+          // are objects with URL values that need to be resolved
           const evaluated = evaluateThemesValues(arg0, checker);
           if (!isEmpty(evaluated))
             return Result.ok({
@@ -249,7 +265,8 @@ function extractOptionsFromThemePattern(
               labels: Object.freeze({}),
             });
 
-          // Fallback: try to extract keys from the object literal itself
+          // If theme evaluation fails, fall back to extracting object keys
+          // This works for simple objects like `const themes = { DarkPlus: "...", LightPlus: "..." }`
           const objInit = resolveIdentifierInitializerNode(arg0, checker);
           const obj = objInit
             .andThen((node) =>
@@ -272,7 +289,9 @@ function extractOptionsFromThemePattern(
       }
     }
 
-    // Handle type assertion pattern: Object.keys(themes) as (keyof typeof themes)[]
+    // TypeScript sometimes wraps Object.keys() calls in type assertions like
+    // `Object.keys(themes) as (keyof typeof themes)[]`. We need to unwrap
+    // the AsExpression to get to the actual CallExpression underneath
     const asExpr = asKind<AsExpression>(initNode, SyntaxKind.AsExpression).unwrapOr(undefined);
     if (asExpr) {
       const expr = unwrapNode(asExpr.getExpression());
@@ -289,7 +308,7 @@ function extractOptionsFromThemePattern(
                 labels: Object.freeze({}),
               });
 
-            // Fallback: extract keys
+            // If theme evaluation fails, extract keys from the object literal directly
             const objInit = resolveIdentifierInitializerNode(arg0, checker);
             const obj = objInit
               .andThen((node) =>
@@ -360,7 +379,8 @@ function extractOptionsFromObjectValuesMap(call: Node, checker: TypeChecker): Se
   const ident = innerTarget;
   const init = resolveIdentifierInitializerNode(ident, checker);
 
-  // Handle as const pattern: const obj = { ... } as const
+  // Unwrap "as const" assertions to get the underlying object literal
+  // Example: `const obj = { a: 1 } as const` -> extract `{ a: 1 }`
   const objLiteral = init.andThen((node) => {
     const asExpr = asKind<AsExpression>(node, SyntaxKind.AsExpression).unwrapOr(undefined);
     if (asExpr) {
@@ -418,9 +438,9 @@ function extractOptionsFromArrayFrom(call: Node, checker: TypeChecker): SelectOp
   const base = propAccess?.getExpression();
   const fromMethod =
     propAccess &&
-    base?.getKind() === SyntaxKind.Identifier &&
-    base.asKindOrThrow(SyntaxKind.Identifier).getText() === GLOBAL_ARRAY_NAME &&
-    propAccess.getName() === METHOD_NAME_FROM
+      base?.getKind() === SyntaxKind.Identifier &&
+      base.asKindOrThrow(SyntaxKind.Identifier).getText() === GLOBAL_ARRAY_NAME &&
+      propAccess.getName() === METHOD_NAME_FROM
       ? propAccess
       : undefined;
 
@@ -446,7 +466,8 @@ function extractOptionsFromArrayFrom(call: Node, checker: TypeChecker): SelectOp
     );
   }
 
-  // Handle Array.from(arrayLike) where arrayLike is an array literal
+  // Pattern: `Array.from([...])` where the argument is a direct array literal
+  // We can extract the elements directly without resolving identifiers
   const arr = asKind<ArrayLiteralExpression>(firstArg, SyntaxKind.ArrayLiteralExpression).unwrapOr(
     undefined
   );
@@ -466,7 +487,9 @@ function extractOptionsFromArrayFrom(call: Node, checker: TypeChecker): SelectOp
     });
   }
 
-  // Handle Array.from(identifier) where identifier resolves to an array
+  // Pattern: `Array.from(someArray)` where the argument is an identifier that
+  // resolves to an array. We need to resolve the identifier first, then extract
+  // the array elements
   const ident = asKind<Identifier>(firstArg, SyntaxKind.Identifier).unwrapOr(undefined);
   if (ident) {
     const init = resolveIdentifierInitializerNode(ident, checker);
@@ -518,12 +541,12 @@ function extractOptionsFromCallExpression(call: Node, checker: TypeChecker): Sel
     propExpr && propExpr.getName() === METHOD_NAME_FROM
       ? extractOptionsFromArrayFrom(call, checker)
       : Result.err(
-          createExtractionError(
-            ExtractionErrorKind.UnsupportedPattern,
-            'Expected PropertyAccessExpression (e.g., .map())',
-            call
-          )
-        );
+        createExtractionError(
+          ExtractionErrorKind.UnsupportedPattern,
+          'Expected PropertyAccessExpression (e.g., .map())',
+          call
+        )
+      );
 
   if (arrayFromResult.isOk) return arrayFromResult;
 
@@ -547,11 +570,13 @@ function extractOptionsFromCallExpression(call: Node, checker: TypeChecker): Sel
 
   const target = propExprForMap.getExpression();
 
-  // Handle array.map() pattern
+  // Pattern: `[...].map(...)` where we extract values from the array literal
+  // Example: `["a", "b", "c"].map(v => ({ value: v }))`
   const arrayResult = extractOptionsFromArrayMap(target, checker);
   if (arrayResult.isOk) return arrayResult;
 
-  // Handle Object.keys(obj).map() and Object.values(obj).map() patterns
+  // Patterns: `Object.keys(obj).map(...)` and `Object.values(obj).map(...)`
+  // These extract keys or values from an object and transform them into option objects
   const callExpressionResult = match(target.getKind())
     .with(SyntaxKind.CallExpression, () => {
       const keysResult = extractOptionsFromObjectKeysMap(target, checker);
@@ -580,7 +605,10 @@ function extractOptionsFromCallExpression(call: Node, checker: TypeChecker): Sel
 
   if (callExpressionResult.isOk) return callExpressionResult;
 
-  // Handle theme patterns
+  // Theme patterns are special: they often use map() with theme objects that need
+  // URL resolution (like Equicord's shikiCodeblocks plugin). This handles patterns
+  // like `themeNames.map(name => ({ value: themes[name] }))` where themes is an
+  // object with URL values
   const themeResult = extractOptionsFromThemePattern(target, call, checker);
   if (themeResult.isOk) return themeResult;
 
@@ -667,7 +695,9 @@ function extractOptionsFromArrayLiteral(
   const labels: Record<string, string> & Partial<Record<number, string>> = {} as any;
   const errors: string[] = [];
 
-  // If the array has object elements, we only extract from objects (not direct literals)
+  // Mixed arrays can have both object literals and direct literals
+  // If we see any object elements, we only extract from objects and ignore
+  // direct literals. This prevents mixing formats like `[{ value: "a" }, "b"]`
   const hasObjectElements = some(
     (el: Node) => el.getKind() === SyntaxKind.ObjectLiteralExpression,
     arr.getElements()
@@ -694,20 +724,19 @@ function extractOptionsFromArrayLiteral(
         match(resolved)
           .with({ isOk: true }, (r) => {
             enumValues.push(r.value.value);
-            if (r.value.label !== undefined) {
-              const key =
-                typeof r.value.value === 'boolean' ? String(r.value.value) : r.value.value;
-              (labels as any)[key] = r.value.label;
+            if (r.value.label !== undefined && typeof r.value.label === 'string') {
+              const BooleanSchema = z.boolean();
+              const key: string | number = BooleanSchema.safeParse(r.value.value).success
+                ? String(r.value.value)
+                : (r.value.value as string | number);
+              (labels as Record<string | number, string>)[key] = r.value.label;
             }
           })
           .with({ isOk: false }, (r) => errors.push(r.error.message))
           .exhaustive();
       })
       .with(SyntaxKind.SpreadElement, () => {
-        const spread = asKind<import('ts-morph').SpreadElement>(
-          element,
-          SyntaxKind.SpreadElement
-        ).unwrapOr(undefined);
+        const spread = asKind<SpreadElement>(element, SyntaxKind.SpreadElement).unwrapOr(undefined);
         if (!spread) return;
         const expr = spread.getExpression();
         const ident = asKind<Identifier>(expr, SyntaxKind.Identifier).unwrapOr(undefined);
@@ -720,8 +749,8 @@ function extractOptionsFromArrayLiteral(
               : undefined;
           const spreadArray = init
             ? asKind<ArrayLiteralExpression>(init, SyntaxKind.ArrayLiteralExpression).unwrapOr(
-                undefined
-              )
+              undefined
+            )
             : undefined;
           if (spreadArray) {
             pipe(
@@ -737,9 +766,11 @@ function extractOptionsFromArrayLiteral(
                 match(resolved)
                   .with({ isOk: true }, (r) => {
                     enumValues.push(r.value.value);
-                    if (r.value.label !== undefined) {
-                      const key =
-                        typeof r.value.value === 'boolean' ? String(r.value.value) : r.value.value;
+                    if (r.value.label !== undefined && typeof r.value.label === 'string') {
+                      const BooleanSchema = z.boolean();
+                      const key: string | number = BooleanSchema.safeParse(r.value.value).success
+                        ? String(r.value.value)
+                        : (r.value.value as string | number);
                       labels[key] = r.value.label;
                     }
                   })
@@ -751,7 +782,8 @@ function extractOptionsFromArrayLiteral(
         }
       })
       .otherwise(() => {
-        // No-op: element kind not handled
+        // Element types we don't handle (e.g., function calls, complex expressions)
+        // are silently skipped. They'll show up in errors if all elements fail
       });
   }
 
@@ -770,6 +802,10 @@ function extractOptionsFromArrayLiteral(
     labels: Object.freeze(labels),
   });
 }
+
+// This file contains the core SELECT option and default extraction logic
+// Some functions have been extracted to modules in the select/ subdirectory,
+// but the main exports remain here for the current implementation
 
 /**
  * Extracts the available options for a SELECT type setting.
@@ -807,26 +843,29 @@ export function extractSelectOptions(
 
   const initUnwrapped = unwrapNode(initializer);
 
-  // Try Array.from() pattern first (not a map pattern)
+  // Array.from() is a common pattern for converting array-like objects to arrays
+  // We check this first because it's distinct from map() patterns and needs
+  // different handling
   if (initUnwrapped.getKind() === SyntaxKind.CallExpression) {
     const arrayFromResult = extractOptionsFromArrayFrom(initUnwrapped, checker);
     if (arrayFromResult.isOk) return arrayFromResult;
-    // If Array.from() fails, continue to try other patterns
   }
 
-  // Try call expression patterns (map, Object.keys, etc.)
+  // If Array.from() didn't match, try other call expression patterns like
+  // map(), Object.keys().map(), Object.values().map(), etc
   if (initUnwrapped.getKind() === SyntaxKind.CallExpression) {
     const result = extractOptionsFromCallExpression(initUnwrapped, checker);
     if (result.isOk) return result;
-    // If call expression fails, gracefully fall back to empty array (old behavior)
-    // This matches the test expectation: "currently returns empty when unresolved"
+    // If we can't extract from call expressions, return empty options
+    // This prevents errors but means the setting won't have enum constraints
     return Result.ok({
       values: Object.freeze([]),
       labels: Object.freeze({}),
     });
   }
 
-  // Fall back to array literal extraction
+  // Last resort: try to extract from a plain array literal
+  // This handles simple cases like `options: ["a", "b", "c"]`
   return extractOptionsFromArrayLiteral(initUnwrapped, checker);
 }
 
@@ -859,8 +898,10 @@ function extractDefaultFromArrayMap(
                   return match(din?.getKind())
                     .with(SyntaxKind.BinaryExpression, () => {
                       if (!din) return Result.ok(undefined);
-                      // Extract default from patterns like default: n === "value"
-                      // We take the right side of the comparison as the default value
+                      // Pattern: `default: n === "value"` where the arrow function parameter
+                      // is compared to a literal. We extract the right side of the comparison
+                      // as the default value. Example: `.map(n => ({ default: n === "option1" }))`
+                      // extracts "option1" as the default
                       const bin = din.asKindOrThrow(SyntaxKind.BinaryExpression);
                       const right = bin.getRight();
                       const val = resolveEnumLikeValue(right, checker);
@@ -878,20 +919,38 @@ function extractDefaultFromArrayMap(
         .otherwise(() => Result.ok(undefined));
 
       const defaultResult = defaultFromArrowFunction;
-      if (defaultResult.isOk && defaultResult.value !== undefined) {
-        return defaultResult;
-      }
-
-      // Fallback to first array element if we can't extract from the comparison
-      const first = arrayExpr.getElements()[0];
-      if (first) {
-        const val = resolveEnumLikeValue(first, checker);
-        return match(val)
-          .with({ isOk: true }, (r) => Result.ok(r.value))
-          .with({ isOk: false }, () => Result.ok(undefined))
-          .exhaustive();
-      }
-      return Result.ok(undefined);
+      // If we successfully extracted a default from the arrow function's comparison,
+      // use it. Otherwise, fall back to the first array element as a reasonable default
+      return defaultResult.match({
+        Ok: (value) => {
+          if (value !== undefined) {
+            return Result.ok(value);
+          }
+          // If the comparison pattern didn't yield a default, use the first element
+          // This handles cases where the map function doesn't specify a default
+          const first = arrayExpr.getElements()[0];
+          if (first) {
+            const val = resolveEnumLikeValue(first, checker);
+            return match(val)
+              .with({ isOk: true }, (r) => Result.ok(r.value))
+              .with({ isOk: false }, () => Result.ok(undefined))
+              .exhaustive();
+          }
+          return Result.ok(undefined);
+        },
+        Err: () => {
+          // If extraction failed entirely, try the first element as a fallback
+          const first = arrayExpr.getElements()[0];
+          if (first) {
+            const val = resolveEnumLikeValue(first, checker);
+            return match(val)
+              .with({ isOk: true }, (r) => Result.ok(r.value))
+              .with({ isOk: false }, () => Result.ok(undefined))
+              .exhaustive();
+          }
+          return Result.ok(undefined);
+        },
+      });
     })
     .otherwise(() => Result.ok(undefined));
 }
@@ -971,8 +1030,10 @@ function extractDefaultFromObjectKeysMap(
   }
 
   const obj = init.value.asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
-  // For Object.keys(obj).map((key, index) => ({ default: index === ARRAY_FIRST_INDEX }))
-  // we return the first key as the default since index ARRAY_FIRST_INDEX means first element
+  // Pattern: `Object.keys(obj).map((key, index) => ({ default: index === 0 }))`
+  // When the map function checks if the index equals ARRAY_FIRST_INDEX (0),
+  // it means the first element should be the default. We extract the first
+  // property name from the object as the default value
   const firstProp = find(obj.getProperties(), (p) => p.getKind() === SyntaxKind.PropertyAssignment);
   if (!firstProp) {
     return Result.ok(undefined);
@@ -1001,23 +1062,30 @@ function extractDefaultFromCallExpression(call: Node, checker: TypeChecker): Sel
 
   const target = propExpr.getExpression();
 
-  // Handle array.map() pattern
-  if (target.getKind() === SyntaxKind.ArrayLiteralExpression) {
-    const result = extractDefaultFromArrayMap(target, call, checker);
-    if (result.isOk && result.value !== undefined) return result;
-  }
+  // Pattern: `[...].map(...)` where we extract the default from the map function
+  // The default is usually specified in the arrow function body as a comparison
+  const arrayResult = match(target.getKind())
+    .with(SyntaxKind.ArrayLiteralExpression, () =>
+      extractDefaultFromArrayMap(target, call, checker)
+    )
+    .otherwise(() => Result.ok(undefined));
 
-  // Handle identifier.map() pattern
-  if (target.getKind() === SyntaxKind.Identifier) {
-    const result = extractDefaultFromIdentifierMap(target, call, checker);
-    if (result.isOk && result.value !== undefined) return result;
-  }
+  if (arrayResult.isOk && arrayResult.value !== undefined) return arrayResult;
 
-  // Handle Object.keys(obj).map() pattern
-  if (target.getKind() === SyntaxKind.CallExpression) {
-    const result = extractDefaultFromObjectKeysMap(target, checker);
-    if (result.isOk && result.value !== undefined) return result;
-  }
+  // Pattern: `identifier.map(...)` where the identifier resolves to an array
+  // We resolve the identifier first, then extract the default from the map function
+  const identifierResult = match(target.getKind())
+    .with(SyntaxKind.Identifier, () => extractDefaultFromIdentifierMap(target, call, checker))
+    .otherwise(() => Result.ok(undefined));
+
+  if (identifierResult.isOk && identifierResult.value !== undefined) return identifierResult;
+
+  // Pattern: `Object.keys(obj).map(...)` where we extract the first key as default
+  const callResult = match(target.getKind())
+    .with(SyntaxKind.CallExpression, () => extractDefaultFromObjectKeysMap(target, checker))
+    .otherwise(() => Result.ok(undefined));
+
+  if (callResult.isOk && callResult.value !== undefined) return callResult;
 
   return Result.ok(undefined);
 }
@@ -1100,11 +1168,15 @@ export function extractSelectDefault(
   const initUnwrapped = unwrapNode(initializer);
 
   // Try call expression patterns first (map, Object.keys, etc.)
-  if (initUnwrapped.getKind() === SyntaxKind.CallExpression) {
-    const result = extractDefaultFromCallExpression(initUnwrapped, checker);
-    if (result.isOk && result.value !== undefined) return result;
-  }
+  const callResult = match(initUnwrapped.getKind())
+    .with(SyntaxKind.CallExpression, () => extractDefaultFromCallExpression(initUnwrapped, checker))
+    .otherwise(() => Result.ok(undefined));
 
-  // Fall back to array literal extraction
-  return extractDefaultFromArrayLiteral(initUnwrapped, checker);
+  return callResult.match({
+    Ok: (value) =>
+      value !== undefined
+        ? Result.ok(value)
+        : extractDefaultFromArrayLiteral(initUnwrapped, checker),
+    Err: () => extractDefaultFromArrayLiteral(initUnwrapped, checker),
+  });
 }

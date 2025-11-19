@@ -6,7 +6,8 @@ import { runGeneratePluginOptions, validateParsedResults } from '../../../src/co
 import { CLI_CONFIG } from '../../../src/shared/config.js';
 import type { GeneratePluginOptionsSummary } from '../../../src/core/runner/index.js';
 import type { Result } from 'true-myth';
-import { isErr, isOk } from 'true-myth/result';
+import { match } from 'ts-pattern';
+import { keys } from 'remeda';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,7 +16,7 @@ const mocks = vi.hoisted(() => ({
   parsePlugins: vi.fn(),
   categorizePlugins: vi.fn(),
   generateNixModule: vi.fn((plugins: Record<string, unknown>, label: string) => {
-    return `${label}:${Object.keys(plugins).join(',')}`;
+    return `${label}:${keys(plugins).join(',')}`;
   }),
   generateParseRulesModule: vi.fn(() => 'rules'),
   oraPromise: vi.fn((promise: Promise<any>) => promise),
@@ -55,27 +56,31 @@ function createLogger() {
 
 async function createRepo(root: string, variant: 'vencord' | 'equicord') {
   const repoRoot = join(root, variant);
-  const pluginsDir =
-    variant === 'vencord'
-      ? CLI_CONFIG.directories.vencordPlugins
-      : CLI_CONFIG.directories.equicordPlugins;
+  const pluginsDir = match(variant)
+    .with('vencord', () => CLI_CONFIG.directories.vencordPlugins)
+    .with('equicord', () => CLI_CONFIG.directories.equicordPlugins)
+    .exhaustive();
   await fse.ensureDir(join(repoRoot, pluginsDir));
   await fse.writeFile(join(repoRoot, 'package.json'), '{}', 'utf8');
   return repoRoot;
 }
 
 function unwrapOk<T, E>(result: Result<T, E>): T {
-  if (isErr(result)) {
-    throw result.error;
-  }
-  return result.value;
+  return result.match({
+    Ok: (value) => value,
+    Err: (error) => {
+      throw error;
+    },
+  });
 }
 
 function unwrapErr<T, E>(result: Result<T, E>): E {
-  if (isOk(result)) {
-    throw new Error('Expected Err result');
-  }
-  return result.error;
+  return result.match({
+    Ok: () => {
+      throw new Error('Expected Err result');
+    },
+    Err: (error) => error,
+  });
 }
 
 describe('runGeneratePluginOptions', () => {

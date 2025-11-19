@@ -1,7 +1,9 @@
-import { entries, keys, map, pipe, reduce } from 'remeda';
+import { entries, filter, isEmpty, keys, map, pipe, reduce } from 'remeda';
 import { filter as iterFilter, map as iterMap, toArray as iterToArray } from 'iter-tools';
 import { match, P } from 'ts-pattern';
 import { z } from 'zod';
+import { Maybe } from 'true-myth';
+import type { ReadonlyDeep } from 'type-fest';
 import type { PluginConfig, PluginSetting } from '../shared/types.js';
 import { type NixAttrSet, NixGenerator, type NixRaw, type NixValue } from './generator-base.js';
 import {
@@ -16,15 +18,19 @@ const NumberSchema = z.number();
 const BooleanSchema = z.boolean();
 const NullSchema = z.null();
 const ArraySchema = z.array(z.unknown());
-const ObjectSchema = z.object({}).catchall(z.unknown());
+const ObjectSchema = z
+  .object({})
+  .catchall(z.unknown())
+  .refine((val) => typeof val === 'object' && val !== null && !Array.isArray(val), {
+    message: 'Must be a non-array object',
+  });
 
 const isString = (x: unknown): x is string => StringSchema.safeParse(x).success;
 const isNumber = (x: unknown): x is number => NumberSchema.safeParse(x).success;
 const isBoolean = (x: unknown): x is boolean => BooleanSchema.safeParse(x).success;
 const isNull = (x: unknown): x is null => NullSchema.safeParse(x).success;
 const isArray = (x: unknown): x is unknown[] => ArraySchema.safeParse(x).success;
-const isObject = (x: unknown): x is object =>
-  typeof x === 'object' && x !== null && ObjectSchema.safeParse(x).success;
+const isObject = (x: unknown): x is object => ObjectSchema.safeParse(x).success;
 
 const gen = new NixGenerator();
 
@@ -45,23 +51,32 @@ const isPluginEntry = (entry: PluginEntry | undefined): entry is PluginEntry => 
 
 function buildEnumMappingDescription(
   enumValues: readonly (string | number | boolean)[],
-  enumLabels?: Readonly<Record<string, string> & Partial<Record<number, string>>>
-): string | null {
-  const integerValues = enumValues.filter((v): v is number => typeof v === 'number');
-  if (integerValues.length === 0 || !enumLabels) {
-    return null;
+  enumLabels?: ReadonlyDeep<Record<string, string> & Partial<Record<number, string>>>
+): Maybe<string> {
+  const integerValues = filter(enumValues, (v): v is number => NumberSchema.safeParse(v).success);
+
+  if (isEmpty(integerValues)) {
+    return Maybe.nothing<string>();
+  }
+  if (enumLabels === undefined) {
+    return Maybe.nothing<string>();
   }
 
-  const mappings: string[] = [];
-  for (const intValue of integerValues) {
-    // Use the label from the source code if available
-    const label = enumLabels[intValue];
-    if (label) {
-      mappings.push(`${intValue} = ${label}`);
-    }
-  }
+  const mappings = pipe(
+    integerValues,
+    map((intValue) => {
+      // Access labels by both number and string key to handle TypeScript/JavaScript key coercion
+      const label = enumLabels[intValue] ?? enumLabels[String(intValue)];
+      if (!label || typeof label !== 'string') {
+        return null;
+      }
+      return `${intValue} = ${label}`;
+    }),
+    filter((val): val is string => val !== null)
+  );
 
-  return mappings.length > 0 ? mappings.join(', ') : null;
+  const mappingStr = mappings.join(', ');
+  return isEmpty(mappingStr) ? Maybe.nothing<string>() : Maybe.just(mappingStr);
 }
 
 function getCategoryLabel(category: PluginCategory): string {
@@ -96,57 +111,100 @@ function buildNixOptionConfig(setting: Readonly<PluginSetting>): NixAttrSet {
 
   config.type = typeConfig;
 
-  const defaultValueResult = match(setting.default)
-    .with(undefined, () => undefined)
+  // Defaults behave differently in Home Manager vs. the runtime store; write them verbatim so
+  // plugins like Vencord's `customRPC` keep their nullable toggles intact
+  match(setting.default)
+    .with(undefined, () => {
+      // No default declared in the AST, so mkOption will fall back to its own idea of “unset”
+    })
+    .with(null, () => {
+      config.default = null;
+    })
     .otherwise((defaultValue) => {
-      // Home Manager's `types.float` is strict about floating point literals, so
-      // integer defaults need to be emitted as `1.0` instead of `1`.
-      return match([setting.type, defaultValue] as const)
+      // Home Manager's `types.float` refuses bare integers; Equicord slider defaults often use
+      // `1` while declaring `types.float`, so emit `1.0` to keep evaluation happy.
+      const defaultValueResult = match([setting.type, defaultValue] as const)
         .when(
           ([type, val]) => isNumber(val) && type === NIX_TYPE_FLOAT && Number.isInteger(val),
-          ([, val]) => gen.raw((val as number).toFixed(1))
+          ([, val]) => {
+            const rawValue = gen.raw((val as number).toFixed(1));
+            return Maybe.just(rawValue);
+          }
         )
         .when(
           ([type, val]) =>
             type === NIX_TYPE_INT && isString(val) && INTEGER_STRING_PATTERN.test(val),
-          ([, val]) => gen.raw(val as string)
+          ([, val]) => {
+            const rawValue = gen.raw(val as string);
+            return Maybe.just(rawValue);
+          }
         )
         .when(
           ([, val]) =>
             isString(val) ||
             isNumber(val) ||
             isBoolean(val) ||
-            isNull(val) ||
             isArray(val) ||
             (isObject(val) && !isNull(val)),
-          ([, val]) => val as NixValue
+          ([, val]) => {
+            // Maybe.just(null) explodes later, so guard here before we stash the value
+            if (val === null) {
+              return Maybe.nothing<Exclude<NixValue, null>>();
+            }
+            return Maybe.just(val as Exclude<NixValue, null>);
+          }
         )
-        .otherwise(() => undefined);
+        .otherwise(() => Maybe.nothing<Exclude<NixValue, null>>());
+
+      if (defaultValueResult.isJust) {
+        config.default = defaultValueResult.value;
+      }
     });
 
-  if (defaultValueResult !== undefined) {
-    config.default = defaultValueResult;
-  }
+  match(setting.description)
+    .with(P.string, (descStr) => {
+      // Integer enums (ActivityType, ChannelType, etc.) make zero sense without a legend;
+      // stitch the mapping straight into the description so generated docs stay readable
+      const isIntegerEnum = match(setting.enumValues)
+        .with(
+          P.not(undefined),
+          (enumValues) =>
+            setting.type === NIX_ENUM_TYPE &&
+            enumValues.every((v) => NumberSchema.safeParse(v).success)
+        )
+        .otherwise(() => false);
 
-  if (setting.description) {
-    let descStr = setting.description;
+      const finalDesc = match([isIntegerEnum, setting.enumValues] as const)
+        .with([true, P.not(undefined)], ([, enumValues]) => {
+          return buildEnumMappingDescription(enumValues, setting.enumLabels)
+            .map((mapping) => `${descStr}\n\nValues: ${mapping}`)
+            .unwrapOr(descStr);
+        })
+        .otherwise(() => descStr);
 
-    // For integer enums, append the value mapping to the description
-    const isIntegerEnum =
-      setting.type === NIX_ENUM_TYPE && setting.enumValues?.every((v) => typeof v === 'number');
-    if (isIntegerEnum && setting.enumValues) {
-      const mapping = buildEnumMappingDescription(setting.enumValues, setting.enumLabels);
-      if (mapping) {
-        descStr = `${descStr}\n\nValues: ${mapping}`;
-      }
-    }
+      config.description = gen.raw(gen.string(finalDesc, true));
+    })
+    .otherwise(() => {
+      // Some plugins never document settings (looking at you, legacy Discord ports). Leave empty
+    });
 
-    config.description = gen.raw(gen.string(descStr, true));
-  }
-
-  if (setting.example && !setting.description?.includes(setting.example)) {
-    config.example = setting.example;
-  }
+  match([setting.example, setting.description] as const)
+    .with([P.string, P.string], ([example, description]) => {
+      return match(description.includes(example))
+        .with(false, () => {
+          config.example = example;
+        })
+        .with(true, () => {
+          // Example is already in description, no need to duplicate
+        })
+        .exhaustive();
+    })
+    .with([P.string, P.union(undefined, P.nullish)], ([example]) => {
+      config.example = example;
+    })
+    .otherwise(() => {
+      // No example specified, so we let mkOption skip it
+    });
 
   return config;
 }
@@ -190,27 +248,27 @@ export function generateNixPlugin(
     }, {} as NixAttrSet)
   );
 
-  const hasExplicitEnable = Object.hasOwn(config.settings, ENABLE_SETTING_NAME);
-  if (hasExplicitEnable) {
-    return baseAttrSet;
-  }
+  return match(Object.hasOwn(config.settings, ENABLE_SETTING_NAME))
+    .with(true, () => baseAttrSet)
+    .with(false, () => {
+      const description = match(category)
+        .with(P.union('shared', 'vencord', 'equicord'), (cat) => {
+          const baseDesc = config.description ?? '';
+          return baseDesc + getCategoryLabel(cat);
+        })
+        .otherwise(() => config.description ?? '');
+      const descStr = description ? gen.string(description, true) : '""';
 
-  const description = match(category)
-    .with(P.union('shared', 'vencord', 'equicord'), (cat) => {
-      const baseDesc = config.description ?? '';
-      return baseDesc + getCategoryLabel(cat);
+      return {
+        enable: gen.raw(`${NIX_ENABLE_OPTION_FUNCTION} ${descStr}`),
+        ...baseAttrSet,
+      };
     })
-    .otherwise(() => config.description ?? '');
-  const descStr = description ? gen.string(description, true) : '""';
-
-  return {
-    enable: gen.raw(`${NIX_ENABLE_OPTION_FUNCTION} ${descStr}`),
-    ...baseAttrSet,
-  };
+    .exhaustive();
 }
 
 export function generateNixModule(
-  plugins: Readonly<Record<string, PluginConfig>>,
+  plugins: ReadonlyDeep<Record<string, PluginConfig>>,
   category?: PluginCategory
 ): string {
   const lines: readonly string[] = [

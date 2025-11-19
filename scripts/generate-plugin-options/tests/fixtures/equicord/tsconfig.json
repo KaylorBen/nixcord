@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "moduleResolution": "Node",
+    "baseUrl": ".",
+    "paths": {
+      "@utils/*": ["src/utils/*"],
+      "@utils/types": ["src/utils/types.ts"],
+      "@api/Settings": ["src/api/Settings.ts"],
+      "@api/*": ["src/api/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}

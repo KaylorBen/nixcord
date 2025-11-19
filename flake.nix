@@ -71,8 +71,8 @@
                 runtimeInputs = [ pkgs.nixfmt-rfc-style ];
                 text = ''
                   nix build .#generatePluginOptions --out-link ./result
-                  rm -rf ./modules/plugins
-                  cp -r ./result/plugins ./modules/plugins
+                  mkdir -p ./modules/plugins
+                  cp -R ./result/plugins/. ./modules/plugins/
                   chmod -R u+w ./modules/plugins
                   nixfmt ./modules/plugins/*.nix
                 '';
