@@ -21,8 +21,8 @@
 }:
 
 let
-  version = "2025-11-15";
-  hash = "sha256-/mlxM6Nv6zXaXYIUM5lgHDy5HtcXCtIQ/GPCa9XjsCU=";
+  version = "2025-11-20";
+  hash = "sha256-12P62UAt9eiQoGCXQGYQx0cPmankniltGqPTsys9Ves=";
   pnpmDeps = "sha256-eqnnaeXHGHs3Q5Q8j32xH8sayIoqQ6Aiyrx/J2DP/Zc=";
 in
 stdenv.mkDerivation (finalAttrs: {
