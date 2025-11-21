@@ -163,6 +163,58 @@ in
       description = "Enable middle-click autoscrolling";
     };
   };
+  equibop = {
+    enable = mkEnableOption ''
+      Whether to enable Equibop
+    '';
+    package = mkOption {
+      type = types.nullOr types.package;
+      default =
+        if pkgs.stdenvNoCC.isDarwin then
+          null
+        else if pkgs ? equibop then
+          pkgs.equibop
+        else
+          null;
+      description = ''
+        The Equibop package to use
+      '';
+    };
+    useSystemEquicord = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Use system Equicord package instead of the bundled one";
+    };
+    configDir = mkOption {
+      type = types.path;
+      default = "${
+        if pkgs.stdenvNoCC.isLinux then
+          config.xdg.configHome
+        else
+          "${config.home.homeDirectory}/Library/Application Support"
+      }/Equibop";
+      description = "Config path for Equibop";
+    };
+    settings = mkOption {
+      type = types.attrs;
+      default = { };
+      description = ''
+        Settings to be placed in equibop.configDir/settings.json
+      '';
+    };
+    state = mkOption {
+      type = types.attrs;
+      default = { };
+      description = ''
+        Settings to be placed in equibop.configDir/state.json
+      '';
+    };
+    autoscroll.enable = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable middle-click autoscrolling";
+    };
+  };
   dorion = {
     enable = mkEnableOption ''
       Whether to enable Dorion
@@ -472,6 +524,14 @@ in
       for vesktop only
     '';
   };
+  equibopConfig = mkOption {
+    type = types.attrs;
+    default = { };
+    description = ''
+      additional config to be added to programs.nixcord.config
+      for equibop only
+    '';
+  };
   vencordConfig = mkOption {
     type = types.attrs;
     default = { };
@@ -545,6 +605,11 @@ in
       type = with types; package;
       readOnly = true;
       description = "The final vesktop package that is created";
+    };
+    equibop = mkOption {
+      type = with types; nullOr package;
+      readOnly = true;
+      description = "The final equibop package that is created (null if package is not provided)";
     };
 
     dorion = mkOption {

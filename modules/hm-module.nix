@@ -234,6 +234,10 @@ in
               !(!cfg.discord.vencord.enable && (builtins.length collectEnabledVencordOnlyPlugins > 0));
             message = "programs.nixcord: Cannot enable Vencord-only plugins when Vencord is disabled. Enabled plugins: ${lib.concatStringsSep ", " collectEnabledVencordOnlyPlugins}. Either enable Vencord (discord.vencord.enable = true) or disable these plugins.";
           }
+          {
+            assertion = !(cfg.equibop.enable && !pkgs.stdenvNoCC.isLinux && cfg.equibop.package != null);
+            message = "programs.nixcord.equibop: Equibop package is only available on Linux. On macOS, set programs.nixcord.equibop.package = null and install Equibop outside of Nix.";
+          }
         ];
 
         programs.nixcord.finalPackage = mkFinalPackages {
@@ -244,6 +248,7 @@ in
         home.packages = [
           (mkIf cfg.discord.enable cfg.finalPackage.discord)
           (mkIf cfg.vesktop.enable cfg.finalPackage.vesktop)
+          (mkIf (cfg.equibop.enable && cfg.finalPackage.equibop != null) cfg.finalPackage.equibop)
           (mkIf cfg.dorion.enable cfg.finalPackage.dorion)
         ];
       }
@@ -326,6 +331,34 @@ in
         (mkIf (cfg.vesktop.state != { }) {
           home.file."${cfg.vesktop.configDir}/state.json".text = builtins.toJSON (
             mkVencordCfg cfg.vesktop.state
+          );
+        })
+      ]))
+      (mkIf cfg.equibop.enable (mkMerge [
+        # QuickCSS
+        (mkIf (isQuickCssUsed cfg.equibopConfig) {
+          home.file."${cfg.equibop.configDir}/settings/quickCss.css".text = cfg.quickCss;
+        })
+        # Equicord Settings
+        {
+          home.file."${cfg.equibop.configDir}/settings/settings.json".text = builtins.toJSON (
+            mkVencordCfg (recursiveUpdateAttrsList [
+              cfg.config
+              cfg.extraConfig
+              cfg.equibopConfig
+            ])
+          );
+        }
+        # Equibop Client Settings
+        (mkIf (cfg.equibop.settings != { }) {
+          home.file."${cfg.equibop.configDir}/settings.json".text = builtins.toJSON (
+            mkVencordCfg cfg.equibop.settings
+          );
+        })
+        # Equibop Client State
+        (mkIf (cfg.equibop.state != { }) {
+          home.file."${cfg.equibop.configDir}/state.json".text = builtins.toJSON (
+            mkVencordCfg cfg.equibop.state
           );
         })
       ]))

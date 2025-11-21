@@ -1,11 +1,14 @@
 # Nixcord
 
-Manage [Vencord](https://github.com/Vendicated/Vencord) and [Equicord](https://github.com/Equicord/Equicord) settings and plugins
-declaratively with Nix!
+Manage [Vencord](https://github.com/Vendicated/Vencord), [Equicord](https://github.com/Equicord/Equicord),
+[Vesktop](https://github.com/Vencord/Vesktop),
+[Equibop](https://github.com/Equicord/Equibop), and
+[Dorion](https://github.com/SpikeHD/Dorion) settings and plugins declaratively
+with Nix!
 
-This repo can be used to make a clean looking config for Vencord or Equicord without needing
-to pollute system config with needless utils to override the discord pacakge,
-and write ugly JSON code directly in .nix files.
+This repo can be used to make a clean looking config for Vencord or Equicord
+without needing to pollute system config with needless utils to override the
+discord pacakge, and write ugly JSON code directly in .nix files.
 
 I started this project after having to reinstall my NixOS system several times,
 resulting in manually enabling and configuring the ~100 Vencord plugins more
@@ -100,6 +103,7 @@ This is an example home-manager configuration using Nixcord
       # equicord.enable = true;  # Or use Equicord instead (cannot enable both)
     };
     vesktop.enable = true;  # Vesktop
+    equibop.enable = true;  # Equibop
     dorion.enable = true;   # Dorion
     quickCss = "some CSS";  # quickCSS file
     config = {
@@ -173,23 +177,25 @@ This step is required because nixcord automatically configures Vencord settings
 in Dorion's LocalStorage database, but these databases only exist after the
 first launch and login
 
-It is highly recommend configuring Nixcord with an open Vencord or Equicord
-client to look through available plugins and options. A list of
-all available options is available in the online documentation
+It is highly recommend configuring Nixcord with an open Vencord, Equicord,
+Vesktop, or Equibop client to look through available plugins and options.
+A list of all available options is available in the online documentation
 [here](https://kaylorben.github.io/nixcord/).
 
 ### Choosing Between Vencord and Equicord
 
-Nixcord supports both [Vencord](https://github.com/Vendicated/Vencord) and [Equicord](https://github.com/Equicord/Equicord).
-Both are Discord client modifications with similar functionality, but Equicord includes
-additional plugins and features. You can only enable one at a time:
+Nixcord supports both [Vencord](https://github.com/Vendicated/Vencord) and
+[Equicord](https://github.com/Equicord/Equicord).
+
+Both are Discord client modifications with similar functionality, but Equicord
+includes additional plugins and features. You can only enable one at a time:
 
 - **Vencord**: The original and more widely used client mod
 - **Equicord**: A fork with additional plugins and features, including Equicord-specific plugins
 
-When you enable Equicord, you'll have access to all shared plugins (available in both),
-plus Equicord-only plugins. Similarly, with Vencord you get shared plugins plus
-Vencord-only plugins.
+When you enable Equicord, you'll have access to all shared plugins (available
+in both), plus Equicord-only plugins. Similarly, with Vencord you get shared
+plugins plus Vencord-only plugins.
 
 ## Documentation
 
