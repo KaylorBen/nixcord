@@ -56,6 +56,21 @@ stdenvNoCC.mkDerivation {
       --output "$out/dummy.nix" \
       --verbose
 
+    NIX_EVAL_USER="''${USER:-nix-eval}"
+    NIX_EVAL_STATE_DIR="$TMPDIR/nix-eval-state"
+    mkdir -p \
+      "$NIX_EVAL_STATE_DIR" \
+      "$NIX_EVAL_STATE_DIR/profiles/per-user/$NIX_EVAL_USER" \
+      "$NIX_EVAL_STATE_DIR/gcroots/per-user/$NIX_EVAL_USER" \
+      "$NIX_EVAL_STATE_DIR/temproots" \
+      "$NIX_EVAL_STATE_DIR/logs"
+
+    export USER="$NIX_EVAL_USER"
+    export HOME="''${HOME:-$TMPDIR}"
+    export NIX_REMOTE="''${NIX_REMOTE:-local}"
+    export NIX_STATE_DIR="$NIX_EVAL_STATE_DIR"
+    export NIX_LOG_DIR="$NIX_EVAL_STATE_DIR/logs"
+
     for nixFile in "$out/plugins"/*.nix; do
       if ! nix-instantiate --parse "$nixFile" > /dev/null 2>&1; then
         echo "ERROR: Invalid Nix syntax in $nixFile"

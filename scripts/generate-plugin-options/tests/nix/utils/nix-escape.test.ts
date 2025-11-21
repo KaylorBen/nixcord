@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { execSync } from 'node:child_process';
-import { writeFileSync, unlinkSync } from 'node:fs';
+import { writeFileSync, unlinkSync, mkdtempSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import {
@@ -9,6 +9,41 @@ import {
   sanitizeNixIdentifier,
   toCamelCase,
 } from '../../../src/nix/utils/nix-escape.js';
+
+const nixEvalEnv = prepareNixEvalEnv();
+
+function prepareNixEvalEnv(): NodeJS.ProcessEnv {
+  try {
+    const baseDir = mkdtempSync(join(tmpdir(), 'nix-eval-state-'));
+    const user = process.env.USER ?? 'nix-test';
+    const dirs = [
+      baseDir,
+      join(baseDir, 'profiles'),
+      join(baseDir, 'profiles', 'per-user'),
+      join(baseDir, 'profiles', 'per-user', user),
+      join(baseDir, 'gcroots'),
+      join(baseDir, 'gcroots', 'per-user'),
+      join(baseDir, 'gcroots', 'per-user', user),
+      join(baseDir, 'temproots'),
+      join(baseDir, 'logs'),
+    ];
+
+    for (const dir of dirs) {
+      mkdirSync(dir, { recursive: true });
+    }
+
+    return {
+      ...process.env,
+      USER: user,
+      HOME: process.env.HOME ?? baseDir,
+      NIX_REMOTE: process.env.NIX_REMOTE ?? 'local',
+      NIX_STATE_DIR: baseDir,
+      NIX_LOG_DIR: join(baseDir, 'logs'),
+    };
+  } catch {
+    return process.env;
+  }
+}
 
 function testNixExpression(expr: string): string {
   const tmpFile = join(
@@ -20,6 +55,7 @@ function testNixExpression(expr: string): string {
     const result = execSync(`nix-instantiate --eval "${tmpFile}"`, {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe'],
+      env: nixEvalEnv,
     }).trim();
     return result;
   } catch (error: any) {
