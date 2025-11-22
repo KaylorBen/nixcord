@@ -95,7 +95,6 @@ let
       equibop =
         if cfg.equibop.package != null then
           cfg.equibop.package.override {
-            withSystemEquicord = cfg.equibop.useSystemEquicord;
             withMiddleClickScroll = cfg.equibop.autoscroll.enable;
             inherit equicord;
           }
