@@ -117,9 +117,6 @@ in
       type = types.float;
     };
   };
-  arRpcBun = {
-    enable = mkEnableOption ''arRPCBun integration (Equicord-only)'';
-  };
   atSomeone = {
     enable = mkEnableOption ''Mention someone randomly (Equicord-only)'';
   };
@@ -266,6 +263,39 @@ in
       type = types.bool;
     };
   };
+  betterUserArea = {
+    enable = mkEnableOption ''Customize and make the user area more clean. (Equicord-only)'';
+    alwaysShowUsername = mkOption {
+      default = true;
+      description = ''Always show username instead of status. (restart required)'';
+      type = types.bool;
+    };
+    removeAudioMenus = mkOption {
+      default = true;
+      description = ''Remove menus next to mute and deafen buttons. (restart required)'';
+      type = types.bool;
+    };
+    removeAvatarDecoration = mkOption {
+      default = true;
+      description = ''Remove avatar decoration. (restart required)'';
+      type = types.bool;
+    };
+    removeButtonTooltips = mkOption {
+      default = false;
+      description = ''Remove button tooltips. (restart required)'';
+      type = types.bool;
+    };
+    removeNameplate = mkOption {
+      default = true;
+      description = ''Remove nameplate styling. (restart required)'';
+      type = types.bool;
+    };
+    removeUsernameStyles = mkOption {
+      default = true;
+      description = ''Remove username colors and effects. (restart required)'';
+      type = types.bool;
+    };
+  };
   blockKeywords = {
     enable = mkEnableOption ''Blocks messages containing specific user-defined keywords, as if the user sending them was blocked. (Equicord-only)'';
     blockedWords = mkOption {
@@ -352,9 +382,6 @@ in
   };
   cleanChannelName = {
     enable = mkEnableOption ''remove all emoji and decor shit from channel names (Equicord-only)'';
-  };
-  cleanUserArea = {
-    enable = mkEnableOption ''Removes the nameplate styling from the user area. (Equicord-only)'';
   };
   clientSideBlock = {
     enable = mkEnableOption ''Allows you to locally hide almost all content from any user (Equicord-only)'';
@@ -784,6 +811,11 @@ in
   };
   globalBadges = {
     enable = mkEnableOption ''Adds global badges from other client mods (Equicord-only)'';
+    apiUrl = mkOption {
+      default = "https://badges.equicord.org/";
+      description = ''API to use'';
+      type = types.str;
+    };
     showAero = mkOption {
       default = true;
       description = ''Show Aero Badges'';
@@ -976,6 +1008,14 @@ in
   };
   instantScreenshare = {
     enable = mkEnableOption ''Instantly screenshare when joining a voice channel with support for desktop sources, windows, and video input devices (cameras, capture cards) (Equicord-only)'';
+  };
+  invisibleChat = {
+    enable = mkEnableOption ''Encrypt your Messages in a non-suspicious way! (Equicord-only)'';
+    savedPasswords = mkOption {
+      default = "password, Password";
+      description = ''Saved Passwords (Seperated with a , )'';
+      type = types.str;
+    };
   };
   inviteDefaults = {
     enable = mkEnableOption ''Allows you to edit the default values when creating server invites. (Equicord-only)'';
@@ -1434,9 +1474,6 @@ in
   noNitroUpsell = {
     enable = mkEnableOption ''Removes ALL of Discord's nitro upsells by tricking the client into thinking you have nitro. (Equicord-only)'';
   };
-  noOnboarding = {
-    enable = mkEnableOption ''Bypasses Discord's onboarding process for quicker server entry. (Equicord-only)'';
-  };
   noRoleHeaders = {
     enable = mkEnableOption ''We are all equal!! (Equicord-only)'';
   };
@@ -1448,6 +1485,11 @@ in
   };
   orbolayBridge = {
     enable = mkEnableOption ''Bridge plugin to connect Orbolay to Discord (Equicord-only)'';
+    isKeybindEnabled = mkOption {
+      default = true;
+      description = ''Enable/disable the global keybind (Ctrl + `) (restart required)'';
+      type = types.bool;
+    };
     messageAlignment = mkOption {
       default = "topright";
       description = ''Alignment of messages in the overlay (restart required)'';
@@ -1643,18 +1685,22 @@ in
     };
   };
   quoter = {
-    enable = mkEnableOption ''Adds the ability to create an inspirational quote image from a message (Equicord-only)'';
-    userIdentifier = mkOption {
-      default = 0;
-      description = ''
-        What the author's name should be displayed as
-
-        Values: 0 = Display Name, 1 = Username, 2 = User ID'';
+    enable = mkEnableOption ''Adds the ability to create an inspirational quote image from a message. (Equicord-only)'';
+    quoteFont = mkOption {
+      default = "M PLUS Rounded 1c";
+      description = ''Font for quote text (author/username always use M PLUS Rounded 1c)'';
       type = types.enum [
-        0
-        1
-        2
+        "M PLUS Rounded 1c"
+        "Open Sans"
+        "Momo Signature"
+        "Lora"
+        "Merriweather"
       ];
+    };
+    watermark = mkOption {
+      default = "Made with Equicord";
+      description = ''Custom watermark text (max 32 characters)'';
+      type = types.str;
     };
   };
   randomVoice = {
@@ -1825,6 +1871,9 @@ in
   remixRevived = {
     enable = mkEnableOption ''Revives Remix and breings it to Desktop (Equicord-only)'';
   };
+  repeatMessages = {
+    enable = mkEnableOption ''Allows you to repeat messages quickly. If you hold shift while clicking the Repeat option, it will reply to the message. (Equicord-only)'';
+  };
   replyPingControl = {
     enable = mkEnableOption ''Control whether to always or never get pinged on message replies, with a whitelist feature (Equicord-only)'';
     alwaysPingOnReply = mkOption {
@@ -1837,6 +1886,9 @@ in
       description = ''Comma-separated list of User IDs to always receive reply pings from'';
       type = types.str;
     };
+  };
+  richMagnetLinks = {
+    enable = mkEnableOption ''Renders magnet links like message links (Equicord-only)'';
   };
   rpcEditor = {
     enable = mkEnableOption ''Edit the type and content of any Rich Presence (Equicord-only)'';
@@ -1950,10 +2002,7 @@ in
     textHeader = mkOption {
       default = ">";
       description = ''What header to preface text with'';
-      type = types.enum [
-        ">"
-        "-#"
-      ];
+      type = types.str;
     };
   };
   snowfall = {
@@ -2549,6 +2598,11 @@ in
   };
   userPfp = {
     enable = mkEnableOption ''Allows you to use an animated avatar without Nitro (Equicord-only)'';
+    dbSource = mkOption {
+      default = "https://userpfp.github.io/UserPFP/source/data.json";
+      description = ''URL to load database from'';
+      type = types.str;
+    };
     preferNitro = mkOption {
       default = true;
       description = ''Which avatar to use if both default animated (Nitro) pfp and UserPFP avatars are present'';
@@ -2719,6 +2773,11 @@ in
       description = ''Toggles their soundboard upon clicking deafen button.'';
       type = types.bool;
     };
+    serverSelf = mkOption {
+      default = false;
+      description = ''Deafen / Mute yourself on the server when using mute/deafen.'';
+      type = types.bool;
+    };
     showButtonsSelf = mkOption {
       default = "display";
       description = ''Whether you want to display buttons for your own user. Same functionality as other button(s) except it'll open DMs panel and mute/deafen for yourself upon clicking button(s). (restart required)'';
@@ -2741,6 +2800,11 @@ in
     showMuteButton = mkOption {
       default = true;
       description = ''Whether you want to display the mute button (restart required)'';
+      type = types.bool;
+    };
+    useServer = mkOption {
+      default = false;
+      description = ''Use server mute/deafen instead of local when you have permission.'';
       type = types.bool;
     };
     whichNameToShow = mkOption {
@@ -2837,6 +2901,24 @@ in
       default = true;
       description = ''Do not send messages about blocked users joining/leaving/moving voice channels'';
       type = types.bool;
+    };
+  };
+  voiceRejoin = {
+    enable = mkEnableOption ''Rejoins DM/Server call automatically when restarting Discord. (Equicord-only)'';
+    preventReconnectIfCallEnded = mkOption {
+      default = "both";
+      description = ''Do not reconnect if the call has ended or the voice channel is empty or does not exist.'';
+      type = types.enum [
+        "none"
+        "dms"
+        "servers"
+        "both"
+      ];
+    };
+    rejoinDelay = mkOption {
+      default = 2.0;
+      description = ''Set Delay before rejoining voice channel.'';
+      type = types.float;
     };
   };
   wallpaperFree = {

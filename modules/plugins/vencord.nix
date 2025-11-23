@@ -6,6 +6,14 @@ let
   inherit (lib) types mkEnableOption mkOption;
 in
 {
+  invisibleChat = {
+    enable = mkEnableOption ''Encrypt your Messages in a non-suspicious way! (Vencord-only)'';
+    savedPasswords = mkOption {
+      default = "password, Password";
+      description = ''Saved Passwords (Seperated with a , )'';
+      type = types.str;
+    };
+  };
   spotifyControls = {
     enable = mkEnableOption ''Adds a Spotify player above the account panel (Vencord-only)'';
   };
