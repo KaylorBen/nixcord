@@ -42,9 +42,9 @@ stdenv.mkDerivation (finalAttrs: {
     hash = if unstable then unstableHash else stableHash;
   };
 
-  patches = [ ./vencord-deps.patch ];
+  patches = lib.optionals (!unstable) [ ./vencord-deps.patch ];
 
-  postPatch = ''
+  postPatch = lib.optionalString (!unstable) ''
     substituteInPlace packages/vencord-types/package.json \
       --replace-fail '"@types/react": "18.3.1"' '"@types/react": "19.0.12"'
   '';
@@ -145,17 +145,17 @@ stdenv.mkDerivation (finalAttrs: {
       update_pnpm_deps_hash() {
         local prefix="$1"
         echo "Fetching pnpm dependencies hash..."
-        
+
         # First, try to get the hash by temporarily setting it to empty and catching the error
         old_hash_line=$(grep -n "''${prefix}PnpmDeps.*=" "$NIX_FILE" | head -1)
         if [[ -n "$old_hash_line" ]]; then
           old_hash=$(echo "$old_hash_line" | sed -n 's/.*"sha256-\([^"]*\)".*/\1/p')
           echo "Found old hash: sha256-$old_hash"
-          
+
           # Temporarily set hash to empty to trigger hash mismatch
           update_value_perl "''${prefix}PnpmDeps" ""
           echo "Set hash to empty, attempting build..."
-          
+
           # Try to build and capture the expected hash from error message
           if build_output=$(nix-build -E "with import <nixpkgs> {}; (callPackage ./pkgs/vencord.nix { unstable = $UPDATE_BOOL; }).pnpmDeps" --no-link --pure 2>&1); then
             # If it succeeds with empty hash, something is wrong
@@ -195,36 +195,36 @@ stdenv.mkDerivation (finalAttrs: {
         base_version=$(get_latest_stable_tag | sed 's/^v//')
         echo "Getting main branch commit info..."
         main_commit_response=$(curl -s "https://api.github.com/repos/Vendicated/Vencord/commits/main")
-        
+
         if ! echo "$main_commit_response" | jq empty 2>/dev/null; then
           echo "Error: Invalid JSON response from GitHub API"
           echo "Response: $main_commit_response"
           exit 1
         fi
-        
+
         revision=$(echo "$main_commit_response" | jq -r '.sha // empty')
         if [[ -z "$revision" || "$revision" == "null" ]]; then
           echo "Error: Could not extract sha from API response"
           echo "Response: $main_commit_response"
           exit 1
         fi
-        
+
         echo "Getting commit details for $revision..."
         commit_response=$(curl -s "https://api.github.com/repos/Vendicated/Vencord/commits/$revision")
-        
+
         if ! echo "$commit_response" | jq empty 2>/dev/null; then
           echo "Error: Invalid JSON response from GitHub API for commit details"
           echo "Response: $commit_response"
           exit 1
         fi
-        
+
         commit_date=$(echo "$commit_response" | jq -r '.commit.committer.date // empty' | cut -d'T' -f1)
         if [[ -z "$commit_date" || "$commit_date" == "null" ]]; then
           echo "Error: Could not extract commit date from API response"
           echo "Response: $commit_response"
           exit 1
         fi
-        
+
         version="''${base_version}-unstable-''${commit_date}"
         echo "New $UPDATE_TYPE version: $version"
         echo "New revision: $revision"
