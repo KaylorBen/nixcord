@@ -42,20 +42,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = if unstable then unstableHash else stableHash;
   };
 
-  patches = [ ./vencord-deps.patch ];
-
-  postPatch = ''
-    substituteInPlace packages/vencord-types/package.json \
-      --replace-fail '"@types/react": "18.3.1"' '"@types/react": "19.0.12"'
-  '';
-
-  pnpmDeps =
-    (pnpm_10.fetchDeps {
-      inherit (finalAttrs) pname src;
-      hash = if unstable then unstablePnpmDeps else stablePnpmDeps;
-      fetcherVersion = 2;
-    }).overrideAttrs
-      { inherit (finalAttrs) patches postPatch; };
+  pnpmDeps = pnpm_10.fetchDeps {
+    inherit (finalAttrs) pname src;
+    hash = if unstable then unstablePnpmDeps else stablePnpmDeps;
+    fetcherVersion = 2;
+  };
 
   nativeBuildInputs = [
     gitMinimal
