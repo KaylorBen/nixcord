@@ -672,6 +672,14 @@ in
   };
   gameActivityToggle = {
     enable = mkEnableOption ''Adds a button next to the mic and deafen button to toggle game activity. (Shared between Vencord and Equicord)'';
+    location = mkOption {
+      default = "PANEL";
+      description = ''Where to show the game activity toggle button'';
+      type = types.enum [
+        "PANEL"
+        "TOOLBOX"
+      ];
+    };
     oldIcon = mkOption {
       default = false;
       description = ''Use the old icon style before Discord icon redesign'';

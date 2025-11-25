@@ -418,6 +418,11 @@ in
       description = ''Should role headers be hidden if all of their members are blocked (restart required)'';
       type = types.bool;
     };
+    hideVc = mkOption {
+      default = false;
+      description = ''Hide voice channels containing blocked users. (restart required)'';
+      type = types.bool;
+    };
     usersToBlock = mkOption {
       default = "";
       description = ''User IDs seperated by a comma and a space (restart required)'';
@@ -568,6 +573,11 @@ in
   };
   equicordToolbox = {
     enable = mkEnableOption ''Adds a button next to the inbox button in the channel header that houses Equicord quick actions (Equicord-only)'';
+    showPluginMenu = mkOption {
+      default = true;
+      description = ''Show the plugins menu in the toolbox'';
+      type = types.bool;
+    };
   };
   equissant = {
     enable = mkEnableOption ''Crossant every specified amount of clicks :trolley: (Equicord-only)'';
@@ -869,6 +879,29 @@ in
     showVelocity = mkOption {
       default = true;
       description = ''Show Velocity Badges'';
+      type = types.bool;
+    };
+  };
+  globalNicknames = {
+    enable = mkEnableOption ''Set custom nicknames for any user globally. (Equicord-only)'';
+    enableMemberList = mkOption {
+      default = true;
+      description = ''Show global nicknames in the member list. (restart required)'';
+      type = types.bool;
+    };
+    enableMessages = mkOption {
+      default = true;
+      description = ''Show global nicknames in chat messages. (restart required)'';
+      type = types.bool;
+    };
+    enableTypingIndicator = mkOption {
+      default = true;
+      description = ''Show global nicknames in the typing indicator. (restart required)'';
+      type = types.bool;
+    };
+    enableVoiceChannels = mkOption {
+      default = true;
+      description = ''Show global nicknames in voice channels. (restart required)'';
       type = types.bool;
     };
   };
