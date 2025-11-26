@@ -587,6 +587,19 @@ in
       type = types.int;
     };
   };
+  exitSounds = {
+    enable = mkEnableOption ''Play soundboard sounds when you disconnect from voice. (Equicord-only)'';
+    soundGuildId = mkOption {
+      default = { };
+      description = ''Select the server containing the sound.'';
+      type = types.attrs;
+    };
+    soundId = mkOption {
+      default = { };
+      description = ''Enter the ID of the sound you want to play.'';
+      type = types.attrs;
+    };
+  };
   exportMessages = {
     enable = mkEnableOption ''Allows you to export any message to a file (Equicord-only)'';
     exportContacts = mkOption {
@@ -1427,6 +1440,14 @@ in
   };
   messageLoggerEnhanced = {
     enable = mkEnableOption ''G'day (Equicord-only)'';
+  };
+  messageNotifier = {
+    enable = mkEnableOption ''Get toasts for when chosen users send a message (Equicord-only)'';
+    users = mkOption {
+      default = "";
+      description = ''Comma separated list of user ids to get message toasts for'';
+      type = types.str;
+    };
   };
   messageTranslate = {
     enable = mkEnableOption ''Auto translate messages to your language (Equicord-only)'';
@@ -2631,7 +2652,7 @@ in
   };
   userPfp = {
     enable = mkEnableOption ''Allows you to use an animated avatar without Nitro (Equicord-only)'';
-    dbSource = mkOption {
+    databaseSource = mkOption {
       default = "https://userpfp.github.io/UserPFP/source/data.json";
       description = ''URL to load database from'';
       type = types.str;
