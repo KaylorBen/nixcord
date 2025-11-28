@@ -550,11 +550,6 @@ in
   };
   equicordHelper = {
     enable = mkEnableOption ''Used to provide support, fix discord caused crashes, and other misc features. (Equicord-only)'';
-    disableCreateDmButton = mkOption {
-      default = false;
-      description = ''Disables the create dm button (restart required)'';
-      type = types.bool;
-    };
     disableDmContextMenu = mkOption {
       default = false;
       description = ''Disables the DM list context menu in favor of the x button (restart required)'';
@@ -732,6 +727,11 @@ in
       description = ''Comma-separated list of channel IDs to exempt from ghosting (right-click a DM channel to copy its ID)'';
       type = types.str;
     };
+    ignoreBots = mkOption {
+      default = true;
+      description = ''Ignore DMs from bots'';
+      type = types.bool;
+    };
     scary = mkOption {
       default = false;
       description = ''Something might happen if you ignore someone for too long...'';
@@ -874,11 +874,6 @@ in
       description = ''Show Ra1ncord Badges'';
       type = types.bool;
     };
-    showReplugged = mkOption {
-      default = true;
-      description = ''Show Replugged Badges'';
-      type = types.bool;
-    };
     showReviewDb = mkOption {
       default = true;
       description = ''Show ReviewDB Badges'';
@@ -892,29 +887,6 @@ in
     showVelocity = mkOption {
       default = true;
       description = ''Show Velocity Badges'';
-      type = types.bool;
-    };
-  };
-  globalNicknames = {
-    enable = mkEnableOption ''Set custom nicknames for any user globally. (Equicord-only)'';
-    enableMemberList = mkOption {
-      default = true;
-      description = ''Show global nicknames in the member list. (restart required)'';
-      type = types.bool;
-    };
-    enableMessages = mkOption {
-      default = true;
-      description = ''Show global nicknames in chat messages. (restart required)'';
-      type = types.bool;
-    };
-    enableTypingIndicator = mkOption {
-      default = true;
-      description = ''Show global nicknames in the typing indicator. (restart required)'';
-      type = types.bool;
-    };
-    enableVoiceChannels = mkOption {
-      default = true;
-      description = ''Show global nicknames in voice channels. (restart required)'';
       type = types.bool;
     };
   };

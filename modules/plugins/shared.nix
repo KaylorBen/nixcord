@@ -1850,11 +1850,16 @@ in
     enable = mkEnableOption ''Displays various hidden & moderator-only things regardless of permissions. (Shared between Vencord and Equicord)'';
   };
   showMeYourName = {
-    enable = mkEnableOption ''Display any permutation of nicknames, display names, and usernames in chat. (Shared between Vencord and Equicord)'';
+    enable = mkEnableOption ''Display any permutation of custom nicknames, friend nicknames, server nicknames, display names, and usernames in chat. (Shared between Vencord and Equicord)'';
     animateGradients = mkOption {
       default = false;
-      description = ''For the second, third, and fourth names, if the role has a gradient, animate it. This is disabled by "Ignore Gradients" and reduced motion.'';
+      description = ''For the non-primary names, if the role has a gradient, animate it. This is disabled by "Ignore Gradients" and reduced motion.'';
       type = types.bool;
+    };
+    customNameColor = mkOption {
+      default = "Role-25";
+      description = ''The color to use for the custom name you assigned a user if it's not the first displayed. Leave blank for default. Accepts hex(a), rgb(a), or hsl(a) input. Use "Role" to follow the user's top role color. Use "Role+-#" to adjust the brightness by that percentage (ex: "Role+15")'';
+      type = types.str;
     };
     discriminators = mkOption {
       default = true;
@@ -1878,17 +1883,17 @@ in
     };
     ignoreFonts = mkOption {
       default = false;
-      description = ''For the second, third, and fourth names, use GG SANS regardless of the user's custom font.'';
+      description = ''For the non-primary names, use Discord's default fonts regardless of the user's custom nitro font.'';
       type = types.bool;
     };
     ignoreGradients = mkOption {
       default = true;
-      description = ''For the second, third, and fourth names, if the role has a gradient, ignore it in favor of the value below.'';
+      description = ''For the non-primary names, if the role has a gradient, ignore it in favor of the color set below.'';
       type = types.bool;
     };
     includedNames = mkOption {
-      default = "{friend, nick} [{display}] (@{user})";
-      description = ''The order to display usernames, display names, nicknames, and friend names. Use the following placeholders: {user}, {display}, {nick}, {friend}. You can provide multiple name options to use as fallbacks if one is unavailable by separating them with commas as such: {friend, nick, display}. You can have up to three prefixes and three suffixes per name.'';
+      default = "{custom, friend, nick} [{display}] (@{user})";
+      description = ''The order to display usernames, display names, nicknames, friend names, and custom names. Use the following placeholders: {user}, {display}, {nick}, {friend}, {custom}. You can provide multiple name options to use as fallbacks if one is unavailable by separating them with commas as such: {custom, friend, nick}. You can have up to three prefixes and three suffixes per name.'';
       type = types.str;
     };
     memberList = mkOption {
