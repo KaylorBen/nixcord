@@ -1658,11 +1658,6 @@ in
       description = ''Disable notifications when no quests are available or when a quest is completed'';
       type = types.bool;
     };
-    useNavBar = mkOption {
-      default = false;
-      description = ''Move quest button down to the server nav bar'';
-      type = types.bool;
-    };
   };
   questFocused = {
     enable = mkEnableOption ''Prevent the quests player from pausing and possibly skip it all together. (Equicord-only)'';
