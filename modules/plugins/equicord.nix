@@ -2771,14 +2771,6 @@ in
   vcSupport = {
     enable = mkEnableOption ''Wumpus Dance + Support Warnings (Equicord-only)'';
   };
-  videoSpeed = {
-    enable = mkEnableOption ''Allows you to change the speed of videos (Equicord-only)'';
-    preservePitch = mkOption {
-      default = false;
-      description = ''Should pitch be preserved when changing speed? (restart required)'';
-      type = types.bool;
-    };
-  };
   viewRawVariant = {
     enable = mkEnableOption ''Copy/View raw content of any message, channel, or guild, but show in the right click menu. (Equicord-only)'';
   };
