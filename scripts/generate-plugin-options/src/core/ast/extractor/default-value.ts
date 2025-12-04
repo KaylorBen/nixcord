@@ -8,6 +8,7 @@ import type {
   CallExpression,
   NoSubstitutionTemplateLiteral,
   NumericLiteral,
+  BinaryExpression,
 } from 'ts-morph';
 import { SyntaxKind } from 'ts-morph';
 import { Result } from 'true-myth';
@@ -134,6 +135,18 @@ export function extractDefaultValue(
     .with(SyntaxKind.FalseKeyword, () => Result.ok(false))
     .with(SyntaxKind.NullKeyword, () => Result.ok(null))
     .with(SyntaxKind.UndefinedKeyword, () => Result.ok(null))
+    .with(SyntaxKind.BinaryExpression, () => {
+      const binExpr = asKind<BinaryExpression>(
+        unwrappedInitializer,
+        SyntaxKind.BinaryExpression
+      ).unwrapOr(undefined);
+      if (!binExpr) return Result.ok(undefined);
+      const resolved = resolveEnumLikeValue(unwrappedInitializer, checker);
+      return match(resolved)
+        .with({ isOk: true }, (r) => Result.ok(r.value))
+        .with({ isOk: false }, () => Result.ok(undefined))
+        .exhaustive();
+    })
     .with(SyntaxKind.Identifier, () => {
       const identifier = unwrappedInitializer.asKind(SyntaxKind.Identifier);
       if (!identifier) {
@@ -211,8 +224,8 @@ export function extractDefaultValue(
       const firstArg = args[0];
       const objLiteral = firstArg
         ? asKind<ObjectLiteralExpression>(firstArg, SyntaxKind.ObjectLiteralExpression).unwrapOr(
-            undefined
-          )
+          undefined
+        )
         : undefined;
 
       // Same as above—if the helper handed us an object literal, iterate its properties directly

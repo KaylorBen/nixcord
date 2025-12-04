@@ -2192,12 +2192,13 @@ in
       type = types.bool;
     };
     indicatorMode = mkOption {
-      default = 1;
+      default = 3;
       description = ''
         How should the indicator be displayed?
 
-        Values: 1 = Animated dots, 2 = Avatars'';
+        Values: 3 = Avatars and animated dots, 1 = Animated dots, 2 = Avatars'';
       type = types.enum [
+        3
         1
         2
       ];

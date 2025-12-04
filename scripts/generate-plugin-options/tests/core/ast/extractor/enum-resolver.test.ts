@@ -414,4 +414,72 @@ describe('resolveEnumLikeValue()', () => {
       expect(resolved === null || typeof resolved === 'string').toBe(true);
     }
   });
+
+  test('resolves bitwise OR operation', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const x = 1 | 2;`
+    );
+    const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
+    const initializer = varDecl.getInitializer();
+    if (initializer) {
+      const checker = project.getTypeChecker();
+      const resolved = unwrapResult(resolveEnumLikeValue(initializer, checker));
+      expect(resolved).toBe(3);
+    }
+  });
+
+  test('resolves bitwise shift operation', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const x = 1 << 1;`
+    );
+    const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
+    const initializer = varDecl.getInitializer();
+    if (initializer) {
+      const checker = project.getTypeChecker();
+      const resolved = unwrapResult(resolveEnumLikeValue(initializer, checker));
+      expect(resolved).toBe(2);
+    }
+  });
+
+  test('resolves enum member with bitwise shift initializer', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const enum IndicatorMode {
+        Dots = 1 << 0,
+        Avatars = 1 << 1
+      }
+      const x = IndicatorMode.Dots;`
+    );
+    const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
+    const initializer = varDecl.getInitializer();
+    if (initializer) {
+      const checker = project.getTypeChecker();
+      const resolved = unwrapResult(resolveEnumLikeValue(initializer, checker));
+      expect(resolved).toBe(1);
+    }
+  });
+
+  test('resolves bitwise OR of enum members', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const enum IndicatorMode {
+        Dots = 1 << 0,
+        Avatars = 1 << 1
+      }
+      const x = IndicatorMode.Dots | IndicatorMode.Avatars;`
+    );
+    const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
+    const initializer = varDecl.getInitializer();
+    if (initializer) {
+      const checker = project.getTypeChecker();
+      const resolved = unwrapResult(resolveEnumLikeValue(initializer, checker));
+      expect(resolved).toBe(3);
+    }
+  });
 });

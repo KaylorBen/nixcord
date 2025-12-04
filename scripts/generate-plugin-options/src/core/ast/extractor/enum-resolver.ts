@@ -9,6 +9,7 @@ import type {
   NoSubstitutionTemplateLiteral,
   NumericLiteral,
   EnumMember,
+  BinaryExpression,
 } from 'ts-morph';
 import { SyntaxKind } from 'ts-morph';
 import { Result } from 'true-myth';
@@ -67,6 +68,88 @@ export function resolveEnumLikeValue(
                 valueInitializer
               )
             );
+      })
+      .with(SyntaxKind.BinaryExpression, () => {
+        const binExpr = asKind<BinaryExpression>(
+          valueInitializer,
+          SyntaxKind.BinaryExpression
+        ).unwrapOr(undefined);
+        if (!binExpr) {
+          return Result.err(
+            createExtractionError(
+              ExtractionErrorKind.InvalidNodeType,
+              'Expected BinaryExpression',
+              valueInitializer
+            )
+          );
+        }
+
+        // Recursively resolve left and right operands
+        const leftResult = resolveEnumLikeValue(binExpr.getLeft(), checker);
+        const rightResult = resolveEnumLikeValue(binExpr.getRight(), checker);
+
+        if (leftResult.isErr || rightResult.isErr) {
+          const errorMessage = match([leftResult.isErr, rightResult.isErr] as const)
+            .with([true, P._], () => {
+              const err = leftResult as Extract<typeof leftResult, { isOk: false }>;
+              return err.error.message;
+            })
+            .with([P._, true], () => {
+              const err = rightResult as Extract<typeof rightResult, { isOk: false }>;
+              return err.error.message;
+            })
+            .otherwise(() => 'Unknown error');
+          return Result.err(
+            createExtractionError(
+              ExtractionErrorKind.CannotEvaluate,
+              `Cannot evaluate binary expression: ${errorMessage}`,
+              binExpr
+            )
+          );
+        }
+
+        const left = leftResult.value;
+        const right = rightResult.value;
+
+        // Only support numeric operations (bitwise and arithmetic)
+        if (typeof left !== 'number' || typeof right !== 'number') {
+          return Result.err(
+            createExtractionError(
+              ExtractionErrorKind.CannotEvaluate,
+              'Binary expression operands must be numbers for bitwise/arithmetic operations',
+              binExpr
+            )
+          );
+        }
+
+        const operator = binExpr.getOperatorToken().getKind();
+        const numericResult = match(operator)
+          // Bitwise operators
+          .with(SyntaxKind.BarToken, () => left | right) // |
+          .with(SyntaxKind.AmpersandToken, () => left & right) // &
+          .with(SyntaxKind.CaretToken, () => left ^ right) // ^
+          .with(SyntaxKind.LessThanLessThanToken, () => left << right) // <<
+          .with(SyntaxKind.GreaterThanGreaterThanToken, () => left >> right) // >>
+          .with(SyntaxKind.GreaterThanGreaterThanGreaterThanToken, () => left >>> right) // >>>
+          // Arithmetic operators (for completeness, though less common in enum contexts)
+          .with(SyntaxKind.PlusToken, () => left + right)
+          .with(SyntaxKind.MinusToken, () => left - right)
+          .with(SyntaxKind.AsteriskToken, () => left * right)
+          .with(SyntaxKind.SlashToken, () => left / right)
+          .with(SyntaxKind.PercentToken, () => left % right)
+          .otherwise(() => null as number | null);
+
+        if (numericResult === null) {
+          return Result.err(
+            createExtractionError(
+              ExtractionErrorKind.CannotEvaluate,
+              `Unsupported binary operator: ${binExpr.getOperatorToken().getText()}`,
+              binExpr
+            )
+          );
+        }
+
+        return Result.ok(numericResult);
       })
       .with(SyntaxKind.StringLiteral, () => {
         const str = asKind<StringLiteral>(valueInitializer, SyntaxKind.StringLiteral).unwrapOr(
@@ -154,6 +237,13 @@ export function resolveEnumLikeValue(
           }
           const init = enumMember.getInitializer();
           if (init) {
+            // Recursively resolve the initializer to handle literals and binary expressions
+            // (e.g., `1 << 0` for enum members with bitwise operations)
+            const resolved = resolveEnumLikeValue(init, checker);
+            if (resolved.isOk) {
+              return resolved;
+            }
+            // Fall back to direct literal extraction for backwards compatibility
             const num = asKind<NumericLiteral>(init, SyntaxKind.NumericLiteral).unwrapOr(undefined);
             if (num) {
               return Result.ok(num.getLiteralValue());
