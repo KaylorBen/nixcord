@@ -149,7 +149,8 @@ in
           extraPlugins = cfg.extraConfig.plugins or { };
           vencordPlugins = cfg.vencordConfig.plugins or { };
           equicordPlugins = cfg.equicordConfig.plugins or { };
-          allPlugins = plugins // extraPlugins // vencordPlugins // equicordPlugins;
+          equibopPlugins = cfg.equibopConfig.plugins or { };
+          allPlugins = plugins // extraPlugins // vencordPlugins // equicordPlugins // equibopPlugins;
           sharedPluginNames = builtins.attrNames sharedPlugins;
           vencordOnlyPluginNames = builtins.attrNames vencordOnlyPlugins;
           equicordOnlyPluginNames = builtins.attrNames equicordOnlyPlugins;
@@ -226,8 +227,12 @@ in
           }
           {
             assertion =
-              !(!cfg.discord.equicord.enable && (builtins.length collectEnabledEquicordOnlyPlugins > 0));
-            message = "programs.nixcord: Cannot enable Equicord-only plugins when Equicord is disabled. Enabled plugins: ${lib.concatStringsSep ", " collectEnabledEquicordOnlyPlugins}. Either enable Equicord (discord.equicord.enable = true) or disable these plugins.";
+              !(
+                !cfg.discord.equicord.enable
+                && !cfg.equibop.enable
+                && (builtins.length collectEnabledEquicordOnlyPlugins > 0)
+              );
+            message = "programs.nixcord: Cannot enable Equicord-only plugins when both Equicord and Equibop are disabled. Enabled plugins: ${lib.concatStringsSep ", " collectEnabledEquicordOnlyPlugins}. Either enable Equicord (discord.equicord.enable = true) or Equibop (equibop.enable = true), or disable these plugins.";
           }
           {
             assertion =

@@ -192,7 +192,7 @@ in
           config.xdg.configHome
         else
           "${config.home.homeDirectory}/Library/Application Support"
-      }/Equibop";
+      }/equibop";
       description = "Config path for Equibop";
     };
     settings = mkOption {
