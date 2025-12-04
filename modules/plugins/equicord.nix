@@ -545,9 +545,6 @@ in
   discordDevBanner = {
     enable = mkEnableOption ''Enables the Discord developer banner, in which displays the build-ID (Equicord-only)'';
   };
-  dontFilterMe = {
-    enable = mkEnableOption ''Warns you if your message contains a term in the automod preset list (Equicord-only)'';
-  };
   equicordHelper = {
     enable = mkEnableOption ''Used to provide support, fix discord caused crashes, and other misc features. (Equicord-only)'';
     disableDmContextMenu = mkOption {
@@ -1490,6 +1487,9 @@ in
   };
   newPluginsManager = {
     enable = mkEnableOption ''Utility that notifies you when new plugins are added to Equicord (Equicord-only)'';
+  };
+  noAppsAllowed = {
+    enable = mkEnableOption ''returns the bot's tag :skulk: (Equicord-only)'';
   };
   noBulletPoints = {
     enable = mkEnableOption ''Stops you from typing markdown bullet points (stinky) (Equicord-only)'';
