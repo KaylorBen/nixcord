@@ -67,7 +67,6 @@ let
       mkVencordCfg
       ;
   };
-
 in
 {
   options.programs.nixcord = import ./options.nix {
@@ -128,9 +127,9 @@ in
         configAttrs:
         let
           plugins = configAttrs.plugins or { };
-          extraPlugins = (cfg.extraConfig.plugins or { });
-          vencordPlugins = (cfg.vencordConfig.plugins or { });
-          equicordPlugins = (cfg.equicordConfig.plugins or { });
+          extraPlugins = cfg.extraConfig.plugins or { };
+          vencordPlugins = cfg.vencordConfig.plugins or { };
+          equicordPlugins = cfg.equicordConfig.plugins or { };
           allPlugins = plugins // extraPlugins // vencordPlugins // equicordPlugins;
         in
         lib.filter (oldName: allPlugins ? ${oldName} && isPluginEnabled allPlugins.${oldName}) (
@@ -280,9 +279,23 @@ in
             ];
           in
           {
-            home.file."${cfg.configDir}/settings/settings.json".text = builtins.toJSON (
-              mkVencordCfg fullConfig
-            );
+            home.file =
+              attrsets.unionOfDisjoint
+                {
+                  "${cfg.configDir}/settings/settings.json".text = builtins.toJSON (mkVencordCfg fullConfig);
+                }
+                (
+                  lib.mapAttrs' (
+                    name: value:
+                    lib.nameValuePair "${cfg.configDir}/themes/${name}.css" {
+                      source =
+                        if builtins.isPath value || lib.isStorePath value then
+                          value
+                        else
+                          pkgs.writeText "discord-themes-${name}" value;
+                    }
+                  ) cfg.config.themes
+                );
           }
         ))
         # Equicord Settings
@@ -299,9 +312,23 @@ in
             ];
           in
           {
-            home.file."${cfg.configDir}/settings/settings.json".text = builtins.toJSON (
-              mkVencordCfg fullConfig
-            );
+            home.file =
+              attrsets.unionOfDisjoint
+                {
+                  "${cfg.configDir}/settings/settings.json".text = builtins.toJSON (mkVencordCfg fullConfig);
+                }
+                (
+                  lib.mapAttrs' (
+                    name: value:
+                    lib.nameValuePair "${cfg.configDir}/themes/${name}.css" {
+                      source =
+                        if builtins.isPath value || lib.isStorePath value then
+                          value
+                        else
+                          pkgs.writeText "discord-themes-${name}" value;
+                    }
+                  ) cfg.config.themes
+                );
           }
         ))
         # Client Settings

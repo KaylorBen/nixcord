@@ -477,6 +477,19 @@ in
       description = "A list of links to online vencord themes";
       example = [ "https://raw.githubusercontent.com/rose-pine/discord/main/rose-pine.theme.css" ];
     };
+    themes = mkOption {
+      type =
+        with types;
+        attrsOf (oneOf [
+          lines
+          path
+        ]);
+      default = { };
+      description = ''
+        Themes to add, they can be enabled by settings
+        `programs.nixcord.config.enabledThemes` to `[ "THEME_NAME.css" ]`
+      '';
+    };
     enabledThemes = mkOption {
       type = with types; listOf types.str;
       default = [ ];
