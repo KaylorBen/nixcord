@@ -61,6 +61,7 @@ function inferNixTypeFromRuntimeDefault(defaultValue: unknown): string {
   return match(defaultValue)
     .with(undefined, () => NIX_TYPE_STR)
     .with(P.boolean, () => NIX_TYPE_BOOL)
+    .when(Array.isArray, () => NIX_TYPE_ATTRS)
     .with(P.string, () => NIX_TYPE_STR)
     .with(P.number, (val) => (Number.isInteger(val) ? NIX_TYPE_INT : NIX_TYPE_FLOAT))
     .when(
@@ -132,8 +133,8 @@ function resolveOptionTypeNameFromNode(typeNode: Node, _checker: TypeChecker): M
         const numeric = typeNode.asKindOrThrow(SyntaxKind.NumericLiteral);
         return Maybe.just<string | number>(
           OptionTypeMap[parseInt(numeric.getLiteralValue().toString(), PARSE_INT_RADIX)] as
-            | string
-            | number
+          | string
+          | number
         );
       })
       .otherwise(() => Maybe.nothing<string | number>());
@@ -175,6 +176,7 @@ function buildEnumValuesFromOptions(
 function nixTypeForComponentOrCustom(defaultValue: unknown): string {
   return match(defaultValue)
     .with(undefined, () => NIX_TYPE_ATTRS)
+    .when(Array.isArray, () => NIX_TYPE_STR)
     .otherwise(() => inferNixTypeFromRuntimeDefault(defaultValue));
 }
 

@@ -156,6 +156,109 @@ describe('inferNixTypeAndEnumValues', () => {
     expect(['types.str', 'types.attrs', 'types.listOf types.str']).toContain(result.finalNixType);
   });
 
+  test('promotes OptionType.STRING with string array default to listOf str', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const setting = { type: OptionType.STRING, default: [] as string[] };`
+    );
+    const obj = sourceFile.getFirstDescendantByKind(SyntaxKind.ObjectLiteralExpression);
+    if (!obj) throw new Error('Expected object literal');
+
+    const typeProp = obj.getProperty('type');
+    const typeNode =
+      typeProp?.getKind() === SyntaxKind.PropertyAssignment
+        ? typeProp.asKindOrThrow(SyntaxKind.PropertyAssignment).getInitializer()
+        : undefined;
+
+    const props = createSettingProperties(typeNode ? Maybe.just(typeNode) : undefined, []);
+    const result = inferNixTypeAndEnumValues(
+      obj,
+      props,
+      {
+        type: typeNode,
+        description: undefined,
+        default: [],
+        restartNeeded: false,
+        hidden: false,
+      },
+      project.getTypeChecker(),
+      project.getProgram()
+    );
+
+    expect(result.finalNixType).toBe('types.listOf types.str');
+    expect(result.defaultValue).toEqual([]);
+  });
+
+  test('promotes OptionType.STRING with empty array default to listOf str', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `const setting = { type: OptionType.STRING, default: [] };`
+    );
+    const obj = sourceFile.getFirstDescendantByKind(SyntaxKind.ObjectLiteralExpression);
+    if (!obj) throw new Error('Expected object literal');
+
+    const typeProp = obj.getProperty('type');
+    const typeNode =
+      typeProp?.getKind() === SyntaxKind.PropertyAssignment
+        ? typeProp.asKindOrThrow(SyntaxKind.PropertyAssignment).getInitializer()
+        : undefined;
+
+    const props = createSettingProperties(typeNode ? Maybe.just(typeNode) : undefined, []);
+    const result = inferNixTypeAndEnumValues(
+      obj,
+      props,
+      {
+        type: typeNode,
+        description: undefined,
+        default: [],
+        restartNeeded: false,
+        hidden: false,
+      },
+      project.getTypeChecker(),
+      project.getProgram()
+    );
+
+    expect(result.finalNixType).toBe('types.listOf types.str');
+    expect(result.defaultValue).toEqual([]);
+  });
+
+  test('treats COMPONENT empty object array default as listOf str', () => {
+    const project = createProject();
+    const sourceFile = project.createSourceFile(
+      'test.ts',
+      `type PatternEntry = { pattern: string; color: string };
+       const setting = { type: OptionType.COMPONENT, default: [] as PatternEntry[] };`
+    );
+    const obj = sourceFile.getFirstDescendantByKind(SyntaxKind.ObjectLiteralExpression);
+    if (!obj) throw new Error('Expected object literal');
+
+    const typeProp = obj.getProperty('type');
+    const typeNode =
+      typeProp?.getKind() === SyntaxKind.PropertyAssignment
+        ? typeProp.asKindOrThrow(SyntaxKind.PropertyAssignment).getInitializer()
+        : undefined;
+
+    const props = createSettingProperties(typeNode ? Maybe.just(typeNode) : undefined, []);
+    const result = inferNixTypeAndEnumValues(
+      obj,
+      props,
+      {
+        type: typeNode,
+        description: undefined,
+        default: [],
+        restartNeeded: false,
+        hidden: false,
+      },
+      project.getTypeChecker(),
+      project.getProgram()
+    );
+
+    expect(result.finalNixType).toBe('types.listOf types.str');
+    expect(result.defaultValue).toEqual([]);
+  });
+
   test('infers listOf attrs from object array default', () => {
     const project = createProject();
     const sourceFile = project.createSourceFile(

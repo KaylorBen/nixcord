@@ -2632,7 +2632,7 @@ in
     patterns = mkOption {
       default = [ ];
       description = ''URL patterns to highlight using glob patterns.'';
-      type = types.str;
+      type = types.listOf types.str;
     };
   };
   userPfp = {

@@ -3,22 +3,27 @@
  * Many plugins describe multi-selects this way without declaring explicit OptionTypes.
  */
 
-import type { TypeChecker, ObjectLiteralExpression, Identifier } from 'ts-morph';
-import { SyntaxKind } from 'ts-morph';
-import { asKind } from '../../utils/node-helpers.js';
+import type {
+  Identifier,
+  ObjectLiteralExpression,
+  TypeChecker,
+} from "ts-morph";
+import { SyntaxKind } from "ts-morph";
+import { asKind } from "../../utils/node-helpers.js";
 import {
-  NIX_TYPE_STR,
   NIX_TYPE_ATTRS,
-  NIX_TYPE_LIST_OF_STR,
   NIX_TYPE_LIST_OF_ATTRS,
-} from '../constants.js';
+  NIX_TYPE_LIST_OF_STR,
+  NIX_TYPE_STR,
+} from "../constants.js";
 import {
-  hasObjectArrayDefault,
   hasEmptyArrayWithTypeAnnotation,
-} from '../default-value-checks/index.js';
-import { getDefaultPropertyInitializer } from '../type-helpers.js';
-import { isCustomType } from '../type-helpers.js';
-import type { InferenceState, SettingProperties } from './types.js';
+  hasObjectArrayDefault,
+} from "../default-value-checks/index.js";
+import { getDefaultPropertyInitializer } from "../type-helpers.js";
+import { isCustomType } from "../type-helpers.js";
+import { SyntaxKind as SK } from "ts-morph";
+import type { InferenceState, SettingProperties } from "./types.js";
 
 /**
  * If we can prove the default is a string array, return `listOf str`; if it's an array of objects,
@@ -29,41 +34,38 @@ export function inferArrayTypes(
   valueObj: ObjectLiteralExpression,
   props: SettingProperties,
   state: InferenceState,
-  checker: TypeChecker
+  checker: TypeChecker,
 ): InferenceState {
   const {
     finalNixType,
     defaultValue,
     hasStringArray,
     hasIdentifierStringArray,
-    isComponentOrCustom,
   } = state;
   let newFinalNixType = finalNixType;
   let newDefaultValue = defaultValue;
 
-  // COMPONENT/CUSTOM defaults that boil down to string arrays behave like multi-selects, so emit
-  // `listOf str` even if they started life as attrs.
-  if (finalNixType === NIX_TYPE_ATTRS && (hasStringArray || hasIdentifierStringArray)) {
-    newFinalNixType = NIX_TYPE_LIST_OF_STR;
-    if (newDefaultValue === undefined) {
-      newDefaultValue = [];
-    }
-  }
-  // Catch the case where the type never flipped to ATTRS but the data is still clearly a string
-  // array (common when authors forget to set OptionType)
+  const hasStringArrayDefaultValue = hasStringArray || hasIdentifierStringArray;
+  const hasObjectArray = hasObjectArrayDefault(valueObj, checker);
+
+  // Any setting that ships a string array default should surface as listOf str
   if (
-    (finalNixType === NIX_TYPE_STR || finalNixType === NIX_TYPE_ATTRS) &&
-    isComponentOrCustom &&
-    (hasStringArray || hasIdentifierStringArray)
+    (newFinalNixType === NIX_TYPE_STR || newFinalNixType === NIX_TYPE_ATTRS) &&
+    hasStringArrayDefaultValue
   ) {
     newFinalNixType = NIX_TYPE_LIST_OF_STR;
     if (newDefaultValue === undefined) {
       newDefaultValue = [];
     }
   }
-  // Arrays of objects (literal or typed) become `listOf attrs`. Identifier defaults stay attrs
-  // unless we can see the literal, because static analysis can't verify their contents safely
-  if (finalNixType === NIX_TYPE_ATTRS && hasObjectArrayDefault(valueObj, checker)) {
+
+  // Arrays of objects (literal or typed) become `listOf attrs`. Identifier
+  // defaults stay attrs unless we can see the literal, because static analysis
+  // can't verify their contents safely
+  if (
+    (newFinalNixType === NIX_TYPE_ATTRS || newFinalNixType === NIX_TYPE_STR) &&
+    hasObjectArray
+  ) {
     const init = getDefaultPropertyInitializer(valueObj);
     // Only upgrade when we can see the literal array or its `as` expression right here
     const isIdentifierDefault = init
@@ -71,6 +73,37 @@ export function inferArrayTypes(
       : false;
     if (!isIdentifierDefault) {
       newFinalNixType = NIX_TYPE_LIST_OF_ATTRS;
+      if (newDefaultValue === undefined) {
+        newDefaultValue = [];
+      }
+    }
+  }
+  // Plain empty array defaults (e.g., type: OptionType.STRING, default: [])
+  // still represent a list of strings, even without annotations. Treat them as
+  // listOf str to avoid invalid Nix, but only when we don't already know it's
+  // an object array
+  if (
+    (newFinalNixType === NIX_TYPE_STR || newFinalNixType === NIX_TYPE_ATTRS) &&
+    !hasStringArrayDefaultValue &&
+    !hasObjectArray
+  ) {
+    const init = getDefaultPropertyInitializer(valueObj);
+    const asArrayLiteral = (() => {
+      if (!init) return null;
+      if (init.getKind() === SyntaxKind.ArrayLiteralExpression) {
+        return init.asKindOrThrow(SyntaxKind.ArrayLiteralExpression);
+      }
+      if (init.getKind() === SyntaxKind.AsExpression) {
+        const expr = init.asKindOrThrow(SyntaxKind.AsExpression).getExpression();
+        if (expr?.getKind() === SyntaxKind.ArrayLiteralExpression) {
+          return expr.asKindOrThrow(SyntaxKind.ArrayLiteralExpression);
+        }
+      }
+      return null;
+    })();
+    const isEmptyArrayLiteral = !!asArrayLiteral && asArrayLiteral.getElements().length === 0;
+    if (isEmptyArrayLiteral) {
+      newFinalNixType = NIX_TYPE_LIST_OF_STR;
       if (newDefaultValue === undefined) {
         newDefaultValue = [];
       }

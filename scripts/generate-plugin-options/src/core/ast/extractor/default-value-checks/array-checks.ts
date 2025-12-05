@@ -258,10 +258,15 @@ export function hasObjectArrayDefault(obj: ObjectLiteralExpression, checker: Typ
       const isArrayType =
         !!typeNode &&
         (/\[\]$/.test(typeNode.getText()) || /\bArray<.+>\b/.test(typeNode.getText()));
+      if (!isArrayType || expr === undefined) return false;
+      const arr = asKind<ArrayLiteralExpression>(expr, SyntaxKind.ArrayLiteralExpression).unwrapOr(
+        undefined
+      );
+      if (!arr) return false;
+      const elems = arr.getElements();
       return (
-        isArrayType &&
-        expr !== undefined &&
-        asKind<ArrayLiteralExpression>(expr, SyntaxKind.ArrayLiteralExpression).isJust
+        !isEmpty(elems) &&
+        every((el: Node) => el.getKind() === SyntaxKind.ObjectLiteralExpression, elems)
       );
     })
     .with(SyntaxKind.CallExpression, () => {
@@ -317,8 +322,8 @@ export function hasObjectArrayDefault(obj: ObjectLiteralExpression, checker: Typ
           const isAsConst = typeNode?.getText() === 'const';
           const arr = expr
             ? asKind<ArrayLiteralExpression>(expr, SyntaxKind.ArrayLiteralExpression).unwrapOr(
-                undefined
-              )
+              undefined
+            )
             : undefined;
           if ((isArrayType || isAsConst) && arr) {
             const elems = arr.getElements();
