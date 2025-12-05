@@ -67,7 +67,6 @@ let
       mkVencordCfg
       ;
   };
-
 in
 {
   options.programs.nixcord = import ./options.nix {
@@ -128,9 +127,9 @@ in
         configAttrs:
         let
           plugins = configAttrs.plugins or { };
-          extraPlugins = (cfg.extraConfig.plugins or { });
-          vencordPlugins = (cfg.vencordConfig.plugins or { });
-          equicordPlugins = (cfg.equicordConfig.plugins or { });
+          extraPlugins = cfg.extraConfig.plugins or { };
+          vencordPlugins = cfg.vencordConfig.plugins or { };
+          equicordPlugins = cfg.equicordConfig.plugins or { };
           allPlugins = plugins // extraPlugins // vencordPlugins // equicordPlugins;
         in
         lib.filter (oldName: allPlugins ? ${oldName} && isPluginEnabled allPlugins.${oldName}) (
@@ -338,6 +337,15 @@ in
             mkVencordCfg cfg.vesktop.state
           );
         })
+        # Vesktop Themes
+        (mkIf (cfg.config.themes != { }) {
+          home.file = lib.mapAttrs' (
+            name: value:
+            lib.nameValuePair "${cfg.vesktop.configDir}/themes/${name}.css" {
+              text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
+            }
+          ) cfg.config.themes;
+        })
       ]))
       (mkIf cfg.equibop.enable (mkMerge [
         # QuickCSS
@@ -365,6 +373,15 @@ in
           home.file."${cfg.equibop.configDir}/state.json".text = builtins.toJSON (
             mkVencordCfg cfg.equibop.state
           );
+        })
+        # Equibop Themes
+        (mkIf (cfg.config.themes != { }) {
+          home.file = lib.mapAttrs' (
+            name: value:
+            lib.nameValuePair "${cfg.equibop.configDir}/themes/${name}.css" {
+              text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
+            }
+          ) cfg.config.themes;
         })
       ]))
       # Dorion Client Settings
