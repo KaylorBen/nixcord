@@ -338,12 +338,14 @@ in
           );
         })
         # Vesktop Themes
-        (lib.mapAttrs' (
-          name: value:
-          lib.nameValuePair "${cfg.vesktop.configDir}/themes/${name}.css" {
-            text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
-          }
-        ) cfg.config.themes)
+        (mkIf (cfg.config.themes != { }) {
+          home.file = lib.mapAttrs' (
+            name: value:
+            lib.nameValuePair "${cfg.vesktop.configDir}/themes/${name}.css" {
+              text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
+            }
+          ) cfg.config.themes;
+        })
       ]))
       (mkIf cfg.equibop.enable (mkMerge [
         # QuickCSS
@@ -372,12 +374,15 @@ in
             mkVencordCfg cfg.equibop.state
           );
         })
-        (lib.mapAttrs' (
-          name: value:
-          lib.nameValuePair "${cfg.equibop.configDir}/themes/${name}.css" {
-            text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
-          }
-        ) cfg.config.themes)
+        # Equibop Themes
+        (mkIf (cfg.config.themes != { }) {
+          home.file = lib.mapAttrs' (
+            name: value:
+            lib.nameValuePair "${cfg.equibop.configDir}/themes/${name}.css" {
+              text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
+            }
+          ) cfg.config.themes;
+        })
       ]))
       # Dorion Client Settings
       (mkIf cfg.dorion.enable (mkMerge [
