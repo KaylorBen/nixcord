@@ -279,19 +279,9 @@ in
             ];
           in
           {
-            home.file =
-              attrsets.unionOfDisjoint
-                {
-                  "${cfg.configDir}/settings/settings.json".text = builtins.toJSON (mkVencordCfg fullConfig);
-                }
-                (
-                  lib.mapAttrs' (
-                    name: value:
-                    lib.nameValuePair "${cfg.configDir}/themes/${name}.css" {
-                      text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
-                    }
-                  ) cfg.config.themes
-                );
+            home.file."${cfg.configDir}/settings/settings.json".text = builtins.toJSON (
+              mkVencordCfg fullConfig
+            );
           }
         ))
         # Equicord Settings
@@ -308,19 +298,9 @@ in
             ];
           in
           {
-            home.file =
-              attrsets.unionOfDisjoint
-                {
-                  "${cfg.configDir}/settings/settings.json".text = builtins.toJSON (mkVencordCfg fullConfig);
-                }
-                (
-                  lib.mapAttrs' (
-                    name: value:
-                    lib.nameValuePair "${cfg.configDir}/themes/${name}.css" {
-                      text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
-                    }
-                  ) cfg.config.themes
-                );
+            home.file."${cfg.configDir}/settings/settings.json".text = builtins.toJSON (
+              mkVencordCfg fullConfig
+            );
           }
         ))
         # Client Settings
@@ -357,6 +337,13 @@ in
             mkVencordCfg cfg.vesktop.state
           );
         })
+        # Vesktop Themes
+        (lib.mapAttrs' (
+          name: value:
+          lib.nameValuePair "${cfg.vesktop.configDir}/themes/${name}.css" {
+            text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
+          }
+        ) cfg.config.themes)
       ]))
       (mkIf cfg.equibop.enable (mkMerge [
         # QuickCSS
@@ -385,6 +372,12 @@ in
             mkVencordCfg cfg.equibop.state
           );
         })
+        (lib.mapAttrs' (
+          name: value:
+          lib.nameValuePair "${cfg.equibop.configDir}/themes/${name}.css" {
+            text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
+          }
+        ) cfg.config.themes)
       ]))
       # Dorion Client Settings
       (mkIf cfg.dorion.enable (mkMerge [
