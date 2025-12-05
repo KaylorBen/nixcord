@@ -288,11 +288,7 @@ in
                   lib.mapAttrs' (
                     name: value:
                     lib.nameValuePair "${cfg.configDir}/themes/${name}.css" {
-                      source =
-                        if builtins.isPath value || lib.isStorePath value then
-                          value
-                        else
-                          pkgs.writeText "discord-themes-${name}" value;
+                      text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
                     }
                   ) cfg.config.themes
                 );
@@ -321,11 +317,7 @@ in
                   lib.mapAttrs' (
                     name: value:
                     lib.nameValuePair "${cfg.configDir}/themes/${name}.css" {
-                      source =
-                        if builtins.isPath value || lib.isStorePath value then
-                          value
-                        else
-                          pkgs.writeText "discord-themes-${name}" value;
+                      text = if builtins.isPath value || lib.isStorePath value then builtins.readFile value else value;
                     }
                   ) cfg.config.themes
                 );
