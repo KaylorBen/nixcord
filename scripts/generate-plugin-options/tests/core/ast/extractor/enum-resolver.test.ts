@@ -417,10 +417,7 @@ describe('resolveEnumLikeValue()', () => {
 
   test('resolves bitwise OR operation', () => {
     const project = createProject();
-    const sourceFile = project.createSourceFile(
-      'test.ts',
-      `const x = 1 | 2;`
-    );
+    const sourceFile = project.createSourceFile('test.ts', `const x = 1 | 2;`);
     const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
     const initializer = varDecl.getInitializer();
     if (initializer) {
@@ -432,10 +429,7 @@ describe('resolveEnumLikeValue()', () => {
 
   test('resolves bitwise shift operation', () => {
     const project = createProject();
-    const sourceFile = project.createSourceFile(
-      'test.ts',
-      `const x = 1 << 1;`
-    );
+    const sourceFile = project.createSourceFile('test.ts', `const x = 1 << 1;`);
     const varDecl = sourceFile.getVariableDeclarationOrThrow('x');
     const initializer = varDecl.getInitializer();
     if (initializer) {

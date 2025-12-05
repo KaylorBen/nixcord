@@ -133,8 +133,8 @@ function resolveOptionTypeNameFromNode(typeNode: Node, _checker: TypeChecker): M
         const numeric = typeNode.asKindOrThrow(SyntaxKind.NumericLiteral);
         return Maybe.just<string | number>(
           OptionTypeMap[parseInt(numeric.getLiteralValue().toString(), PARSE_INT_RADIX)] as
-          | string
-          | number
+            | string
+            | number
         );
       })
       .otherwise(() => Maybe.nothing<string | number>());

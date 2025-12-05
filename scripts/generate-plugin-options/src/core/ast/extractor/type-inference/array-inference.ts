@@ -3,27 +3,23 @@
  * Many plugins describe multi-selects this way without declaring explicit OptionTypes.
  */
 
-import type {
-  Identifier,
-  ObjectLiteralExpression,
-  TypeChecker,
-} from "ts-morph";
-import { SyntaxKind } from "ts-morph";
-import { asKind } from "../../utils/node-helpers.js";
+import type { Identifier, ObjectLiteralExpression, TypeChecker } from 'ts-morph';
+import { SyntaxKind } from 'ts-morph';
+import { asKind } from '../../utils/node-helpers.js';
 import {
   NIX_TYPE_ATTRS,
   NIX_TYPE_LIST_OF_ATTRS,
   NIX_TYPE_LIST_OF_STR,
   NIX_TYPE_STR,
-} from "../constants.js";
+} from '../constants.js';
 import {
   hasEmptyArrayWithTypeAnnotation,
   hasObjectArrayDefault,
-} from "../default-value-checks/index.js";
-import { getDefaultPropertyInitializer } from "../type-helpers.js";
-import { isCustomType } from "../type-helpers.js";
-import { SyntaxKind as SK } from "ts-morph";
-import type { InferenceState, SettingProperties } from "./types.js";
+} from '../default-value-checks/index.js';
+import { getDefaultPropertyInitializer } from '../type-helpers.js';
+import { isCustomType } from '../type-helpers.js';
+import { SyntaxKind as SK } from 'ts-morph';
+import type { InferenceState, SettingProperties } from './types.js';
 
 /**
  * If we can prove the default is a string array, return `listOf str`; if it's an array of objects,
@@ -34,14 +30,9 @@ export function inferArrayTypes(
   valueObj: ObjectLiteralExpression,
   props: SettingProperties,
   state: InferenceState,
-  checker: TypeChecker,
+  checker: TypeChecker
 ): InferenceState {
-  const {
-    finalNixType,
-    defaultValue,
-    hasStringArray,
-    hasIdentifierStringArray,
-  } = state;
+  const { finalNixType, defaultValue, hasStringArray, hasIdentifierStringArray } = state;
   let newFinalNixType = finalNixType;
   let newDefaultValue = defaultValue;
 
@@ -62,10 +53,7 @@ export function inferArrayTypes(
   // Arrays of objects (literal or typed) become `listOf attrs`. Identifier
   // defaults stay attrs unless we can see the literal, because static analysis
   // can't verify their contents safely
-  if (
-    (newFinalNixType === NIX_TYPE_ATTRS || newFinalNixType === NIX_TYPE_STR) &&
-    hasObjectArray
-  ) {
+  if ((newFinalNixType === NIX_TYPE_ATTRS || newFinalNixType === NIX_TYPE_STR) && hasObjectArray) {
     const init = getDefaultPropertyInitializer(valueObj);
     // Only upgrade when we can see the literal array or its `as` expression right here
     const isIdentifierDefault = init

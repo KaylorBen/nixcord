@@ -322,8 +322,8 @@ export function hasObjectArrayDefault(obj: ObjectLiteralExpression, checker: Typ
           const isAsConst = typeNode?.getText() === 'const';
           const arr = expr
             ? asKind<ArrayLiteralExpression>(expr, SyntaxKind.ArrayLiteralExpression).unwrapOr(
-              undefined
-            )
+                undefined
+              )
             : undefined;
           if ((isArrayType || isAsConst) && arr) {
             const elems = arr.getElements();

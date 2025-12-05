@@ -211,8 +211,8 @@ function extractOptionsFromThemePattern(
       if (body) body = unwrapNode(body);
       const obj = body
         ? asKind<ObjectLiteralExpression>(body, SyntaxKind.ObjectLiteralExpression).unwrapOr(
-          undefined
-        )
+            undefined
+          )
         : undefined;
 
       if (obj) {
@@ -438,9 +438,9 @@ function extractOptionsFromArrayFrom(call: Node, checker: TypeChecker): SelectOp
   const base = propAccess?.getExpression();
   const fromMethod =
     propAccess &&
-      base?.getKind() === SyntaxKind.Identifier &&
-      base.asKindOrThrow(SyntaxKind.Identifier).getText() === GLOBAL_ARRAY_NAME &&
-      propAccess.getName() === METHOD_NAME_FROM
+    base?.getKind() === SyntaxKind.Identifier &&
+    base.asKindOrThrow(SyntaxKind.Identifier).getText() === GLOBAL_ARRAY_NAME &&
+    propAccess.getName() === METHOD_NAME_FROM
       ? propAccess
       : undefined;
 
@@ -541,12 +541,12 @@ function extractOptionsFromCallExpression(call: Node, checker: TypeChecker): Sel
     propExpr && propExpr.getName() === METHOD_NAME_FROM
       ? extractOptionsFromArrayFrom(call, checker)
       : Result.err(
-        createExtractionError(
-          ExtractionErrorKind.UnsupportedPattern,
-          'Expected PropertyAccessExpression (e.g., .map())',
-          call
-        )
-      );
+          createExtractionError(
+            ExtractionErrorKind.UnsupportedPattern,
+            'Expected PropertyAccessExpression (e.g., .map())',
+            call
+          )
+        );
 
   if (arrayFromResult.isOk) return arrayFromResult;
 
@@ -749,8 +749,8 @@ function extractOptionsFromArrayLiteral(
               : undefined;
           const spreadArray = init
             ? asKind<ArrayLiteralExpression>(init, SyntaxKind.ArrayLiteralExpression).unwrapOr(
-              undefined
-            )
+                undefined
+              )
             : undefined;
           if (spreadArray) {
             pipe(

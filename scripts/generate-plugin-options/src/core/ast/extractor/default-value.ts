@@ -224,8 +224,8 @@ export function extractDefaultValue(
       const firstArg = args[0];
       const objLiteral = firstArg
         ? asKind<ObjectLiteralExpression>(firstArg, SyntaxKind.ObjectLiteralExpression).unwrapOr(
-          undefined
-        )
+            undefined
+          )
         : undefined;
 
       // Same as above—if the helper handed us an object literal, iterate its properties directly
