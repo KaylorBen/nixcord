@@ -2617,6 +2617,24 @@ in
       type = types.bool;
     };
   };
+  urlHighlighter = {
+    enable = mkEnableOption ''Highlights URLs in messages that match your patterns. (Equicord-only)'';
+    boldUrls = mkOption {
+      default = false;
+      description = ''Make highlighted URLs bold.'';
+      type = types.bool;
+    };
+    highlightEmbeds = mkOption {
+      default = false;
+      description = ''Also highlight URLs in embed content.'';
+      type = types.bool;
+    };
+    patterns = mkOption {
+      default = [ ];
+      description = ''URL patterns to highlight using glob patterns.'';
+      type = types.str;
+    };
+  };
   userPfp = {
     enable = mkEnableOption ''Allows you to use an animated avatar without Nitro (Equicord-only)'';
     databaseSource = mkOption {
