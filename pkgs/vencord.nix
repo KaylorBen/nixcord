@@ -26,7 +26,7 @@ let
   stableHash = "sha256-QY23r5URr0yDuZXamnW7Nrp+GAJOZ2Q+yZiyEHB8+o8=";
   stablePnpmDeps = "sha256-5MjxEs+jbowJJbJ9+Z+vppFImpB+PZzEhntwRAgv+xM=";
 
-  unstableVersion = "1.13.6-unstable-2025-12-06";
+  unstableVersion = "1.13.7-unstable-2025-12-06";
   unstableRev = "7098f41c5bbe76edd62151042e4bd7c7d15ac2f6";
   unstableHash = "sha256-LfNZQoJ49xxcfGx0JfNJb5YbeW2HTUX3d6KZl7+fUmc=";
   unstablePnpmDeps = "sha256-M9yZxBtuZg5KwG2Sli+f6Ionwccq7F7tI8/FnP1iObA=";
