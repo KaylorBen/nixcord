@@ -1966,6 +1966,29 @@ in
   saveFavoriteGiFs = {
     enable = mkEnableOption ''Save favorite GIF urls to a file (Equicord-only)'';
   };
+  scheduledMessages = {
+    enable = mkEnableOption ''Schedule messages to be sent at a specific time or after a delay. (Equicord-only)'';
+    checkIntervalSeconds = mkOption {
+      default = 10.0;
+      description = ''How often to check for messages to send (seconds).'';
+      type = types.float;
+    };
+    maxMessagesPerMinute = mkOption {
+      default = 3.0;
+      description = ''Max scheduled messages per channel that can fire in the same minute.'';
+      type = types.float;
+    };
+    showNotifications = mkOption {
+      default = true;
+      description = ''Show toast notifications when messages are sent.'';
+      type = types.bool;
+    };
+    showPhantomMessages = mkOption {
+      default = true;
+      description = ''Show scheduled messages as phantom messages in chat.'';
+      type = types.bool;
+    };
+  };
   screenRecorder = {
     enable = mkEnableOption ''epic screen recorder lol (Equicord-only)'';
   };
@@ -2785,9 +2808,6 @@ in
       description = ''Automatically uncollapse voice settings by default'';
       type = types.bool;
     };
-  };
-  vcSupport = {
-    enable = mkEnableOption ''Wumpus Dance + Support Warnings (Equicord-only)'';
   };
   viewRawVariant = {
     enable = mkEnableOption ''Copy/View raw content of any message, channel, or guild, but show in the right click menu. (Equicord-only)'';

@@ -849,7 +849,7 @@ in
     };
     apiKey = mkOption {
       default = null;
-      description = ''Custom Last.fm API key. You shouldn't need to set this'';
+      description = ''Custom Last.fm API key. Not required but highly recommended to avoid rate limiting with our shared key'';
       type = types.nullOr types.str;
     };
     clickableLinks = mkOption {
@@ -1694,70 +1694,70 @@ in
       type = types.nullOr types.str;
     };
     theme = mkOption {
-      default = "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/dark-plus.json";
+      default = "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/dark-plus.json";
       description = ''Default themes'';
       type = types.enum [
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/dark-plus.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/dark-plus.json"
         "https://raw.githubusercontent.com/millsp/material-candy/master/material-candy.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/andromeeda.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/aurora-x.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/ayu-dark.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/catppuccin-latte.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/catppuccin-frappe.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/catppuccin-macchiato.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/catppuccin-mocha.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/dracula-soft.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/dracula.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/everforest-dark.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/everforest-light.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/github-dark-default.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/github-dark-dimmed.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/github-dark-high-contrast.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/github-dark.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/github-light-default.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/github-light-high-contrast.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/github-light.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/gruvbox-dark-hard.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/gruvbox-dark-medium.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/gruvbox-dark-soft.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/gruvbox-light-hard.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/gruvbox-light-medium.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/gruvbox-light-soft.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/houston.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/kanagawa-dragon.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/kanagawa-lotus.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/kanagawa-wave.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/laserwave.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/light-plus.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/material-theme-darker.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/material-theme.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/material-theme-lighter.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/material-theme-ocean.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/material-theme-palenight.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/min-dark.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/min-light.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/monokai.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/night-owl.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/nord.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/one-dark-pro.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/one-light.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/plastic.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/poimandres.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/red.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/rose-pine-dawn.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/rose-pine-moon.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/rose-pine.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/slack-dark.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/slack-ochin.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/snazzy-light.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/solarized-dark.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/solarized-light.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/synthwave-84.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/tokyo-night.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/vesper.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/vitesse-black.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/vitesse-dark.json"
-        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/ecd9fb1b4a38381df95048c19cf9b8bdcbb1ec09/packages/tm-themes/themes/vitesse-light.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/andromeeda.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/aurora-x.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/ayu-dark.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/catppuccin-latte.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/catppuccin-frappe.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/catppuccin-macchiato.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/catppuccin-mocha.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/dracula-soft.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/dracula.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/everforest-dark.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/everforest-light.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/github-dark-default.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/github-dark-dimmed.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/github-dark-high-contrast.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/github-dark.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/github-light-default.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/github-light-high-contrast.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/github-light.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/gruvbox-dark-hard.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/gruvbox-dark-medium.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/gruvbox-dark-soft.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/gruvbox-light-hard.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/gruvbox-light-medium.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/gruvbox-light-soft.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/houston.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/kanagawa-dragon.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/kanagawa-lotus.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/kanagawa-wave.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/laserwave.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/light-plus.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/material-theme-darker.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/material-theme.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/material-theme-lighter.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/material-theme-ocean.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/material-theme-palenight.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/min-dark.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/min-light.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/monokai.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/night-owl.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/nord.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/one-dark-pro.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/one-light.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/plastic.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/poimandres.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/red.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/rose-pine-dawn.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/rose-pine-moon.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/rose-pine.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/slack-dark.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/slack-ochin.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/snazzy-light.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/solarized-dark.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/solarized-light.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/synthwave-84.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/tokyo-night.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/vesper.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/vitesse-black.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/vitesse-dark.json"
+        "https://raw.githubusercontent.com/shikijs/textmate-grammars-themes/bc5436518111d87ea58eb56d97b3f9bec30e6b83/packages/tm-themes/themes/vitesse-light.json"
       ];
     };
     tryHljs = mkOption {
@@ -2161,11 +2161,6 @@ in
     showAutoTranslateTooltip = mkOption {
       default = true;
       description = ''Show a tooltip on the ChatBar button whenever a message is automatically translated'';
-      type = types.bool;
-    };
-    showChatBarButton = mkOption {
-      default = true;
-      description = ''Show translate button in chat bar'';
       type = types.bool;
     };
   };
