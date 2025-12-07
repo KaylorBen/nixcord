@@ -199,7 +199,7 @@ plugins plus Vencord-only plugins.
 
 ## Documentation
 
-You can find the rendered docs at: https://kaylorben.github.io/nixcord/
+You can find the rendered docs at: https://flameflag.github.io/nixcord/
 
 Alternatively, you can build them locally with `nix build .#docs-html` and view
 them with `nix run .#docs`
