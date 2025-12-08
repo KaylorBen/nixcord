@@ -1143,11 +1143,6 @@ in
       description = ''Show Rich Presence when media is paused'';
       type = types.bool;
     };
-    showTmdbButton = mkOption {
-      default = true;
-      description = ''Show TheMovieDB button in Rich Presence'';
-      type = types.bool;
-    };
     userId = mkOption {
       default = null;
       description = ''Jellyfin user ID obtained from your user profile URL'';
@@ -2004,7 +1999,7 @@ in
     };
   };
   selfForward = {
-    enable = mkEnableOption ''adds the current channel to the forward list popup (Equicord-only)'';
+    enable = mkEnableOption ''Adds the current channel to the forward list popup (Equicord-only)'';
   };
   serverSearch = {
     enable = mkEnableOption ''Navigate your servers better with a quick search button (Equicord-only)'';
@@ -2164,6 +2159,14 @@ in
   };
   spotifyActivityToggle = {
     enable = mkEnableOption ''Adds a toggle button for Spotify activity visibility. (Equicord-only)'';
+    location = mkOption {
+      default = "PANEL";
+      description = ''Where to show the spotify toggle button'';
+      type = types.enum [
+        "PANEL"
+        "TOOLBOX"
+      ];
+    };
   };
   statsfmPresence = {
     enable = mkEnableOption ''Statsfm presence to track your music (Equicord-only)'';
