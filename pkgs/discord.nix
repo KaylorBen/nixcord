@@ -254,7 +254,11 @@ let
                 perl
               ];
               text = ''
-                BRANCHES=("stable" "ptb" "canary" "development")
+                if [[ -n "''${DISCORD_BRANCHES:-}" ]]; then
+                  read -r -a BRANCHES <<< "''${DISCORD_BRANCHES//,/ }"
+                else
+                  BRANCHES=("stable" "ptb" "canary" "development")
+                fi
                 NIX_FILE="./pkgs/discord.nix"
 
                 # Validation
@@ -309,7 +313,10 @@ let
                         (";)
                       }
                       {$1$new_hash$2}xms
-                    ' "$tmp_file" || die "Failed to update hash for $platform $branch";
+                    ' "$tmp_file" || {
+                      echo "Error: Failed to update hash for $platform $branch" >&2
+                      return 1
+                    };
                 }
 
                 # Track updates

@@ -11,8 +11,12 @@ concurrency:
 
 jobs:
   update-discord:
-    name: Update Discord
+    name: Update Discord (${{ matrix.branch }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch: [stable, ptb, canary, development]
+      max-parallel: 1
     timeout-minutes: 4
     permissions:
       contents: write
@@ -80,6 +84,7 @@ jobs:
         id: update
         env:
           NIXPKGS_ALLOW_UNFREE: 1
+          DISCORD_BRANCHES: ${{ matrix.branch }}
         run: |
           set -euo pipefail
           
@@ -157,23 +162,22 @@ jobs:
           echo "::group::Testing builds"
           failed_branches=()
           
-          for branch in stable ptb canary development; do
-            echo "::notice::Testing build for $branch"
-            if ! timeout 300 nix-build --arg config '{ allowUnfree = true; }' -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./pkgs/discord.nix { branch = \"$branch\"; }" 2>&1; then
-               echo "::error::Failed to build $branch"
-               failed_branches+=("$branch")
-               continue
-            fi
-            echo "::notice::Successfully built $branch"
-            rm -f result
-          done
+          branch="${{ matrix.branch }}"
+          echo "::notice::Testing build for $branch"
+          if ! timeout 300 nix-build --arg config '{ allowUnfree = true; }' -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./pkgs/discord.nix { branch = \"$branch\"; }" 2>&1; then
+             echo "::error::Failed to build $branch"
+             failed_branches+=("$branch")
+          else
+             echo "::notice::Successfully built $branch"
+          fi
+          rm -f result || true
           
           if [[ ${#failed_branches[@]} -gt 0 ]]; then
             echo "::error::Failed to build branches: ${failed_branches[*]}"
             exit 1
           fi
           
-          echo "::notice::All Linux builds tested successfully"
+          echo "::notice::Linux build for $branch tested successfully"
           echo "::endgroup::"
 
       - name: Commit changes
