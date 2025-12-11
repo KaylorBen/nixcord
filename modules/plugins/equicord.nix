@@ -729,11 +729,6 @@ in
       description = ''Ignore DMs from bots'';
       type = types.bool;
     };
-    scary = mkOption {
-      default = false;
-      description = ''Something might happen if you ignore someone for too long...'';
-      type = types.bool;
-    };
     showDmIcons = mkOption {
       default = true;
       description = ''Show ghost icons next to individual DMs'';
