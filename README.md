@@ -8,7 +8,7 @@ with Nix!
 
 This repo can be used to make a clean looking config for Vencord or Equicord
 without needing to pollute system config with needless utils to override the
-discord pacakge, and write ugly JSON code directly in .nix files.
+discord package, and write ugly JSON code directly in .nix files.
 
 I started this project after having to reinstall my NixOS system several times,
 resulting in manually enabling and configuring the ~100 Vencord plugins more
