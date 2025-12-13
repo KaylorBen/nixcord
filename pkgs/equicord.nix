@@ -21,7 +21,7 @@
 }:
 
 let
-  version = "2025-12-12";
+  version = "2025-12-13";
   hash = "sha256-lwffnwJqbgmeF1OKTbTC4YgsC+D7IDVaWmFmL93lOe4=";
   pnpmDeps = "sha256-dKSmsFylVYl3L9aeEZJvG1rHjWsoMHEAvHF6YkxL8aw=";
 in
