@@ -90,7 +90,7 @@ let
   versions = {
     linux = {
       stable = "0.0.118";
-      ptb = "0.0.169";
+      ptb = "0.0.170";
       canary = "0.0.826";
       development = "0.0.94";
     };
@@ -110,7 +110,7 @@ let
       };
       ptb = fetchurl {
         url = "https://ptb.dl2.discordapp.net/apps/linux/${versions.linux.ptb}/discord-ptb-${versions.linux.ptb}.tar.gz";
-        hash = "sha256-IK02ro+c2fzsu7vMf/zl0cFxA2jmf7NCv3M2XJ5/EMs=";
+        hash = "sha256-HLuq1/hlKOygxJtJl5hooAbmeqioTX2yfSoAG3HphFo=";
       };
       canary = fetchurl {
         url = "https://canary.dl2.discordapp.net/apps/linux/${versions.linux.canary}/discord-canary-${versions.linux.canary}.tar.gz";
