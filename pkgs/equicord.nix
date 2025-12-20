@@ -8,6 +8,8 @@
   lib,
   nodejs,
   pnpm_10,
+  fetchPnpmDeps,
+  pnpmConfigHook,
   stdenv,
   buildWebExtension ? false,
   writeShellApplication,
@@ -36,7 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     inherit hash;
   };
 
-  pnpmDeps = pnpm_10.fetchDeps {
+  pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
     fetcherVersion = 1;
     hash = pnpmDeps;
@@ -45,7 +47,8 @@ stdenv.mkDerivation (finalAttrs: {
   nativeBuildInputs = [
     git
     nodejs
-    pnpm_10.configHook
+    pnpm_10
+    pnpmConfigHook
   ];
 
   env = {
