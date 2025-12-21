@@ -52,6 +52,8 @@ jobs:
 
       - uses: DeterminateSystems/nix-installer-action@v21
         with:
+          extra-conf: |
+            extra-nix-path = nixpkgs=flake:github:NixOS/nixpkgs/nixos-unstable
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get old version
@@ -184,10 +186,12 @@ jobs:
       actions: write
     if: needs.update-plugin.result == 'success' && needs.update-plugin.outputs.changes == 'true'
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v6.0.1
 
       - uses: DeterminateSystems/nix-installer-action@v21
         with:
+          extra-conf: |
+            extra-nix-path = nixpkgs=flake:github:NixOS/nixpkgs/nixos-unstable
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate plugin options
@@ -221,7 +225,7 @@ jobs:
       actions: write
     if: needs.generate-plugin-options.result == 'success' && needs.generate-plugin-options.outputs.changes == 'true'
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v6.0.1
 
       - name: Commit changes
         id: commit

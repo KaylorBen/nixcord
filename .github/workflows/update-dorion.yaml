@@ -23,6 +23,9 @@ jobs:
           fetch-depth: 1
 
       - uses: DeterminateSystems/nix-installer-action@v21
+        with:
+          extra-conf: |
+            extra-nix-path = nixpkgs=flake:github:NixOS/nixpkgs/nixos-unstable
 
       - name: Validate workspace
         run: |
