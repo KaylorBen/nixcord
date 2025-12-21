@@ -1,7 +1,3 @@
-# Made from nixpkgs pkg and updated with nix-update
-# identical to nixpkgs source, but maintained here for
-# quicker updates that don't wait on hydra
-
 {
   fetchFromGitHub,
   gitMinimal,
@@ -11,6 +7,7 @@
   buildWebExtension ? false,
   unstable ? false,
   pnpm_10,
+  fetchPnpmDeps,
   writeShellApplication,
   cacert,
   coreutils,
@@ -24,7 +21,7 @@
 let
   stableVersion = "1.13.11";
   stableHash = "sha256-PSA1CD5YMDSNrP6JUEfdqSC1fNXXWHKsu5hCXnoXGCA=";
-  stablePnpmDeps = "sha256-K9rjPsODn56kM2k5KZHxY99n8fKvWbRbxuxFpYVXYks=";
+  stablePnpmDeps = "sha256-103mxmXBupvQ/H7MRPFaAWmHrzYw8r6U10XH4tfmfaY=";
 
   unstableVersion = "1.13.11-unstable-2025-12-20";
   unstableRev = "e5df9b394e1183bd76fe0b09efda228063ad4dca";
@@ -42,8 +39,22 @@ stdenv.mkDerivation (finalAttrs: {
     hash = if unstable then unstableHash else stableHash;
   };
 
-  pnpmDeps = pnpm_10.fetchDeps {
-    inherit (finalAttrs) pname src;
+  patches = [ ./fix-deps.patch ];
+
+  postPatch = ''
+    substituteInPlace packages/vencord-types/package.json \
+      --replace-fail '"@types/react": "18.3.1"' '"@types/react": "19.0.12"'
+  '';
+
+  pnpmDeps = fetchPnpmDeps {
+    inherit (finalAttrs)
+      pname
+      src
+      patches
+      postPatch
+      ;
+    pnpm = pnpm_10;
+    fetcherVersion = 2;
     hash = if unstable then unstablePnpmDeps else stablePnpmDeps;
   };
 
@@ -89,19 +100,12 @@ stdenv.mkDerivation (finalAttrs: {
       UPDATE_TYPE="${if unstable then "unstable" else "stable"}"
       UPDATE_BOOL="${if unstable then "true" else "false"}"
 
-      if [[ ! -f "$NIX_FILE" ]]; then
-        echo "Error: File $NIX_FILE does not exist"
-        exit 1
-      fi
-
       backup_file="$NIX_FILE.backup.$(date +%s)"
       cp "$NIX_FILE" "$backup_file"
-      echo "Created backup: $backup_file"
 
       cleanup() {
         local exit_code=$?
         if [[ $exit_code -ne 0 && -f "$backup_file" ]]; then
-          echo "Restoring backup due to error..." >&2
           cp "$backup_file" "$NIX_FILE"
         fi
         rm -f "$backup_file"
@@ -126,52 +130,28 @@ stdenv.mkDerivation (finalAttrs: {
       update_source_hash() {
         local rev="$1"
         local prefix="$2"
-        echo "Fetching source hash..."
         local new_src_hash
         new_src_hash=$(nix-prefetch-github "${finalAttrs.src.owner}" "${finalAttrs.src.repo}" --rev "$rev" | jq -r .hash)
-        echo "New source hash: $new_src_hash"
         update_value_perl "''${prefix}Hash" "$new_src_hash"
       }
 
       update_pnpm_deps_hash() {
         local prefix="$1"
-        echo "Fetching pnpm dependencies hash..."
-
-        # First, try to get the hash by temporarily setting it to empty and catching the error
         old_hash_line=$(grep -n "''${prefix}PnpmDeps.*=" "$NIX_FILE" | head -1)
         if [[ -n "$old_hash_line" ]]; then
           old_hash=$(echo "$old_hash_line" | sed -n 's/.*"sha256-\([^"]*\)".*/\1/p')
-          echo "Found old hash: sha256-$old_hash"
-
-          # Temporarily set hash to empty to trigger hash mismatch
           update_value_perl "''${prefix}PnpmDeps" ""
-          echo "Set hash to empty, attempting build..."
-
-          # Try to build and capture the expected hash from error message
           if build_output=$(nix-build -E "with import <nixpkgs> {}; (callPackage ./pkgs/vencord.nix { unstable = $UPDATE_BOOL; }).pnpmDeps" --no-link --pure 2>&1); then
-            # If it succeeds with empty hash, something is wrong
-            echo "Warning: Build succeeded with empty hash, this shouldn't happen"
             update_value_perl "''${prefix}PnpmDeps" "sha256-$old_hash"
           else
-            echo "Build failed as expected, extracting hash..."
-            # Extract the expected hash from error message - try multiple patterns
             if new_pnpm_hash=$(echo "$build_output" | grep -oE "got:\s+sha256-[A-Za-z0-9+/=]+" | sed 's/got:\s*//' | head -1); then
-              echo "New pnpm deps hash: $new_pnpm_hash"
               update_value_perl "''${prefix}PnpmDeps" "$new_pnpm_hash"
             elif new_pnpm_hash=$(echo "$build_output" | grep -oE "sha256-[A-Za-z0-9+/=]+" | tail -1); then
-              echo "New pnpm deps hash (fallback): $new_pnpm_hash"
               update_value_perl "''${prefix}PnpmDeps" "$new_pnpm_hash"
             else
-              echo "Warning: Could not extract hash from build output"
-              echo "=== BUILD OUTPUT START ==="
-              echo "$build_output"
-              echo "=== BUILD OUTPUT END ==="
-              # Restore old hash
               update_value_perl "''${prefix}PnpmDeps" "sha256-$old_hash"
             fi
           fi
-        else
-          echo "Warning: Could not find existing pnpm deps hash line"
         fi
       }
 
@@ -184,56 +164,20 @@ stdenv.mkDerivation (finalAttrs: {
 
       if [ "$UPDATE_BOOL" = "true" ]; then
         base_version=$(get_latest_stable_tag | sed 's/^v//')
-        echo "Getting main branch commit info..."
-        main_commit_response=$(curl -s "https://api.github.com/repos/Vendicated/Vencord/commits/main")
-
-        if ! echo "$main_commit_response" | jq empty 2>/dev/null; then
-          echo "Error: Invalid JSON response from GitHub API"
-          echo "Response: $main_commit_response"
-          exit 1
-        fi
-
-        revision=$(echo "$main_commit_response" | jq -r '.sha // empty')
-        if [[ -z "$revision" || "$revision" == "null" ]]; then
-          echo "Error: Could not extract sha from API response"
-          echo "Response: $main_commit_response"
-          exit 1
-        fi
-
-        echo "Getting commit details for $revision..."
-        commit_response=$(curl -s "https://api.github.com/repos/Vendicated/Vencord/commits/$revision")
-
-        if ! echo "$commit_response" | jq empty 2>/dev/null; then
-          echo "Error: Invalid JSON response from GitHub API for commit details"
-          echo "Response: $commit_response"
-          exit 1
-        fi
-
-        commit_date=$(echo "$commit_response" | jq -r '.commit.committer.date // empty' | cut -d'T' -f1)
-        if [[ -z "$commit_date" || "$commit_date" == "null" ]]; then
-          echo "Error: Could not extract commit date from API response"
-          echo "Response: $commit_response"
-          exit 1
-        fi
-
+        revision=$(curl -s "https://api.github.com/repos/Vendicated/Vencord/commits/main" | jq -r '.sha')
+        commit_date=$(curl -s "https://api.github.com/repos/Vendicated/Vencord/commits/$revision" | jq -r '.commit.committer.date' | cut -d'T' -f1)
         version="''${base_version}-unstable-''${commit_date}"
-        echo "New $UPDATE_TYPE version: $version"
-        echo "New revision: $revision"
         update_value_perl "''${UPDATE_TYPE}Rev" "$revision"
       else
         new_tag=$(get_latest_stable_tag)
-        if [[ ! "$new_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          echo "Error: Invalid stable version format: $new_tag"
-          exit 1
-        fi
         version="''${new_tag#v}"
         revision="$new_tag"
-        echo "New $UPDATE_TYPE version: $version"
       fi
 
       update_value_perl "''${UPDATE_TYPE}Version" "$version"
       update_source_hash "$revision" "$UPDATE_TYPE"
       update_pnpm_deps_hash "$UPDATE_TYPE"
+      echo "Update complete"
     '';
   };
 
@@ -241,11 +185,6 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Vencord web extension" + lib.optionalString unstable " (Unstable)";
     homepage = "https://github.com/Vendicated/Vencord";
     license = lib.licenses.gpl3Only;
-    maintainers = with lib.maintainers; [
-      donteatoreo
-      FlafyDev
-      NotAShelf
-      Scrumplex
-    ];
+    maintainers = with lib.maintainers; [ FlameFlag ];
   };
 })

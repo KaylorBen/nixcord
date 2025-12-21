@@ -21,9 +21,9 @@
 }:
 
 let
-  version = "2025-12-20";
+  version = "2025-12-21";
   hash = "sha256-ur/Jsft2ILvMB7BmnjAA2xh1ZHExYVaRnF1fXbz1psQ=";
-  pnpmDeps = "sha256-iBCA4G1E1Yw/d94pQzcbBGJYeIIgZI+Gw87/x4ogoyg=";
+  pnpmDeps = "sha256-NUVYVwMiF7bvULzvoddAm4Yp+dhdsJv5uwmLAmph/Fs=";
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "equicord";
@@ -38,7 +38,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   pnpmDeps = pnpm_10.fetchDeps {
     inherit (finalAttrs) pname version src;
+    pnpm = pnpm_10;
     hash = pnpmDeps;
+    fetcherVersion = 1;
   };
 
   nativeBuildInputs = [
@@ -96,6 +98,7 @@ stdenv.mkDerivation (finalAttrs: {
           perl -i -pe "$1" "$NIX_FILE"
         }
 
+        echo "Fetching latest Equicord tag..."
         new_tag=$(
           curl -s "https://api.github.com/repos/Equicord/Equicord/tags" |
             jq -r '.[] | select(.name | test("^\\d{4}-\\d{2}-\\d{2}$")) | .name' |
@@ -105,11 +108,13 @@ stdenv.mkDerivation (finalAttrs: {
 
         [[ ! "$new_tag" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] && exit 1
 
+        echo "Updating to version: $new_tag"
         new_hash=$(nix-prefetch-github "Equicord" "Equicord" --rev "$new_tag" |jq -r .hash)
 
         update_inplace "s|version = \".*\";|version = \"$new_tag\";|"
         update_inplace "s|hash = \"sha256-[^\"]*\";|hash = \"$new_hash\";|"
 
+        echo "Updating pnpm dependencies hash..."
         old_pnpm_hash=$(
           grep -o 'pnpmDeps = "sha256-[^"]*";' "$NIX_FILE" |
             sed 's/.*"sha256-\([^"]*\)".*/\1/'
@@ -138,6 +143,7 @@ stdenv.mkDerivation (finalAttrs: {
           new_pnpm_hash="sha256-$old_pnpm_hash"
 
         update_inplace "s|pnpmDeps = \"\";|pnpmDeps = \"$new_pnpm_hash\";|"
+        echo "Update complete"
       '';
     };
   };
