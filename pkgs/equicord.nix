@@ -23,7 +23,7 @@
 let
   version = "2025-12-21";
   hash = "sha256-ur/Jsft2ILvMB7BmnjAA2xh1ZHExYVaRnF1fXbz1psQ=";
-  pnpmDeps = "sha256-NUVYVwMiF7bvULzvoddAm4Yp+dhdsJv5uwmLAmph/Fs=";
+  pnpmDeps = "sha256-iBCA4G1E1Yw/d94pQzcbBGJYeIIgZI+Gw87/x4ogoyg=";
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "equicord";
