@@ -48,7 +48,7 @@ jobs:
             version_truncate: true
 
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v6.0.1
 
       - uses: DeterminateSystems/nix-installer-action@v21
         with:
@@ -95,7 +95,7 @@ jobs:
           fi
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New ${{ matrix.variant }} version: $NEW_VERSION"
-          
+
           if [[ "${{ steps.old-version.outputs.version }}" == "$NEW_VERSION" ]]; then
             echo "::warning::No version change detected for ${{ matrix.variant }} - no commit needed"
           else
@@ -230,7 +230,7 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
-          
+
           echo "::group::Preparing commit"
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'

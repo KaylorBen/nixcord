@@ -22,11 +22,11 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v6.0.1
         with:
           fetch-depth: 1
 
-      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/nix-installer-action@v21
 
       - name: Validate workspace
         run: |
@@ -42,9 +42,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          
+
           echo "::group::Extracting current versions"
-          
+
           if ! perl_output=$(perl -ne '
             BEGIN { our $platform = ""; }
             if (/^\s*linux\s*=\s*\{/) { $platform="linux"; }
@@ -77,7 +77,7 @@ jobs:
               echo "::warning::Unexpected Perl output line: [$line]"
             fi
           done < <(echo "$perl_output" | tr -d '\r')
-          
+
           echo "::endgroup::"
 
       - name: Update Discord
@@ -87,7 +87,7 @@ jobs:
           DISCORD_BRANCHES: ${{ matrix.branch }}
         run: |
           set -euo pipefail
-          
+
           echo "::group::Building update script"
           if ! nix build --impure --expr 'let pkgs = import <nixpkgs> { config.allowUnfree = true; }; in (pkgs.callPackage ./pkgs/discord.nix {}).passthru.updateScript' 2>&1; then
             echo "::error::Failed to build the update script"
@@ -102,7 +102,7 @@ jobs:
           fi
           echo "::notice::Discord update script completed successfully"
           echo "::endgroup::"
-          
+
           rm -f ./result
 
       - name: Get new versions
@@ -110,14 +110,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          
+
           echo "::group::Extracting updated versions"
-          
+
           if [[ ! -f ./pkgs/discord.nix ]]; then
             echo "::error::pkgs/discord.nix not found after update script ran"
             exit 1
           fi
-          
+
           if ! perl_output=$(perl -ne '
             BEGIN { our $platform = ""; }
             if (/^\s*linux\s*=\s*\{/) { $platform="linux"; }
@@ -150,7 +150,7 @@ jobs:
               echo "::warning::Unexpected Perl output line: [$line]"
              fi
           done < <(echo "$perl_output" | tr -d '\r')
-          
+
           echo "::endgroup::"
 
       - name: Test Build
@@ -158,10 +158,10 @@ jobs:
           NIXPKGS_ALLOW_UNFREE: 1
         run: |
           set -euo pipefail
-          
+
           echo "::group::Testing builds"
           failed_branches=()
-          
+
           branch="${{ matrix.branch }}"
           echo "::notice::Testing build for $branch"
           if ! timeout 300 nix-build --arg config '{ allowUnfree = true; }' -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./pkgs/discord.nix { branch = \"$branch\"; }" 2>&1; then
@@ -171,12 +171,12 @@ jobs:
              echo "::notice::Successfully built $branch"
           fi
           rm -f result || true
-          
+
           if [[ ${#failed_branches[@]} -gt 0 ]]; then
             echo "::error::Failed to build branches: ${failed_branches[*]}"
             exit 1
           fi
-          
+
           echo "::notice::Linux build for $branch tested successfully"
           echo "::endgroup::"
 
@@ -212,9 +212,9 @@ jobs:
           NEW_darwin_development: ${{ steps.new-versions.outputs.darwin_development }}
         run: |
           set -euo pipefail
-          
+
           echo "::group::Preparing commit"
-          
+
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 

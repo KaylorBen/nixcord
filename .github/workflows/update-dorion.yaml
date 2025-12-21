@@ -18,11 +18,11 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v6.0.1
         with:
           fetch-depth: 1
 
-      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/nix-installer-action@v21
 
       - name: Validate workspace
         run: |
@@ -38,22 +38,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          
+
           echo "::group::Extracting current version"
-          
+
           if ! OLD_VERSION=$(perl -ne 'print $1 if /^\s*version\s*=\s*"([^"]+)";/' pkgs/dorion.nix 2>&1); then
             echo "::error::Failed to extract current version from dorion.nix"
             exit 1
           fi
-          
+
           if [[ -z "$OLD_VERSION" ]]; then
             echo "::error::No version found in dorion.nix"
             exit 1
           fi
-          
+
           echo "::notice::Current version: $OLD_VERSION"
           echo "version=$OLD_VERSION" >> $GITHUB_OUTPUT
-          
+
           echo "::endgroup::"
 
       - name: Update Dorion
@@ -62,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          
+
           echo "::group::Building update script"
           if ! nix build --impure --expr 'let pkgs = import <nixpkgs> { config.allowUnfree = true; }; in (pkgs.callPackage ./pkgs/dorion.nix {}).passthru.updateScript' 2>&1; then
             echo "::error::Failed to build the update script"
@@ -77,7 +77,7 @@ jobs:
           fi
           echo "::notice::Dorion update script completed successfully"
           echo "::endgroup::"
-          
+
           rm -f ./result
 
       - name: Get new version
@@ -85,22 +85,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          
+
           echo "::group::Extracting updated version"
-          
+
           if ! NEW_VERSION=$(perl -ne 'print $1 if /^\s*version\s*=\s*"([^"]+)";/' pkgs/dorion.nix 2>&1); then
             echo "::error::Failed to extract updated version from dorion.nix"
             exit 1
           fi
-          
+
           if [[ -z "$NEW_VERSION" ]]; then
             echo "::error::No version found in updated dorion.nix"
             exit 1
           fi
-          
+
           echo "::notice::Updated version: $NEW_VERSION"
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          
+
           echo "::endgroup::"
 
       - name: Test Build
@@ -108,25 +108,25 @@ jobs:
           NIXPKGS_ALLOW_UNFREE: 1
         run: |
           set -euo pipefail
-          
+
           echo "::group::Testing build"
           echo "::notice::Testing dorion build..."
-          
+
           if ! timeout 300 nix-build -E "let pkgs = import <nixpkgs> {}; in pkgs.callPackage ./pkgs/dorion.nix {}" 2>&1; then
             echo "::error::Build failed"
             exit 1
           fi
-          
+
           echo "::notice::Build test successful"
           rm -f result
-          
+
           echo "::endgroup::"
 
       - name: Check for changes
         id: check-changes
         run: |
           set -euo pipefail
-          
+
           if [[ "${{ steps.old-version.outputs.version }}" == "${{ steps.new-version.outputs.version }}" ]]; then
             echo "::notice::No version changes detected"
             echo "has_changes=false" >> $GITHUB_OUTPUT
@@ -141,9 +141,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          
+
           echo "::group::Preparing commit"
-          
+
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 

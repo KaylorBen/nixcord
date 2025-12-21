@@ -5,10 +5,10 @@ on:
     branches:
       - main
     paths:
-      - 'flake.nix'
-      - 'flake.lock'
-      - 'modules/**'
-      - 'docs/**'
+      - "flake.nix"
+      - "flake.lock"
+      - "modules/**"
+      - "docs/**"
   workflow_dispatch:
 
 jobs:
@@ -25,14 +25,14 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4.2.2
+      - uses: actions/checkout@v6.0.1
         with:
           fetch-depth: 1
 
-      - uses: DeterminateSystems/nix-installer-action@v17
+      - uses: DeterminateSystems/nix-installer-action@v21
 
       - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v5.0.0
 
       - name: Build documentation
         run: |
@@ -41,7 +41,7 @@ jobs:
           unlink result
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3.0.1
+        uses: actions/upload-pages-artifact@v4.0.0
         with:
           path: ./public
 
