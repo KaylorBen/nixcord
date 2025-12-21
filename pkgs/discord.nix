@@ -248,59 +248,49 @@ let
               runtimeInputs = [
                 cacert
                 nix
-                coreutils # For base64
                 curl
                 gnugrep
                 perl
               ];
               text = ''
                 if [[ -n "''${DISCORD_BRANCHES:-}" ]]; then
-                  read -r -a BRANCHES <<< "''${DISCORD_BRANCHES//,/ }"
+                  IFS=' ' read -r -a BRANCHES <<< "''${DISCORD_BRANCHES}"
                 else
-                  BRANCHES=("stable" "ptb" "canary" "development")
-                fi
-                NIX_FILE="./pkgs/discord.nix"
-
-                # Validation
-                if [[ ! -f "$NIX_FILE" ]]; then
-                    echo "Error: Could not find Nix expression at '$NIX_FILE'" >&2
-                    exit 1
+                  BRANCHES=(stable ptb canary development)
                 fi
 
-                backup_file="$NIX_FILE.backup.$(date +%s)"
-                cp "$NIX_FILE" "$backup_file"
-                echo "Created backup: $backup_file"
+                for BRANCH in "''${BRANCHES[@]}"; do
+                  # Get Linux URL and version
+                  linux_url=$(curl -sI -L -o /dev/null -w '%{url_effective}' "https://discord.com/api/download/$BRANCH?platform=linux&format=tar.gz")
+                  linux_version=$(echo "$linux_url" | grep -oP 'apps/linux/\K([0-9]+\.[0-9]+\.[0-9]+)')
 
-                tmp_file=$(mktemp)
-                cp "$NIX_FILE" "$tmp_file"
+                  # Get Linux hash
+                  linux_hash=$(nix-prefetch-url --type sha256 "$linux_url")
+                  linux_sri_hash=$(nix hash convert --to sri --hash-algo sha256 "$linux_hash")
 
-                # Cleanup function
-                cleanup() {
-                  local exit_code=$?
-                  if [[ -f "$tmp_file" ]]; then
-                    rm -f "$tmp_file"
-                  fi
-                  if [[ $exit_code -ne 0 && -f "$backup_file" ]]; then
-                    echo "Restoring backup due to error..." >&2
-                    cp "$backup_file" "$NIX_FILE"
-                  fi
-                  rm -f "$backup_file"
-                  exit $exit_code
-                }
-                trap cleanup EXIT
+                  # Get Darwin URL and version
+                  darwin_url=$(curl -sI -L -o /dev/null -w '%{url_effective}' "https://discord.com/api/download/$BRANCH?platform=osx&format=dmg")
+                  darwin_version=$(echo "$darwin_url" | grep -oP 'apps/osx/\K([0-9]+\.[0-9]+\.[0-9]+)')
 
-                update_hash_perl() {
-                  local platform="$1"
-                  local branch="$2"
-                  local new_hash="$3"
-                  
-                  if [[ -z "$platform" || -z "$branch" || -z "$new_hash" ]]; then
-                    echo "Error: update_hash_perl requires platform, branch, and new_hash" >&2
-                    return 1
-                  fi
-                  
-                  PLATFORM="$platform" BRANCH="$branch" NEWHASH="$new_hash" \
-                  perl -0777 -i -pe '
+                  # Get Darwin hash
+                  darwin_hash=$(nix-prefetch-url --type sha256 "$darwin_url")
+                  darwin_sri_hash=$(nix hash convert --to sri --hash-algo sha256 "$darwin_hash")
+
+                  # Update versions
+                  LINUX_VERSION="$linux_version" DARWIN_VERSION="$darwin_version" BRANCH="$BRANCH" perl -i -pe '
+                    my $linux_version = $ENV{"LINUX_VERSION"};
+                    my $darwin_version = $ENV{"DARWIN_VERSION"};
+                    my $branch = $ENV{"BRANCH"};
+                    if (/^\s*linux\s*=\s*\{/../^\s*\}/) {
+                      s/^(\s*)$branch(\s*=\s*)"[^"]+";/$1$branch$2"$linux_version";/;
+                    }
+                    if (/^\s*darwin\s*=\s*\{/../^\s*\}/) {
+                      s/^(\s*)$branch(\s*=\s*)"[^"]+";/$1$branch$2"$darwin_version";/;
+                    }
+                  ' ./pkgs/discord.nix
+
+                  # Update hashes
+                  PLATFORM="x86_64-linux" BRANCH="$BRANCH" NEWHASH="$linux_sri_hash" perl -0777 -i -pe '
                     my $platform = $ENV{"PLATFORM"};
                     my $branch = $ENV{"BRANCH"};
                     my $new_hash = $ENV{"NEWHASH"};
@@ -313,145 +303,23 @@ let
                         (";)
                       }
                       {$1$new_hash$2}xms
-                    ' "$tmp_file" || {
-                      echo "Error: Failed to update hash for $platform $branch" >&2
-                      return 1
-                    };
-                }
+                    ' ./pkgs/discord.nix
 
-                # Track updates
-                updated_branches=()
-                failed_branches=()
-
-                for BRANCH in "''${BRANCHES[@]}"; do
-                  echo "Processing branch: $BRANCH"
-                  
-                  # LINUX
-                  echo "  Fetching Linux URL for $BRANCH..."
-                  if ! linux_url=$(timeout 30 curl -sI -L -o /dev/null -w '%{url_effective}' "https://discord.com/api/download/$BRANCH?platform=linux&format=tar.gz" 2>/dev/null); then
-                    echo "  Warning: Failed to fetch Linux URL for $BRANCH" >&2
-                    failed_branches+=("$BRANCH-linux")
-                    continue
-                  fi
-                  
-                  if ! linux_version=$(echo "$linux_url" | grep -oP 'apps/linux/\K([0-9]+\.[0-9]+\.[0-9]+)'); then
-                    echo "  Warning: Could not extract Linux version for $BRANCH from URL: $linux_url" >&2
-                    failed_branches+=("$BRANCH-linux")
-                    continue
-                  fi
-                  
-                  echo "  Found Linux version: $linux_version"
-                  
-                  echo "  Fetching Linux hash..."
-                  if ! linux_hash=$(timeout 120 nix-prefetch-url --type sha256 "$linux_url" 2>/dev/null); then
-                    echo "  Warning: Failed to fetch Linux hash for $BRANCH" >&2
-                    failed_branches+=("$BRANCH-linux")
-                    continue
-                  fi
-                  
-                  if ! linux_sri_hash=$(nix hash convert --to sri --hash-algo sha256 "$linux_hash" 2>/dev/null); then
-                    echo "  Warning: Failed to convert Linux hash to SRI for $BRANCH" >&2
-                    failed_branches+=("$BRANCH-linux")  
-                    continue
-                  fi
-
-                  # DARWIN
-                  echo "  Fetching Darwin URL for $BRANCH..."
-                  if ! darwin_url=$(timeout 30 curl -sI -L -o /dev/null -w '%{url_effective}' "https://discord.com/api/download/$BRANCH?platform=osx&format=dmg" 2>/dev/null); then
-                    echo "  Warning: Failed to fetch Darwin URL for $BRANCH" >&2
-                    failed_branches+=("$BRANCH-darwin")
-                    continue
-                  fi
-                  
-                  if ! darwin_version=$(echo "$darwin_url" | grep -oP 'apps/osx/\K([0-9]+\.[0-9]+\.[0-9]+)'); then
-                    echo "  Warning: Could not extract Darwin version for $BRANCH from URL: $darwin_url" >&2
-                    failed_branches+=("$BRANCH-darwin")
-                    continue
-                  fi
-                  
-                  echo "  Found Darwin version: $darwin_version"
-                  
-                  echo "  Fetching Darwin hash..."
-                  if ! darwin_hash=$(timeout 120 nix-prefetch-url --type sha256 "$darwin_url" 2>/dev/null); then
-                    echo "  Warning: Failed to fetch Darwin hash for $BRANCH" >&2
-                    failed_branches+=("$BRANCH-darwin")
-                    continue
-                  fi
-                  
-                  if ! darwin_sri_hash=$(nix hash convert --to sri --hash-algo sha256 "$darwin_hash" 2>/dev/null); then
-                    echo "  Warning: Failed to convert Darwin hash to SRI for $BRANCH" >&2
-                    failed_branches+=("$BRANCH-darwin")
-                    continue
-                  fi
-
-                  # Update versions
-                  echo "  Updating versions in file..."
-                  
-                  # Linux version
-                  if ! BRANCH="$BRANCH" LINUX_VERSION="$linux_version" perl -i -pe '
+                  PLATFORM="x86_64-darwin" BRANCH="$BRANCH" NEWHASH="$darwin_sri_hash" perl -0777 -i -pe '
+                    my $platform = $ENV{"PLATFORM"};
                     my $branch = $ENV{"BRANCH"};
-                    my $version = $ENV{"LINUX_VERSION"};
-                    if (/^\s*linux\s*=\s*\{/../^\s*\}/) {
-                      s/^(\s*)$branch(\s*=\s*)"[^"]+";/$1$branch$2"$version";/;
-                    }
-                  ' "$tmp_file" 2>/dev/null; then
-                    echo "  Error: Failed to update Linux version for $BRANCH" >&2
-                    failed_branches+=("$BRANCH-linux-version")
-                    continue
-                  fi
-                  
-                  # Darwin version
-                  if ! BRANCH="$BRANCH" DARWIN_VERSION="$darwin_version" perl -i -pe '
-                    my $branch = $ENV{"BRANCH"};
-                    my $version = $ENV{"DARWIN_VERSION"};
-                    if (/^\s*darwin\s*=\s*\{/../^\s*\}/) {
-                      s/^(\s*)$branch(\s*=\s*)"[^"]+";/$1$branch$2"$version";/;
-                    }
-                  ' "$tmp_file" 2>/dev/null; then
-                    echo "  Error: Failed to update Darwin version for $BRANCH" >&2
-                    failed_branches+=("$BRANCH-darwin-version")
-                    continue
-                  fi
-
-                  # Update hashes
-                  echo "  Updating hashes..."
-                  if ! update_hash_perl "x86_64-linux" "$BRANCH" "$linux_sri_hash"; then
-                    echo "  Error: Failed to update Linux hash for $BRANCH" >&2
-                    failed_branches+=("$BRANCH-linux-hash")
-                    continue
-                  fi
-                  
-                  if ! update_hash_perl "x86_64-darwin" "$BRANCH" "$darwin_sri_hash"; then
-                    echo "  Error: Failed to update Darwin hash for $BRANCH" >&2
-                    failed_branches+=("$BRANCH-darwin-hash")
-                    continue
-                  fi
-
-                  updated_branches+=("$BRANCH")
-                  echo "  Successfully updated $BRANCH (Linux: $linux_version, Darwin: $darwin_version)"
+                    my $new_hash = $ENV{"NEWHASH"};
+                    s{
+                      ($platform\s*=\s*\{\s*.*?
+                        $branch\s*=\s*fetchurl\s*\{
+                        .*?
+                        hash\s*=\s*")
+                        sha256-[A-Za-z0-9+/=]+
+                        (";)
+                      }
+                      {$1$new_hash$2}xms
+                    ' ./pkgs/discord.nix
                 done
-
-                # Summary
-                echo ""
-                echo "Update Summary:"
-                echo "  Successfully updated: ''${#updated_branches[@]} branches"
-                if [[ ''${#updated_branches[@]} -gt 0 ]]; then
-                  printf "    - %s\n" "''${updated_branches[@]}"
-                fi
-
-                if [[ ''${#failed_branches[@]} -gt 0 ]]; then
-                  echo "  Failed updates: ''${#failed_branches[@]}"
-                  printf "    - %s\n" "''${failed_branches[@]}"
-                fi
-
-                # Only update if we have some successes
-                if [[ ''${#updated_branches[@]} -gt 0 ]]; then
-                  mv "$tmp_file" "$NIX_FILE"
-                  echo "Successfully updated $NIX_FILE"
-                else
-                  echo "No successful updates, keeping original file"
-                  exit 1
-                fi
               '';
             }
           );
