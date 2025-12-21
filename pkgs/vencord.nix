@@ -11,8 +11,6 @@
   buildWebExtension ? false,
   unstable ? false,
   pnpm_10,
-  fetchPnpmDeps,
-  pnpmConfigHook,
   writeShellApplication,
   cacert,
   coreutils,
@@ -44,17 +42,16 @@ stdenv.mkDerivation (finalAttrs: {
     hash = if unstable then unstableHash else stableHash;
   };
 
-  pnpmDeps = fetchPnpmDeps {
+  pnpmDeps = pnpm_10.fetchDeps {
     inherit (finalAttrs) pname src;
     hash = if unstable then unstablePnpmDeps else stablePnpmDeps;
-    fetcherVersion = 2;
   };
 
   nativeBuildInputs = [
     gitMinimal
     nodejs_22
     pnpm_10
-    pnpmConfigHook
+    pnpm_10.configHook
   ];
 
   env = {
