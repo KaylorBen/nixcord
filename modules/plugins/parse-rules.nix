@@ -4,6 +4,7 @@
 {
   lowerPluginTitles = [ ];
   upperNames = [
+    "usrbg"
     "webhook"
     "owner"
     "administrator"

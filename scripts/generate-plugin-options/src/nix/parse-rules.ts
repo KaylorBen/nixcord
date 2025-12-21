@@ -6,6 +6,7 @@ import { NixGenerator } from './generator-base.js';
 const gen = new NixGenerator();
 
 const baseUpperNames = [
+  'usrbg',
   'webhook',
   'owner',
   'administrator',
