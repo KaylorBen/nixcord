@@ -44,6 +44,8 @@ let
     tagSettings = "tagSettings";
     useQuickCss = "useQuickCSS";
     webRichPresence = "WebRichPresence (arRPC)";
+    _24hTime = "24h Time";
+    showOwnTimezone = "Show Own Timezone";
   };
 
   normalizeName =
