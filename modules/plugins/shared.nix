@@ -6,6 +6,279 @@ let
   inherit (lib) types mkEnableOption mkOption;
 in
 {
+  AutoDNDWhilePlaying = {
+    enable = mkEnableOption ''Automatically updates your online status (online, idle, dnd) when launching games (Shared between Vencord and Equicord)'';
+    excludeInvisible = mkOption {
+      default = false;
+      description = ''Prevent automatic status changes while your status is set to invisible'';
+      type = types.bool;
+    };
+    statusToSet = mkOption {
+      default = "dnd";
+      description = ''Status to set while playing a game'';
+      type = types.enum [
+        "online"
+        "idle"
+        "dnd"
+        "invisible"
+      ];
+    };
+  };
+  BlurNSFW = {
+    enable = mkEnableOption ''Blur attachments in NSFW channels until hovered (Shared between Vencord and Equicord)'';
+    blurAllChannels = mkOption {
+      default = false;
+      description = ''Blur attachments in all channels (not just NSFW)'';
+      type = types.bool;
+    };
+    blurAmount = mkOption {
+      default = 10;
+      description = ''Blur Amount (in pixels)'';
+      type = types.int;
+    };
+  };
+  ClearURLs = {
+    enable = mkEnableOption ''Automatically removes tracking elements from URLs you send (Shared between Vencord and Equicord)'';
+  };
+  CopyUserURLs = {
+    enable = mkEnableOption ''Adds a 'Copy User URL' option to the user context menu. (Shared between Vencord and Equicord)'';
+  };
+  CustomRPC = {
+    enable = mkEnableOption ''Add a fully customisable Rich Presence (Game status) to your Discord profile (Shared between Vencord and Equicord)'';
+    config = mkOption {
+      default = { };
+      type = types.attrs;
+    };
+  };
+  LastFMRichPresence = {
+    enable = mkEnableOption ''Little plugin for Last.fm rich presence (Shared between Vencord and Equicord)'';
+    alwaysHideArt = mkOption {
+      default = false;
+      description = ''Disable downloading album art'';
+      type = types.bool;
+    };
+    apiKey = mkOption {
+      default = null;
+      description = ''Custom Last.fm API key. Not required but highly recommended to avoid rate limiting with our shared key'';
+      type = types.nullOr types.str;
+    };
+    clickableLinks = mkOption {
+      default = true;
+      description = ''Make track, artist and album names clickable links'';
+      type = types.bool;
+    };
+    hideWithActivity = mkOption {
+      default = false;
+      description = ''Hide Last.fm presence if you have any other presence'';
+      type = types.bool;
+    };
+    hideWithSpotify = mkOption {
+      default = true;
+      description = ''Hide Last.fm presence if spotify is running'';
+      type = types.bool;
+    };
+    missingArt = mkOption {
+      default = "lastfmLogo";
+      description = ''When album or album art is missing'';
+      type = types.enum [
+        "lastfmLogo"
+        "placeholder"
+      ];
+    };
+    nameFormat = mkOption {
+      default = "status-name";
+      description = ''Show name of song and artist in status name'';
+      type = types.enum [
+        "status-name"
+        "artist-first"
+        "song-first"
+        "artist"
+        "song"
+        "album"
+      ];
+    };
+    shareUsername = mkOption {
+      default = false;
+      description = ''Show link to Last.fm profile'';
+      type = types.bool;
+    };
+    showLastFmLogo = mkOption {
+      default = true;
+      description = ''Show the Last.fm logo by the album cover'';
+      type = types.bool;
+    };
+    statusDisplayType = mkOption {
+      default = "artist";
+      description = ''Show the track / artist name in the member list'';
+      type = types.enum [
+        "off"
+        "artist"
+        "track"
+      ];
+    };
+    statusName = mkOption {
+      default = "some music";
+      description = ''Custom status text'';
+      type = types.str;
+    };
+    useListeningStatus = mkOption {
+      default = false;
+      description = ''Show "Listening to" status instead of "Playing"'';
+      type = types.bool;
+    };
+    username = mkOption {
+      default = null;
+      description = ''Last.fm username'';
+      type = types.nullOr types.str;
+    };
+  };
+  MutualGroupDMs = {
+    enable = mkEnableOption ''Shows mutual group dms in profiles (Shared between Vencord and Equicord)'';
+  };
+  OnePingPerDM = {
+    enable = mkEnableOption ''If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping. Read the messages to reset the limit (Shared between Vencord and Equicord)'';
+    allowEveryone = mkOption {
+      default = false;
+      description = ''Receive audio pings for @everyone and @here in group DMs'';
+      type = types.bool;
+    };
+    allowMentions = mkOption {
+      default = false;
+      description = ''Receive audio pings for @mentions'';
+      type = types.bool;
+    };
+    alwaysPlaySound = mkOption {
+      default = false;
+      description = ''Play the message notification sound even when its disabled (restart required)'';
+      type = types.bool;
+    };
+    channelToAffect = mkOption {
+      default = "both_dms";
+      description = ''Select the type of DM for the plugin to affect'';
+      type = types.enum [
+        "both_dms"
+        "user_dm"
+        "group_dm"
+      ];
+    };
+    ignoreUsers = mkOption {
+      default = "";
+      description = ''User IDs (comma + space) whose pings should NEVER be throttled (restart required)'';
+      type = types.str;
+    };
+  };
+  PinDMs = {
+    enable = mkEnableOption ''Allows you to pin private channels to the top of your DM list. To pin/unpin or re-order pins, right click DMs (Shared between Vencord and Equicord)'';
+    canCollapseDmSection = mkOption {
+      default = false;
+      description = ''Allow uncategorised DMs section to be collapsable'';
+      type = types.bool;
+    };
+    pinOrder = mkOption {
+      default = 0;
+      description = ''
+        Which order should pinned DMs be displayed in?
+
+        Values: 0 = Most recent message, 1 = Custom (right click channels to reorder)'';
+      type = types.enum [
+        0
+        1
+      ];
+    };
+    userBasedCategoryList = mkOption {
+      default = { };
+      type = types.attrs;
+    };
+  };
+  ReviewDB = {
+    enable = mkEnableOption ''Review other users (Adds a new settings to profiles) (Shared between Vencord and Equicord)'';
+  };
+  USRBG = {
+    enable = mkEnableOption ''Displays user banners from USRBG, allowing anyone to get a banner without Nitro (Shared between Vencord and Equicord)'';
+    nitroFirst = mkOption {
+      default = true;
+      description = ''Banner to use if both Nitro and USRBG banners are present'';
+      type = types.bool;
+    };
+    voiceBackground = mkOption {
+      default = true;
+      description = ''Use USRBG banners as voice chat backgrounds (restart required)'';
+      type = types.bool;
+    };
+  };
+  XSOverlay = {
+    enable = mkEnableOption ''Forwards discord notifications to XSOverlay, for easy viewing in VR (Shared between Vencord and Equicord)'';
+    botNotifications = mkOption {
+      default = false;
+      description = ''Allow bot notifications'';
+      type = types.bool;
+    };
+    callNotifications = mkOption {
+      default = true;
+      description = ''Allow call notifications'';
+      type = types.bool;
+    };
+    channelPingColor = mkOption {
+      default = "#8a2be2";
+      description = ''Channel mention color'';
+      type = types.str;
+    };
+    dmNotifications = mkOption {
+      default = true;
+      description = ''Allow Direct Message notifications'';
+      type = types.bool;
+    };
+    groupDmNotifications = mkOption {
+      default = true;
+      description = ''Allow Group DM notifications'';
+      type = types.bool;
+    };
+    lengthBasedTimeout = mkOption {
+      default = true;
+      description = ''Extend duration with message length'';
+      type = types.bool;
+    };
+    opacity = mkOption {
+      default = 1.0;
+      description = ''Notif opacity'';
+      type = types.float;
+    };
+    pingColor = mkOption {
+      default = "#7289da";
+      description = ''User mention color'';
+      type = types.str;
+    };
+    preferUDP = mkOption {
+      default = false;
+      description = ''Enable if you use an older build of XSOverlay unable to connect through websockets. This setting is ignored on web.'';
+      type = types.bool;
+    };
+    serverNotifications = mkOption {
+      default = true;
+      description = ''Allow server notifications'';
+      type = types.bool;
+    };
+    soundPath = mkOption {
+      default = "default";
+      description = ''Notification sound (default/warning/error)'';
+      type = types.str;
+    };
+    timeout = mkOption {
+      default = 3;
+      description = ''Notification duration (secs)'';
+      type = types.int;
+    };
+    volume = mkOption {
+      default = 0.2;
+      description = ''Volume'';
+      type = types.float;
+    };
+    webSocketPort = mkOption {
+      default = 42070;
+      description = ''Websocket port'';
+      type = types.int;
+    };
+  };
   accountPanelServerProfile = {
     enable = mkEnableOption ''Right click your account panel in the bottom left to view your profile in the current server (Shared between Vencord and Equicord)'';
     prioritizeServerProfile = mkOption {
@@ -189,24 +462,6 @@ in
       ];
     };
   };
-  autoDndWhilePlaying = {
-    enable = mkEnableOption ''Automatically updates your online status (online, idle, dnd) when launching games (Shared between Vencord and Equicord)'';
-    excludeInvisible = mkOption {
-      default = false;
-      description = ''Prevent automatic status changes while your status is set to invisible'';
-      type = types.bool;
-    };
-    statusToSet = mkOption {
-      default = "dnd";
-      description = ''Status to set while playing a game'';
-      type = types.enum [
-        "online"
-        "idle"
-        "dnd"
-        "invisible"
-      ];
-    };
-  };
   betterFolders = {
     enable = mkEnableOption ''Shows server folders on dedicated sidebar and adds folder related improvements (Shared between Vencord and Equicord)'';
     closeAllFolders = mkOption {
@@ -267,6 +522,11 @@ in
   };
   betterGifPicker = {
     enable = mkEnableOption ''Makes the gif picker open the favourite category by default (Shared between Vencord and Equicord)'';
+    keepOpen = mkOption {
+      default = false;
+      description = ''Keeps the gif picker open after selecting a gif'';
+      type = types.bool;
+    };
   };
   betterNotesBox = {
     enable = mkEnableOption ''Hide notes or disable spellcheck (Configure in settings!!) (Shared between Vencord and Equicord)'';
@@ -343,19 +603,6 @@ in
   biggerStreamPreview = {
     enable = mkEnableOption ''This plugin allows you to enlarge stream previews (Shared between Vencord and Equicord)'';
   };
-  blurNsfw = {
-    enable = mkEnableOption ''Blur attachments in NSFW channels until hovered (Shared between Vencord and Equicord)'';
-    blurAllChannels = mkOption {
-      default = false;
-      description = ''Blur attachments in all channels (not just NSFW)'';
-      type = types.bool;
-    };
-    blurAmount = mkOption {
-      default = 10;
-      description = ''Blur Amount (in pixels)'';
-      type = types.int;
-    };
-  };
   callTimer = {
     enable = mkEnableOption ''Adds a timer to vcs (Shared between Vencord and Equicord)'';
     format = mkOption {
@@ -366,9 +613,6 @@ in
         "human"
       ];
     };
-  };
-  clearUrLs = {
-    enable = mkEnableOption ''Automatically removes tracking elements from URLs you send (Shared between Vencord and Equicord)'';
   };
   clientTheme = {
     enable = mkEnableOption ''Recreation of the old client theme experiment. Add a color to your Discord client theme (Shared between Vencord and Equicord)'';
@@ -430,9 +674,6 @@ in
   copyStickerLinks = {
     enable = mkEnableOption ''Adds the ability to copy & open Sticker links (Shared between Vencord and Equicord)'';
   };
-  copyUserUrLs = {
-    enable = mkEnableOption ''Adds a 'Copy User URL' option to the user context menu. (Shared between Vencord and Equicord)'';
-  };
   crashHandler = {
     enable = mkEnableOption ''Utility plugin for handling and possibly recovering from crashes without a restart (Shared between Vencord and Equicord)'';
     attemptToNavigateToHome = mkOption {
@@ -474,13 +715,6 @@ in
       default = true;
       description = ''When you come back to Discord, remain idle until you confirm you want to go online'';
       type = types.bool;
-    };
-  };
-  customRpc = {
-    enable = mkEnableOption ''Add a fully customisable Rich Presence (Game status) to your Discord profile (Shared between Vencord and Equicord)'';
-    config = mkOption {
-      default = { };
-      type = types.attrs;
     };
   };
   dearrow = {
@@ -642,7 +876,12 @@ in
     enable = mkEnableOption ''Removes the gap between codeblocks and text below it (Shared between Vencord and Equicord)'';
   };
   fixImagesQuality = {
-    enable = mkEnableOption ''Improves quality of images in chat by forcing png format (Shared between Vencord and Equicord)'';
+    enable = mkEnableOption ''Improves quality of images by loading them at their original resolution (Shared between Vencord and Equicord)'';
+    originalImagesInChat = mkOption {
+      default = false;
+      description = ''Also load the original image in Chat. WARNING: Read the caveats above'';
+      type = types.bool;
+    };
   };
   fixSpotifyEmbeds = {
     enable = mkEnableOption ''Fixes spotify embeds being incredibly loud by letting you customise the volume (Shared between Vencord and Equicord)'';
@@ -741,7 +980,7 @@ in
       default = [ ];
       type = types.listOf types.attrs;
     };
-    importCustomRpc = mkOption {
+    importCustomRPC = mkOption {
       default = { };
       type = types.attrs;
     };
@@ -839,88 +1078,6 @@ in
   };
   keepCurrentChannel = {
     enable = mkEnableOption ''Attempt to navigate to the channel you were in before switching accounts or loading Discord. (Shared between Vencord and Equicord)'';
-  };
-  lastFmRichPresence = {
-    enable = mkEnableOption ''Little plugin for Last.fm rich presence (Shared between Vencord and Equicord)'';
-    alwaysHideArt = mkOption {
-      default = false;
-      description = ''Disable downloading album art'';
-      type = types.bool;
-    };
-    apiKey = mkOption {
-      default = null;
-      description = ''Custom Last.fm API key. Not required but highly recommended to avoid rate limiting with our shared key'';
-      type = types.nullOr types.str;
-    };
-    clickableLinks = mkOption {
-      default = true;
-      description = ''Make track, artist and album names clickable links'';
-      type = types.bool;
-    };
-    hideWithActivity = mkOption {
-      default = false;
-      description = ''Hide Last.fm presence if you have any other presence'';
-      type = types.bool;
-    };
-    hideWithSpotify = mkOption {
-      default = true;
-      description = ''Hide Last.fm presence if spotify is running'';
-      type = types.bool;
-    };
-    missingArt = mkOption {
-      default = "lastfmLogo";
-      description = ''When album or album art is missing'';
-      type = types.enum [
-        "lastfmLogo"
-        "placeholder"
-      ];
-    };
-    nameFormat = mkOption {
-      default = "status-name";
-      description = ''Show name of song and artist in status name'';
-      type = types.enum [
-        "status-name"
-        "artist-first"
-        "song-first"
-        "artist"
-        "song"
-        "album"
-      ];
-    };
-    shareUsername = mkOption {
-      default = false;
-      description = ''Show link to Last.fm profile'';
-      type = types.bool;
-    };
-    showLastFmLogo = mkOption {
-      default = true;
-      description = ''Show the Last.fm logo by the album cover'';
-      type = types.bool;
-    };
-    statusDisplayType = mkOption {
-      default = "artist";
-      description = ''Show the track / artist name in the member list'';
-      type = types.enum [
-        "off"
-        "artist"
-        "track"
-      ];
-    };
-    statusName = mkOption {
-      default = "some music";
-      description = ''Custom status text'';
-      type = types.str;
-    };
-    useListeningStatus = mkOption {
-      default = false;
-      description = ''Show "Listening to" status instead of "Playing"'';
-      type = types.bool;
-    };
-    username = mkOption {
-      default = null;
-      description = ''Last.fm username'';
-      type = types.nullOr types.str;
-    };
   };
   loadingQuotes = {
     enable = mkEnableOption ''Replace Discords loading quotes (Shared between Vencord and Equicord)'';
@@ -1134,9 +1291,6 @@ in
       type = types.attrs;
     };
   };
-  mutualGroupDMs = {
-    enable = mkEnableOption ''Shows mutual group dms in profiles (Shared between Vencord and Equicord)'';
-  };
   newGuildSettings = {
     enable = mkEnableOption ''Automatically mute new servers and change various other settings upon joining (Shared between Vencord and Equicord)'';
     events = mkOption {
@@ -1322,38 +1476,6 @@ in
       type = types.float;
     };
   };
-  onePingPerDm = {
-    enable = mkEnableOption ''If unread messages are sent by a user in DMs multiple times, you'll only receive one audio ping. Read the messages to reset the limit (Shared between Vencord and Equicord)'';
-    allowEveryone = mkOption {
-      default = false;
-      description = ''Receive audio pings for @everyone and @here in group DMs'';
-      type = types.bool;
-    };
-    allowMentions = mkOption {
-      default = false;
-      description = ''Receive audio pings for @mentions'';
-      type = types.bool;
-    };
-    alwaysPlaySound = mkOption {
-      default = false;
-      description = ''Play the message notification sound even when its disabled (restart required)'';
-      type = types.bool;
-    };
-    channelToAffect = mkOption {
-      default = "both_dms";
-      description = ''Select the type of DM for the plugin to affect'';
-      type = types.enum [
-        "both_dms"
-        "user_dm"
-        "group_dm"
-      ];
-    };
-    ignoreUsers = mkOption {
-      default = "";
-      description = ''User IDs (comma + space) whose pings should NEVER be throttled (restart required)'';
-      type = types.str;
-    };
-  };
   oneko = {
     enable = mkEnableOption ''cat follow mouse (real) (Shared between Vencord and Equicord)'';
     speed = mkOption {
@@ -1429,29 +1551,6 @@ in
       default = true;
       description = ''Whether to make the PiP video loop or not'';
       type = types.bool;
-    };
-  };
-  pinDMs = {
-    enable = mkEnableOption ''Allows you to pin private channels to the top of your DM list. To pin/unpin or re-order pins, right click DMs (Shared between Vencord and Equicord)'';
-    canCollapseDmSection = mkOption {
-      default = false;
-      description = ''Allow uncategorised DMs section to be collapsable'';
-      type = types.bool;
-    };
-    pinOrder = mkOption {
-      default = 0;
-      description = ''
-        Which order should pinned DMs be displayed in?
-
-        Values: 0 = Most recent message, 1 = Custom (right click channels to reorder)'';
-      type = types.enum [
-        0
-        1
-      ];
-    };
-    userBasedCategoryList = mkOption {
-      default = { };
-      type = types.attrs;
     };
   };
   plainFolderIcon = {
@@ -1568,7 +1667,7 @@ in
       example = "Google";
       type = types.nullOr types.str;
     };
-    customEngineUrl = mkOption {
+    customEngineURL = mkOption {
       default = null;
       description = ''The URL of your Engine'';
       example = "https://google.com/search?q=";
@@ -1591,9 +1690,6 @@ in
   };
   reverseImageSearch = {
     enable = mkEnableOption ''Adds ImageSearch to image context menus (Shared between Vencord and Equicord)'';
-  };
-  reviewDb = {
-    enable = mkEnableOption ''Review other users (Adds a new settings to profiles) (Shared between Vencord and Equicord)'';
   };
   roleColorEverywhere = {
     enable = mkEnableOption ''Adds the top role color anywhere possible (Shared between Vencord and Equicord)'';
@@ -2265,19 +2361,6 @@ in
       type = types.bool;
     };
   };
-  usrbg = {
-    enable = mkEnableOption ''Displays user banners from USRBG, allowing anyone to get a banner without Nitro (Shared between Vencord and Equicord)'';
-    nitroFirst = mkOption {
-      default = true;
-      description = ''Banner to use if both Nitro and USRBG banners are present'';
-      type = types.bool;
-    };
-    voiceBackground = mkOption {
-      default = true;
-      description = ''Use USRBG banners as voice chat backgrounds (restart required)'';
-      type = types.bool;
-    };
-  };
   validReply = {
     enable = mkEnableOption ''Fixes "Message could not be loaded" upon hovering over the reply (Shared between Vencord and Equicord)'';
   };
@@ -2431,79 +2514,6 @@ in
       default = false;
       description = ''Toggle clicking avatars in reactions (restart required)'';
       type = types.bool;
-    };
-  };
-  xsOverlay = {
-    enable = mkEnableOption ''Forwards discord notifications to XSOverlay, for easy viewing in VR (Shared between Vencord and Equicord)'';
-    botNotifications = mkOption {
-      default = false;
-      description = ''Allow bot notifications'';
-      type = types.bool;
-    };
-    callNotifications = mkOption {
-      default = true;
-      description = ''Allow call notifications'';
-      type = types.bool;
-    };
-    channelPingColor = mkOption {
-      default = "#8a2be2";
-      description = ''Channel mention color'';
-      type = types.str;
-    };
-    dmNotifications = mkOption {
-      default = true;
-      description = ''Allow Direct Message notifications'';
-      type = types.bool;
-    };
-    groupDmNotifications = mkOption {
-      default = true;
-      description = ''Allow Group DM notifications'';
-      type = types.bool;
-    };
-    lengthBasedTimeout = mkOption {
-      default = true;
-      description = ''Extend duration with message length'';
-      type = types.bool;
-    };
-    opacity = mkOption {
-      default = 1.0;
-      description = ''Notif opacity'';
-      type = types.float;
-    };
-    pingColor = mkOption {
-      default = "#7289da";
-      description = ''User mention color'';
-      type = types.str;
-    };
-    preferUdp = mkOption {
-      default = false;
-      description = ''Enable if you use an older build of XSOverlay unable to connect through websockets. This setting is ignored on web.'';
-      type = types.bool;
-    };
-    serverNotifications = mkOption {
-      default = true;
-      description = ''Allow server notifications'';
-      type = types.bool;
-    };
-    soundPath = mkOption {
-      default = "default";
-      description = ''Notification sound (default/warning/error)'';
-      type = types.str;
-    };
-    timeout = mkOption {
-      default = 3;
-      description = ''Notification duration (secs)'';
-      type = types.int;
-    };
-    volume = mkOption {
-      default = 0.2;
-      description = ''Volume'';
-      type = types.float;
-    };
-    webSocketPort = mkOption {
-      default = 42070;
-      description = ''Websocket port'';
-      type = types.int;
     };
   };
   youtubeAdblock = {

@@ -6,6 +6,301 @@ let
   inherit (lib) types mkEnableOption mkOption;
 in
 {
+  AmITyping = {
+    enable = mkEnableOption ''Shows you if other people can see you typing. (Equicord-only)'';
+  };
+  FullVCPFP = {
+    enable = mkEnableOption ''Makes avatars take up the entire vc tile (Equicord-only)'';
+  };
+  GensokyoRadioRPC = {
+    enable = mkEnableOption ''Discord rich presence for Gensokyo Radio! (Equicord-only)'';
+    refreshInterval = mkOption {
+      default = 15.0;
+      description = ''The interval between activity refreshes (seconds) (restart required)'';
+      type = types.float;
+    };
+  };
+  IRememberYou = {
+    enable = mkEnableOption ''Locally saves everyone you've been communicating with (including servers), in case of lose (Equicord-only)'';
+  };
+  ListenBrainzRPC = {
+    enable = mkEnableOption ''Little plugin for ListenBrainz rich presence (Equicord-only)'';
+    hideWithActivity = mkOption {
+      default = false;
+      description = ''hide ListenBrainz presence if you have any other presence'';
+      type = types.bool;
+    };
+    hideWithSpotify = mkOption {
+      default = true;
+      description = ''hide ListenBrainz presence if Spotify is running'';
+      type = types.bool;
+    };
+    mbContact = mkOption {
+      default = null;
+      description = ''ListenBrainz contact'';
+      type = types.nullOr types.str;
+    };
+    missingArt = mkOption {
+      default = "listenbrainzLogo";
+      description = ''When album or album art is missing'';
+      type = types.enum [
+        "listenbrainzLogo"
+        "placeholder"
+      ];
+    };
+    nameFormat = mkOption {
+      default = "status-name";
+      description = ''Show name of song and artist in status name'';
+      type = types.enum [
+        "status-name"
+        "artist-first"
+        "song-first"
+        "artist"
+        "song"
+        "album"
+      ];
+    };
+    shareSong = mkOption {
+      default = true;
+      description = ''show link to song on ListenBrainz (may only be visible to other users)'';
+      type = types.bool;
+    };
+    shareUsername = mkOption {
+      default = false;
+      description = ''show link to ListenBrainz profile (may only be visible to other users)'';
+      type = types.bool;
+    };
+    statusName = mkOption {
+      default = "some music";
+      description = ''custom status text'';
+      type = types.str;
+    };
+    useListeningStatus = mkOption {
+      default = true;
+      description = ''show "Listening to" status instead of "Playing"'';
+      type = types.bool;
+    };
+    useLogo = mkOption {
+      default = true;
+      description = ''Show ListenBrainz logo on album art'';
+      type = types.bool;
+    };
+    useTimeBar = mkOption {
+      default = true;
+      description = ''use track duration to display a time bar (must be using Listening status)'';
+      type = types.bool;
+    };
+    username = mkOption {
+      default = null;
+      description = ''ListenBrainz username'';
+      type = types.nullOr types.str;
+    };
+  };
+  LoginWithQR = {
+    enable = mkEnableOption ''Allows you to login to another device by scanning a login QR code, just like on mobile! (Equicord-only)'';
+    scanQr = mkOption {
+      default = { };
+      description = ''Scan a QR code'';
+      type = types.attrs;
+    };
+  };
+  NoRPC = {
+    enable = mkEnableOption ''Disables Discord's RPC server. (Equicord-only)'';
+  };
+  RPCEditor = {
+    enable = mkEnableOption ''Edit the type and content of any Rich Presence (Equicord-only)'';
+    replacedAppIds = mkOption {
+      default = { };
+      type = types.attrs;
+    };
+  };
+  RPCStats = {
+    enable = mkEnableOption ''Displays stats about your activity as an rpc (Equicord-only)'';
+    RPCTitle = mkOption {
+      default = "RPCStats";
+      description = ''The title for the rpc'';
+      type = types.str;
+    };
+    albumCoverImage = mkOption {
+      default = true;
+      description = ''Should the album cover image be used as the rpc image? (if you have the last fm display chosen)'';
+      type = types.bool;
+    };
+    assetURL = mkOption {
+      default = "";
+      description = ''The image to use for your rpc. Your profile picture is used if left blank'';
+      type = types.str;
+    };
+    lastFMApiKey = mkOption {
+      default = "";
+      description = ''Your last.fm API key'';
+      type = types.str;
+    };
+    lastFMStatFormat = mkOption {
+      default = "Top album this week: \"$album - $artist\"";
+      description = ''How should the last fm stat be formatted? ''$album is replaced with the album name, and ''$artist is replaced with the artist name'';
+      type = types.str;
+    };
+    lastFMUsername = mkOption {
+      default = "";
+      description = ''Your last.fm username'';
+      type = types.str;
+    };
+    statDisplay = mkOption {
+      default = 0;
+      description = ''
+        What should the rpc display? (you can only have one line i'm pretty sure)
+
+        Values: 0 = The amount of messages sent today, 1 = The amount of messages sent all time, 2 = Your most listened album for the week'';
+      type = types.enum [
+        0
+        1
+        2
+      ];
+    };
+  };
+  RecentDMSwitcher = {
+    enable = mkEnableOption ''Ctrl+Tab between most recently used DMs (Ctrl+Shift+Tab reverse) (Equicord-only)'';
+    amountOfUsers = mkOption {
+      default = 20.0;
+      description = ''Number of users to show in overlay'';
+      type = types.float;
+    };
+    clearRdms = mkOption {
+      default = { };
+      description = ''Testing utility: Clear RDMS list'';
+      type = types.attrs;
+    };
+    overlayMode = mkOption {
+      default = "row";
+      description = ''Overlay content'';
+      type = types.enum [
+        "row"
+        "current"
+      ];
+    };
+    overlayRowLength = mkOption {
+      default = 5.0;
+      description = ''Number of recent DMs to show in row'';
+      type = types.float;
+    };
+    overlayShowAvatars = mkOption {
+      default = true;
+      description = ''Show avatars in overlay'';
+      type = types.bool;
+    };
+    toastDurationMs = mkOption {
+      default = 600.0;
+      description = ''Toast hide delay (ms)'';
+      type = types.float;
+    };
+    visualStyle = mkOption {
+      default = "overlay";
+      description = ''Visual indicator style while cycling'';
+      type = types.enum [
+        "overlay"
+        "toast"
+        "off"
+      ];
+    };
+  };
+  SaveFavoriteGIFs = {
+    enable = mkEnableOption ''Save favorite GIF urls to a file (Equicord-only)'';
+  };
+  TiktokTTS = {
+    enable = mkEnableOption ''Reads out chat messages with the good ol' Tiktok TTS voice :sob: (Equicord-only)'';
+  };
+  TosuRPC = {
+    enable = mkEnableOption ''osu! RPC with data from tosu (Equicord-only)'';
+  };
+  UserPFP = {
+    enable = mkEnableOption ''Allows you to use an animated avatar without Nitro (Equicord-only)'';
+    databaseSource = mkOption {
+      default = "https://userpfp.github.io/UserPFP/source/data.json";
+      description = ''URL to load database from'';
+      type = types.str;
+    };
+    overrideServerAvatars = mkOption {
+      default = true;
+      description = ''Override server avatars with custom avatars or the default user avatar if no custom avatar is set.'';
+      type = types.bool;
+    };
+    preferNitro = mkOption {
+      default = true;
+      description = ''Which avatar to use if both default animated (Nitro) pfp and UserPFP avatars are present'';
+      type = types.bool;
+    };
+  };
+  VCPanelSettings = {
+    enable = mkEnableOption ''Control voice settings right from the voice panel (Equicord-only)'';
+    camera = mkOption {
+      default = false;
+      description = ''Show a camera selector'';
+      type = types.bool;
+    };
+    inputDevice = mkOption {
+      default = true;
+      description = ''Show an input device selector'';
+      type = types.bool;
+    };
+    inputVolume = mkOption {
+      default = true;
+      description = ''Show an input volume slider'';
+      type = types.bool;
+    };
+    outputDevice = mkOption {
+      default = true;
+      description = ''Show an output device selector'';
+      type = types.bool;
+    };
+    outputVolume = mkOption {
+      default = true;
+      description = ''Show an output volume slider'';
+      type = types.bool;
+    };
+    showInputDeviceHeader = mkOption {
+      default = false;
+      description = ''Show header above input device selector'';
+      type = types.bool;
+    };
+    showInputVolumeHeader = mkOption {
+      default = true;
+      description = ''Show header above input volume slider'';
+      type = types.bool;
+    };
+    showOutputDeviceHeader = mkOption {
+      default = false;
+      description = ''Show header above output device selector'';
+      type = types.bool;
+    };
+    showOutputVolumeHeader = mkOption {
+      default = true;
+      description = ''Show header above output volume slider'';
+      type = types.bool;
+    };
+    showVideoDeviceHeader = mkOption {
+      default = false;
+      description = ''Show header above camera selector'';
+      type = types.bool;
+    };
+    title1 = mkOption {
+      default = { };
+      type = types.attrs;
+    };
+    title2 = mkOption {
+      default = { };
+      type = types.attrs;
+    };
+    title3 = mkOption {
+      default = { };
+      type = types.attrs;
+    };
+    uncollapseSettingsByDefault = mkOption {
+      default = false;
+      description = ''Automatically uncollapse voice settings by default'';
+      type = types.bool;
+    };
+  };
   allCallTimers = {
     enable = mkEnableOption ''Add call timer to all users in a server voice channel. (Equicord-only)'';
     format = mkOption {
@@ -47,9 +342,6 @@ in
   };
   alwaysExpandProfiles = {
     enable = mkEnableOption ''Always expands profile popouts to the full modal (Equicord-only)'';
-  };
-  amITyping = {
-    enable = mkEnableOption ''Shows you if other people can see you typing. (Equicord-only)'';
   };
   anammox = {
     enable = mkEnableOption ''A microbial process that plays an important part in the nitrogen cycle (Equicord-only)'';
@@ -476,6 +768,9 @@ in
       ];
     };
   };
+  components = {
+    enable = mkEnableOption ''Adds a new tab to settings to browse Discord components. (Equicord-only)'';
+  };
   contentWarning = {
     enable = mkEnableOption ''Allows you to specify certain trigger words that will be blurred by default. Hovering/Clicking on the blurred content will reveal it. (Equicord-only)'';
     flagged = mkOption {
@@ -545,21 +840,74 @@ in
   discordDevBanner = {
     enable = mkEnableOption ''Enables the Discord developer banner, in which displays the build-ID (Equicord-only)'';
   };
+  elementHighlighter = {
+    enable = mkEnableOption ''Highlight and inspect elements easily. (Equicord-only)'';
+    keybind = mkOption {
+      default = [ ];
+      description = ''Toggle Highlighter'';
+      type = types.listOf types.str;
+    };
+    showBorderRadius = mkOption {
+      default = false;
+      description = ''Display the element's border-radius values'';
+      type = types.bool;
+    };
+    showClasses = mkOption {
+      default = false;
+      description = ''Display the element's CSS class names in the tooltip'';
+      type = types.bool;
+    };
+    showDisplay = mkOption {
+      default = false;
+      description = ''Display the element's display type along with flex or grid properties'';
+      type = types.bool;
+    };
+    showFont = mkOption {
+      default = false;
+      description = ''Display the computed font family and font size'';
+      type = types.bool;
+    };
+    showId = mkOption {
+      default = false;
+      description = ''Display the element's ID attribute in the tooltip'';
+      type = types.bool;
+    };
+    showMargin = mkOption {
+      default = false;
+      description = ''Display the element's margin values'';
+      type = types.bool;
+    };
+    showPadding = mkOption {
+      default = false;
+      description = ''Display the element's padding values'';
+      type = types.bool;
+    };
+    showPosition = mkOption {
+      default = false;
+      description = ''Display the element's CSS position type and z-index'';
+      type = types.bool;
+    };
+  };
   equicordHelper = {
     enable = mkEnableOption ''Used to provide support, fix discord caused crashes, and other misc features. (Equicord-only)'';
-    disableDmContextMenu = mkOption {
+    disableDMContextMenu = mkOption {
       default = false;
       description = ''Disables the DM list context menu in favor of the x button (restart required)'';
       type = types.bool;
     };
     noMirroredCamera = mkOption {
       default = false;
-      description = ''Prevents the camera from being mirrored on your screen'';
+      description = ''Prevents the camera from being mirrored on your screen (restart required)'';
       type = types.bool;
     };
     removeActivitySection = mkOption {
       default = false;
-      description = ''Removes the activity section above member list'';
+      description = ''Removes the activity section above member list (restart required)'';
+      type = types.bool;
+    };
+    showYourOwnActivityButtons = mkOption {
+      default = false;
+      description = ''Discord hides your own activity buttons for some reason (restart required)'';
       type = types.bool;
     };
   };
@@ -705,17 +1053,6 @@ in
   };
   friendshipRanks = {
     enable = mkEnableOption ''Adds badges showcasing how long you have been friends with a user for (Equicord-only)'';
-  };
-  fullVcpfp = {
-    enable = mkEnableOption ''Makes avatars take up the entire vc tile (Equicord-only)'';
-  };
-  gensokyoRadioRpc = {
-    enable = mkEnableOption ''Discord rich presence for Gensokyo Radio! (Equicord-only)'';
-    refreshInterval = mkOption {
-      default = 15.0;
-      description = ''The interval between activity refreshes (seconds) (restart required)'';
-      type = types.float;
-    };
   };
   ghosted = {
     enable = mkEnableOption ''A cute ghost will appear if you don't answer their DMs (Equicord-only)'';
@@ -866,7 +1203,7 @@ in
       description = ''Show Ra1ncord Badges'';
       type = types.bool;
     };
-    showReviewDb = mkOption {
+    showReviewDB = mkOption {
       default = true;
       description = ''Show ReviewDB Badges'';
       type = types.bool;
@@ -884,7 +1221,7 @@ in
   };
   googleThat = {
     enable = mkEnableOption ''Adds a command to send a internet search link (Equicord-only)'';
-    customEngineUrl = mkOption {
+    customEngineURL = mkOption {
       default = null;
       description = ''The URL of the Engine you wish to use'';
       type = types.nullOr types.str;
@@ -964,7 +1301,7 @@ in
   };
   husk = {
     enable = mkEnableOption ''Adds Husk button (check settings to change used emoji) (Equicord-only)'';
-    emojiId = mkOption {
+    emojiID = mkOption {
       default = 1026532993923293184;
       description = ''Emoji ID (default (from Vencord Server): 1026532993923293184)'';
       type = types.int;
@@ -980,11 +1317,21 @@ in
       type = types.bool;
     };
   };
-  iRememberYou = {
-    enable = mkEnableOption ''Locally saves everyone you've been communicating with (including servers), in case of lose (Equicord-only)'';
-  };
   iconViewer = {
-    enable = mkEnableOption ''Adds a new tab to settings, to preview all icons (Equicord-only)'';
+    enable = mkEnableOption ''Adds a new tab to settings to preview all icons. (Equicord-only)'';
+  };
+  idleAutoRestart = {
+    enable = mkEnableOption ''Automatically restarts the client after being idle for a configurable amount of time, but avoids restarting while you are in VC. (Equicord-only)'';
+    idleMinutes = mkOption {
+      default = 30.0;
+      description = ''Minutes of inactivity before restarting (when not in VC)'';
+      type = types.float;
+    };
+    isEnabled = mkOption {
+      default = true;
+      description = ''Enable automatic restart after idle'';
+      type = types.bool;
+    };
   };
   ignoreCalls = {
     enable = mkEnableOption ''Allows you to ignore calls from specific users or dm groups. (Equicord-only)'';
@@ -1232,87 +1579,6 @@ in
       type = types.float;
     };
   };
-  listenBrainzRpc = {
-    enable = mkEnableOption ''Little plugin for ListenBrainz rich presence (Equicord-only)'';
-    hideWithActivity = mkOption {
-      default = false;
-      description = ''hide ListenBrainz presence if you have any other presence'';
-      type = types.bool;
-    };
-    hideWithSpotify = mkOption {
-      default = true;
-      description = ''hide ListenBrainz presence if Spotify is running'';
-      type = types.bool;
-    };
-    mbContact = mkOption {
-      default = null;
-      description = ''ListenBrainz contact'';
-      type = types.nullOr types.str;
-    };
-    missingArt = mkOption {
-      default = "listenbrainzLogo";
-      description = ''When album or album art is missing'';
-      type = types.enum [
-        "listenbrainzLogo"
-        "placeholder"
-      ];
-    };
-    nameFormat = mkOption {
-      default = "status-name";
-      description = ''Show name of song and artist in status name'';
-      type = types.enum [
-        "status-name"
-        "artist-first"
-        "song-first"
-        "artist"
-        "song"
-        "album"
-      ];
-    };
-    shareSong = mkOption {
-      default = true;
-      description = ''show link to song on ListenBrainz (may only be visible to other users)'';
-      type = types.bool;
-    };
-    shareUsername = mkOption {
-      default = false;
-      description = ''show link to ListenBrainz profile (may only be visible to other users)'';
-      type = types.bool;
-    };
-    statusName = mkOption {
-      default = "some music";
-      description = ''custom status text'';
-      type = types.str;
-    };
-    useListeningStatus = mkOption {
-      default = true;
-      description = ''show "Listening to" status instead of "Playing"'';
-      type = types.bool;
-    };
-    useLogo = mkOption {
-      default = true;
-      description = ''Show ListenBrainz logo on album art'';
-      type = types.bool;
-    };
-    useTimeBar = mkOption {
-      default = true;
-      description = ''use track duration to display a time bar (must be using Listening status)'';
-      type = types.bool;
-    };
-    username = mkOption {
-      default = null;
-      description = ''ListenBrainz username'';
-      type = types.nullOr types.str;
-    };
-  };
-  loginWithQr = {
-    enable = mkEnableOption ''Allows you to login to another device by scanning a login QR code, just like on mobile! (Equicord-only)'';
-    scanQr = mkOption {
-      default = { };
-      description = ''Scan a QR code'';
-      type = types.attrs;
-    };
-  };
   mediaPlaybackSpeed = {
     enable = mkEnableOption ''Allows changing the (default) playback speed of media embeds (Equicord-only)'';
     defaultAudioSpeed = mkOption {
@@ -1493,9 +1759,6 @@ in
   noRoleHeaders = {
     enable = mkEnableOption ''We are all equal!! (Equicord-only)'';
   };
-  noRpc = {
-    enable = mkEnableOption ''Disables Discord's RPC server. (Equicord-only)'';
-  };
   notificationTitle = {
     enable = mkEnableOption ''Makes desktop notifications more informative (Equicord-only)'';
   };
@@ -1642,10 +1905,10 @@ in
     };
   };
   questCompleter = {
-    enable = mkEnableOption ''A plugin to complete quests without having the game installed. (Equicord-only)'';
+    enable = mkEnableOption ''Adds a button to the header bar to complete quests without having the game installed. (Equicord-only)'';
     disableNotifications = mkOption {
       default = false;
-      description = ''Disable notifications when no quests are available or when a quest is completed'';
+      description = ''Disable notifications when no quests are available or when a quest is completed - still shows no quests notif'';
       type = types.bool;
     };
   };
@@ -1834,51 +2097,6 @@ in
       type = types.bool;
     };
   };
-  recentDmSwitcher = {
-    enable = mkEnableOption ''Ctrl+Tab between most recently used DMs (Ctrl+Shift+Tab reverse) (Equicord-only)'';
-    amountOfUsers = mkOption {
-      default = 20.0;
-      description = ''Number of users to show in overlay'';
-      type = types.float;
-    };
-    clearRdms = mkOption {
-      default = { };
-      description = ''Testing utility: Clear RDMS list'';
-      type = types.attrs;
-    };
-    overlayMode = mkOption {
-      default = "row";
-      description = ''Overlay content'';
-      type = types.enum [
-        "row"
-        "current"
-      ];
-    };
-    overlayRowLength = mkOption {
-      default = 5.0;
-      description = ''Number of recent DMs to show in row'';
-      type = types.float;
-    };
-    overlayShowAvatars = mkOption {
-      default = true;
-      description = ''Show avatars in overlay'';
-      type = types.bool;
-    };
-    toastDurationMs = mkOption {
-      default = 600.0;
-      description = ''Toast hide delay (ms)'';
-      type = types.float;
-    };
-    visualStyle = mkOption {
-      default = "overlay";
-      description = ''Visual indicator style while cycling'';
-      type = types.enum [
-        "overlay"
-        "toast"
-        "off"
-      ];
-    };
-  };
   remixRevived = {
     enable = mkEnableOption ''Revives Remix and breings it to Desktop (Equicord-only)'';
   };
@@ -1900,61 +2118,6 @@ in
   };
   richMagnetLinks = {
     enable = mkEnableOption ''Renders magnet links like message links (Equicord-only)'';
-  };
-  rpcEditor = {
-    enable = mkEnableOption ''Edit the type and content of any Rich Presence (Equicord-only)'';
-    replacedAppIds = mkOption {
-      default = { };
-      type = types.attrs;
-    };
-  };
-  rpcStats = {
-    enable = mkEnableOption ''Displays stats about your activity as an rpc (Equicord-only)'';
-    albumCoverImage = mkOption {
-      default = true;
-      description = ''Should the album cover image be used as the rpc image? (if you have the last fm display chosen)'';
-      type = types.bool;
-    };
-    assetUrl = mkOption {
-      default = "";
-      description = ''The image to use for your rpc. Your profile picture is used if left blank'';
-      type = types.str;
-    };
-    lastFmApiKey = mkOption {
-      default = "";
-      description = ''Your last.fm API key'';
-      type = types.str;
-    };
-    lastFmStatFormat = mkOption {
-      default = "Top album this week: \"$album - $artist\"";
-      description = ''How should the last fm stat be formatted? ''$album is replaced with the album name, and ''$artist is replaced with the artist name'';
-      type = types.str;
-    };
-    lastFmUsername = mkOption {
-      default = "";
-      description = ''Your last.fm username'';
-      type = types.str;
-    };
-    rpcTitle = mkOption {
-      default = "RPCStats";
-      description = ''The title for the rpc'';
-      type = types.str;
-    };
-    statDisplay = mkOption {
-      default = 0;
-      description = ''
-        What should the rpc display? (you can only have one line i'm pretty sure)
-
-        Values: 0 = The amount of messages sent today, 1 = The amount of messages sent all time, 2 = Your most listened album for the week'';
-      type = types.enum [
-        0
-        1
-        2
-      ];
-    };
-  };
-  saveFavoriteGiFs = {
-    enable = mkEnableOption ''Save favorite GIF urls to a file (Equicord-only)'';
   };
   scheduledMessages = {
     enable = mkEnableOption ''Schedule messages to be sent at a specific time or after a delay. (Equicord-only)'';
@@ -2156,7 +2319,7 @@ in
     enable = mkEnableOption ''Adds a toggle button for Spotify activity visibility. (Equicord-only)'';
     location = mkOption {
       default = "PANEL";
-      description = ''Where to show the spotify toggle button'';
+      description = ''Where to show the Spotify toggle button.'';
       type = types.enum [
         "PANEL"
         "TOOLBOX"
@@ -2170,7 +2333,7 @@ in
       description = ''Disable downloading album art'';
       type = types.bool;
     };
-    hideWithExternalRpc = mkOption {
+    hideWithExternalRPC = mkOption {
       default = false;
       description = ''Hides stats.fm presence if an external RPC is running'';
       type = types.bool;
@@ -2344,12 +2507,12 @@ in
       description = ''Make Discord not consider using H265 for streaming.'';
       type = types.bool;
     };
-    disableVp8Codec = mkOption {
+    disableVP8Codec = mkOption {
       default = false;
       description = ''Make Discord not consider using VP8 for streaming.'';
       type = types.bool;
     };
-    disableVp9Codec = mkOption {
+    disableVP9Codec = mkOption {
       default = false;
       description = ''Make Discord not consider using VP9 for streaming.'';
       type = types.bool;
@@ -2363,9 +2526,6 @@ in
   };
   tidalEmbeds = {
     enable = mkEnableOption ''Embeds TIDAL songs to make them playable in Discord. (Equicord-only)'';
-  };
-  tiktokTts = {
-    enable = mkEnableOption ''Reads out chat messages with the good ol' Tiktok TTS voice :sob: (Equicord-only)'';
   };
   timelessClips = {
     enable = mkEnableOption ''Add a your own clip length (Equicord-only)'';
@@ -2567,9 +2727,6 @@ in
       type = types.str;
     };
   };
-  tosuRpc = {
-    enable = mkEnableOption ''osu! RPC with data from tosu (Equicord-only)'';
-  };
   translate = {
     enable = mkEnableOption ''Vencord's translate plugin but with support for artistic languages! (Equicord-only)'';
     shavian = mkOption {
@@ -2611,7 +2768,7 @@ in
       description = ''Mention users from any server, not just the current one (restart required)'';
       type = types.bool;
     };
-    onlyDmUsers = mkOption {
+    onlyDMUsers = mkOption {
       default = false;
       description = ''Only show users you've had DMs with (restart required)'';
       type = types.bool;
@@ -2654,19 +2811,6 @@ in
       default = [ ];
       description = ''URL patterns to highlight using glob patterns.'';
       type = types.listOf types.str;
-    };
-  };
-  userPfp = {
-    enable = mkEnableOption ''Allows you to use an animated avatar without Nitro (Equicord-only)'';
-    databaseSource = mkOption {
-      default = "https://userpfp.github.io/UserPFP/source/data.json";
-      description = ''URL to load database from'';
-      type = types.str;
-    };
-    preferNitro = mkOption {
-      default = true;
-      description = ''Which avatar to use if both default animated (Nitro) pfp and UserPFP avatars are present'';
-      type = types.bool;
     };
   };
   vcNarratorCustom = {
@@ -2735,76 +2879,6 @@ in
       default = 1.0;
       description = ''Narrator Volume'';
       type = types.float;
-    };
-  };
-  vcPanelSettings = {
-    enable = mkEnableOption ''Control voice settings right from the voice panel (Equicord-only)'';
-    camera = mkOption {
-      default = false;
-      description = ''Show a camera selector'';
-      type = types.bool;
-    };
-    inputDevice = mkOption {
-      default = true;
-      description = ''Show an input device selector'';
-      type = types.bool;
-    };
-    inputVolume = mkOption {
-      default = true;
-      description = ''Show an input volume slider'';
-      type = types.bool;
-    };
-    outputDevice = mkOption {
-      default = true;
-      description = ''Show an output device selector'';
-      type = types.bool;
-    };
-    outputVolume = mkOption {
-      default = true;
-      description = ''Show an output volume slider'';
-      type = types.bool;
-    };
-    showInputDeviceHeader = mkOption {
-      default = false;
-      description = ''Show header above input device selector'';
-      type = types.bool;
-    };
-    showInputVolumeHeader = mkOption {
-      default = true;
-      description = ''Show header above input volume slider'';
-      type = types.bool;
-    };
-    showOutputDeviceHeader = mkOption {
-      default = false;
-      description = ''Show header above output device selector'';
-      type = types.bool;
-    };
-    showOutputVolumeHeader = mkOption {
-      default = true;
-      description = ''Show header above output volume slider'';
-      type = types.bool;
-    };
-    showVideoDeviceHeader = mkOption {
-      default = false;
-      description = ''Show header above camera selector'';
-      type = types.bool;
-    };
-    title1 = mkOption {
-      default = { };
-      type = types.attrs;
-    };
-    title2 = mkOption {
-      default = { };
-      type = types.attrs;
-    };
-    title3 = mkOption {
-      default = { };
-      type = types.attrs;
-    };
-    uncollapseSettingsByDefault = mkOption {
-      default = false;
-      description = ''Automatically uncollapse voice settings by default'';
-      type = types.bool;
     };
   };
   viewRawVariant = {

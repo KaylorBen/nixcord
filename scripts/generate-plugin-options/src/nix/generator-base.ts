@@ -246,7 +246,21 @@ export class NixGenerator {
       sanitized.startsWith('-') ||
       (!isEmpty(sanitized) && !NixGenerator.VALID_IDENTIFIER_START_PATTERN.test(sanitized));
 
-    sanitized = camelCase(sanitized);
+    // Preserve casing for strings containing consecutive uppercase letters (acronyms like RPC, TTS)
+    // Apply camelCase only if the string contains underscores/spaces or needs conversion
+    const hasAcronym = (() => {
+      for (let i = 0; i < sanitized.length - 1; i++) {
+        const char = sanitized.charAt(i);
+        const nextChar = sanitized.charAt(i + 1);
+        if (char >= 'A' && char <= 'Z' &&
+            nextChar >= 'A' && nextChar <= 'Z') {
+          return true;
+        }
+      }
+      return false;
+    })();
+    const needsCamelCase = sanitized.includes('_') || sanitized.includes(' ');
+    sanitized = hasAcronym && !needsCamelCase ? sanitized : camelCase(sanitized);
 
     if (
       originalStartsWithUnderscore &&

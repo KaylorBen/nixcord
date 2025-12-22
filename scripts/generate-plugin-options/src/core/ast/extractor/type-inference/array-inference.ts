@@ -18,7 +18,6 @@ import {
 } from '../default-value-checks/index.js';
 import { getDefaultPropertyInitializer } from '../type-helpers.js';
 import { isCustomType } from '../type-helpers.js';
-import { SyntaxKind as SK } from 'ts-morph';
 import type { InferenceState, SettingProperties } from './types.js';
 
 /**

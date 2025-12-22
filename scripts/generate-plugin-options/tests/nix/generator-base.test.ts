@@ -11,6 +11,16 @@ describe('NixGenerator', () => {
       expect(gen.identifier('Test Setting')).toBe('testSetting');
     });
 
+    test('preserves acronym casing', () => {
+      expect(gen.identifier('ListenBrainzRPC')).toBe('ListenBrainzRPC');
+      expect(gen.identifier('TosuRPC')).toBe('TosuRPC');
+      expect(gen.identifier('TiktokTTS')).toBe('TiktokTTS');
+      expect(gen.identifier('AmITyping')).toBe('AmITyping');
+      expect(gen.identifier('AlwaysExpandProfiles')).toBe('alwaysExpandProfiles');
+      expect(gen.identifier('BetterPlusReacts')).toBe('betterPlusReacts');
+      expect(gen.identifier('AudioBookShelfRichPresence')).toBe('audioBookShelfRichPresence');
+    });
+
     test('handles special characters', () => {
       expect(gen.identifier('test-setting-name')).toBe('testSettingName');
       expect(gen.identifier('test_setting_name')).toBe('testSettingName');
