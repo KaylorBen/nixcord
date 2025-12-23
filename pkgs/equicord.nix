@@ -1,7 +1,3 @@
-# Made from nixpkgs pkg and updated with nix-update
-# identical to nixpkgs source, but maintained here for
-# quicker updates that don't wait on hydra
-
 {
   fetchFromGitHub,
   git,
@@ -23,7 +19,7 @@
 let
   version = "2025-12-23";
   hash = "sha256-ce5n7E+eJLPnj/dUnaaDi4R8kKO4+iOcQgdtOin4NcM=";
-  pnpmDeps = "sha256-iBCA4G1E1Yw/d94pQzcbBGJYeIIgZI+Gw87/x4ogoyg=";
+  pnpmDeps = "sha256-NUVYVwMiF7bvULzvoddAm4Yp+dhdsJv5uwmLAmph/Fs=";
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "equicord";
@@ -109,7 +105,14 @@ stdenv.mkDerivation (finalAttrs: {
         [[ ! "$new_tag" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] && exit 1
 
         echo "Updating to version: $new_tag"
-        new_hash=$(nix-prefetch-github "Equicord" "Equicord" --rev "$new_tag" |jq -r .hash)
+        new_hash=$(
+          if prefetch_output=$(nix-prefetch-github "Equicord" "Equicord" --rev "$new_tag" 2>/dev/null); then
+            echo "$prefetch_output" | jq -r .hash
+          else
+            echo "Failed to prefetch GitHub revision $new_tag" >&2
+            exit 1
+          fi
+        )
 
         update_inplace "s|version = \".*\";|version = \"$new_tag\";|"
         update_inplace "s|hash = \"sha256-[^\"]*\";|hash = \"$new_hash\";|"
@@ -119,8 +122,6 @@ stdenv.mkDerivation (finalAttrs: {
           grep -o 'pnpmDeps = "sha256-[^"]*";' "$NIX_FILE" |
             sed 's/.*"sha256-\([^"]*\)".*/\1/'
         )
-
-        update_inplace "s|pnpmDeps = \"sha256-[^\"]*\";|pnpmDeps = \"\";|"
 
         build_output=$(
           nix-build -E "with import <nixpkgs> {}; (callPackage ./pkgs/equicord.nix {}).pnpmDeps" \
@@ -139,10 +140,12 @@ stdenv.mkDerivation (finalAttrs: {
             tr -d '[:space:]'
         )
 
-        [[ -z "$new_pnpm_hash" ]] &&
-          new_pnpm_hash="sha256-$old_pnpm_hash"
-
-        update_inplace "s|pnpmDeps = \"\";|pnpmDeps = \"$new_pnpm_hash\";|"
+        if [[ -n "$new_pnpm_hash" && "$new_pnpm_hash" != "sha256-$old_pnpm_hash" ]]; then
+          update_inplace "s|pnpmDeps = \"sha256-[^\"]*\";|pnpmDeps = \"$new_pnpm_hash\";|"
+          echo "Updated pnpmDeps hash to $new_pnpm_hash"
+        else
+          echo "pnpmDeps hash is already correct or could not be determined"
+        fi
         echo "Update complete"
       '';
     };
