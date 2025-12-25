@@ -131,8 +131,7 @@ stdenv.mkDerivation (finalAttrs: {
         local prefix="$2"
         local new_src_hash
         local prefetch_output
-        prefetch_output=$(nix-prefetch-github "${finalAttrs.src.owner}" "${finalAttrs.src.repo}" --rev "$rev" 2>/dev/null)
-        if [[ $? -eq 0 ]]; then
+        if prefetch_output=$(nix-prefetch-github "${finalAttrs.src.owner}" "${finalAttrs.src.repo}" --rev "$rev" 2>/dev/null); then
           new_src_hash=$(echo "$prefetch_output" | jq -r .hash)
           update_value_perl "''${prefix}Hash" "$new_src_hash"
         else
