@@ -7,7 +7,6 @@
   buildWebExtension ? false,
   unstable ? false,
   pnpm_10,
-  fetchPnpmDeps,
   writeShellApplication,
   cacert,
   coreutils,
@@ -46,7 +45,7 @@ stdenv.mkDerivation (finalAttrs: {
       --replace-fail '"@types/react": "18.3.1"' '"@types/react": "19.0.12"'
   '';
 
-  pnpmDeps = fetchPnpmDeps {
+  pnpmDeps = pnpm_10.fetchDeps {
     inherit (finalAttrs)
       pname
       src
